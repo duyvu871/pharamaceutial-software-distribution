@@ -1,0 +1,23 @@
+{
+    "extends": "@repo/typescript-config/base.json",
+    "compilerOptions": {
+        "rootDir": "src",
+        "outDir": "dist",
+        "baseUrl": ".",
+        "paths": {
+            "server/*": ["src/*"],
+            "types/*": ["./src/@types/*"],
+            "config/app-config": ["./src/common/config.ts"],
+            "constants/*": ["./src/common/constants/*"],
+            "responses/*": ["./src/responses/*"],
+            "utils/*": ["./src/utils/*"],
+            "middlewares/*": ["./src/api/middlewares/*"],
+            "validations/*": ["./src/api/validations/*"],
+            "services/*": ["./src/api/services/*"],
+            "controllers/*": ["./src/api/controllers/*"],
+            "models/*": ["./src/api/models/*"],
+        }
+    },
+    "include": ["src/**/*"],
+    "exclude": ["node_modules"]
+}

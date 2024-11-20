@@ -1,0 +1,118 @@
+{
+  "name": "@repo/database",
+  "type": "module",
+  "scripts": {
+    "build": "npm run clean && tsup && tsc-alias",
+    "dev": "tsup --watch",
+    "test": "jest --coverage",
+    "typecheck": "tsc --noEmit",
+    "clean": "rimraf .turbo && rimraf node_modules && rimraf dist",
+    "clear:force": "rimraf *.js --force"
+  },
+  "files": [
+    "dist/**"
+  ],
+  "exports": {
+    ".": {
+      "require": {
+        "types": "./dist/base.d.cts",
+        "default": "./dist/index.cjs"
+      },
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    },
+    "./redis": {
+      "require": {
+        "types": "./dist/redis/index.d.cts",
+        "default": "./dist/redis/index.cjs"
+      },
+      "import": {
+        "types": "./dist/redis/index.d.ts",
+        "default": "./dist/redis/index.js"
+      }
+    },
+    "./redis/*": {
+      "require": {
+        "types": "./dist/redis/*.d.cts",
+        "default": "./dist/redis/*.cjs"
+      },
+      "import": {
+        "types": "./dist/redis/*.d.ts",
+        "default": "./dist/redis/*.js"
+      }
+    },
+    "./mongodb": {
+      "require": {
+        "types": "./dist/mongodb/index.d.cts",
+        "default": "./dist/mongodb/index.cjs"
+      },
+      "import": {
+        "types": "./dist/mongodb/index.d.ts",
+        "default": "./dist/mongodb/index.js"
+      }
+    },
+    "./mongodb/*": {
+      "require": {
+        "types": "./dist/mongodb/*.d.cts",
+        "default": "./dist/mongodb/*.cjs"
+      },
+      "import": {
+        "types": "./dist/mongodb/*.d.ts",
+        "default": "./dist/mongodb/*.js"
+      }
+    },
+    "./postgresql": {
+      "require": {
+        "types": "./dist/postgresql/index.d.cts",
+        "default": "./dist/postgresql/index.cjs"
+      },
+      "import": {
+        "types": "./dist/postgresql/index.d.ts",
+        "default": "./dist/postgresql/index.js"
+      }
+    },
+    "./postgresql/*": {
+      "require": {
+        "types": "./dist/postgresql/*.d.cts",
+        "default": "./dist/postgresql/*.cjs"
+      },
+      "import": {
+        "types": "./dist/postgresql/*.d.ts",
+        "default": "./dist/postgresql/*.js"
+      }
+    },
+    "./mysql": {
+      "require": {
+        "types": "./dist/mysql/index.d.cts",
+        "default": "./dist/mysql/index.cjs"
+      },
+      "import": {
+        "types": "./dist/mysql/index.d.ts",
+        "default": "./dist/mysql/index.js"
+      }
+    },
+    "./mysql/*": {
+      "require": {
+        "types": "./dist/mysql/*.d.cts",
+        "default": "./dist/mysql/*.cjs"
+      },
+      "import": {
+        "types": "./dist/mysql/*.d.ts",
+        "default": "./dist/mysql/*.js"
+      }
+    }
+  },
+  "dependencies": {
+    "ioredis": "^5.4.1",
+    "sequelize": "^6.37.5"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "*",
+    "rimraf": "^6.0.1",
+    "tsc-alias": "^1.8.10",
+    "tsup": "^8.2.4",
+    "typescript": "latest"
+  }
+}

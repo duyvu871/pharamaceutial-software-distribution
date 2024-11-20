@@ -2,7 +2,8 @@
   "private": true,
   "scripts": {
     "build": "turbo build",
-    "dev": "turbo dev",
+    "dev": "turbo dev --filter=server --filter=web",
+    "dev:server": "turbo dev --filter=server",
     "lint": "turbo lint",
     "type-check": "turbo type-check",
     "clean": "turbo clean",
@@ -11,6 +12,8 @@
   "devDependencies": {
     "prettier": "^3.2.5",
     "prettier-plugin-tailwindcss": "^0.5.11",
+    "tsc-alias": "^1.8.10",
+    "tsup": "^8.3.5",
     "turbo": "^2.2.3"
   },
   "engines": {

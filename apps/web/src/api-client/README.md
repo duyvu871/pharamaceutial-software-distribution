@@ -1,0 +1,1 @@
+## This directory contains the API client for the web app.

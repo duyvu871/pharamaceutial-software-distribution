@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import tailwindcssAnimated from "tailwindcss-animated";
 
 // We want each package to be responsible for its own content.
 const config: Omit<Config, "content"> = {
@@ -10,6 +11,6 @@ const config: Omit<Config, "content"> = {
       },
     },
   },
-  plugins: [],
+  plugins: [tailwindcssAnimated],
 };
 export default config;

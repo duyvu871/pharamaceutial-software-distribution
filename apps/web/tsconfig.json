@@ -1,8 +1,89 @@
 {
   "extends": "@repo/typescript-config/nextjs.json",
   "compilerOptions": {
-    "plugins": [{ "name": "next" }]
+    "baseUrl": "./",
+    "paths": {
+      "@ui/*": [
+        "../../packages/ui/src/*"
+      ],
+      "@app/*": [
+        "./src/app/*"
+      ],
+      "@api/*": [
+        "./src/api-client/*"
+      ],
+      "@component/*": [
+        "./src/components/*"
+      ],
+      "@global/*": [
+        "./src/global/*"
+      ],
+      "@global/constant/*": [
+        "./src/global/constants/*"
+      ],
+      "@context/*": [
+        "./src/contexts/*"
+      ],
+      "@layout/*": [
+        "./src/layouts/*"
+      ],
+      "@provider/*": [
+        "./src/providers/*"
+      ],
+      "@service/*": [
+        "./src/services/*"
+      ],
+      "@section/*": [
+        "./src/sections/*"
+      ],
+      "@store/*": [
+        "./src/stores/*"
+      ],
+      "@container/*": [
+        "./src/containers/*"
+      ],
+      "@route/*": [
+        "./src/routes/*"
+      ],
+      "@schema/*": [
+        "./src/schemas/*"
+      ],
+      "@lib/*": [
+        "./src/libs/*"
+      ],
+      "config": [
+        "./src/global-config.ts"
+      ],
+      "@page/*": [
+        "./src/pages/*"
+      ],
+      "@style/*": [
+        "./src/styles/*"
+      ],
+      "@util/*": [
+        "./src/utils/*"
+      ],
+      "@hook/*": [
+        "./src/hooks/*"
+      ],
+      "@type/*": [
+        "./src/types/*"
+      ]
+    },
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "strictNullChecks": true
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

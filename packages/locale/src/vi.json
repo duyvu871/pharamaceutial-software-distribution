@@ -1,0 +1,22 @@
+{
+    "sign_in": "Đăng nhập",
+    "sign_up": "Đăng ký",
+    "sign_out": "Đăng xuất",
+    "email": "Email",
+    "password": "Mật khẩu",
+    "name": "Tên đăng nhập",
+    "forgot_password?": "Quên mật khẩu?",
+    "do_not_have_an_account?": "Chưa có tài khoản?",
+    "already_have_an_account?": "Đã có tài khoản?",
+    "create_account": "Tạo tài khoản",
+
+    "welcome_back": "Chào mừng trở lại",
+    "please_sign_in_to_your _account": "Vui lòng đăng nhập vào tài khoản của bạn",
+    "please_enter_your_email_and_password": "Vui lòng nhập email và mật khẩu của bạn",
+
+    "name_is_required": "Tên đăng nhập không được để trống",
+    "name_must_be_a_string": "Tên đăng nhập không hợp lệ",
+    "email_is_required": "Email không được để trống",
+    "email_is_invalid": "Email không hợp lệ",
+    "password_is_required": "Mật khẩu không được để trống"
+}

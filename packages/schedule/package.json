@@ -1,0 +1,26 @@
+{
+  "name": "@repo/schedule",
+  "type": "module",
+  "scripts": {
+    "build": "npm run clean && tsup && tsc-alias",
+    "dev": "tsup --watch",
+    "test": "jest --coverage",
+    "typecheck": "tsc --noEmit",
+    "clean": "rimraf .turbo && rimraf node_modules && rimraf dist",
+    "clear:force": "rimraf *.js --force"
+  },
+  "files": [
+    "dist/**"
+  ],
+  "exports": {},
+  "dependencies": {
+    "node-cron": "^3.0.3"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "*",
+    "rimraf": "^6.0.1",
+    "tsc-alias": "^1.8.10",
+    "tsup": "^8.2.4",
+    "typescript": "latest"
+  }
+}

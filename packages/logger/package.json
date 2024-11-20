@@ -1,0 +1,56 @@
+{
+  "name": "@repo/logger",
+  "type": "module",
+  "scripts": {
+    "build": "npm run clean && tsup && tsc-alias",
+    "dev": "tsup --watch",
+    "test": "jest --coverage",
+    "typecheck": "tsc --noEmit",
+    "clean": "rimraf .turbo && rimraf node_modules && rimraf dist",
+    "clear:force": "rimraf *.js --force"
+  },
+  "files": [
+    "dist/**"
+  ],
+  "exports": {
+    "./node": {
+      "require": {
+        "types": "./dist/node/index.d.cts",
+        "default": "./dist/node/index.cjs"
+      },
+      "import": {
+        "types": "./dist/node/index.d.ts",
+        "default": "./dist/node/index.js"
+      }
+    },
+    "./client": {
+      "require": {
+        "types": "./dist/client/index.d.cts",
+        "default": "./dist/client/index.cjs"
+      },
+      "import": {
+        "types": "./dist/client/index.d.ts",
+        "default": "./dist/client/index.js"
+      }
+    }
+  },
+  "dependencies": {
+    "clientjs": "^0.2.1",
+    "winston": "^3.16.0",
+    "winston-daily-rotate-file": "^5.0.0"
+  },
+  "devDependencies": {
+    "@swc/core": "^1.9.2",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^20.16.0",
+    "@types/clientjs": "^0.2.2",
+    "@repo/typescript-config": "*",
+    "jest-config-custom": "*",
+    "jest": "^29.5.0",
+    "ts-jest": "^29.2.5",
+    "rimraf": "^6.0.1",
+    "tsc-alias": "^1.8.10",
+    "tsup": "^8.2.4",
+    "typescript": "latest"
+  }
+}
