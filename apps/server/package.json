@@ -1,0 +1,73 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "Live bitcoin fluency with fourier transform, websocket",
+  "repository": "git@github.com:duyvu871/btl-xlths.git",
+  "main": "server.js",
+  "keywords": [
+    "Socket",
+    "Fourier",
+    "Transform"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "author": "BUIANDU",
+  "license": "ISC",
+  "scripts": {
+    "dev": "set NODE_ENV=development&&set PORT=4001&&tsup --watch --onSuccess \"tsc-alias && npm run start\"",
+    "start": "node dist/server.js",
+    "build": "tsc && tsc-alias",
+    "test": "jest",
+    "dev:migrate:up": "set NODE_ENV=development&&npx sequelize-cli db:migrate",
+    "dev:migrate:undo": "set NODE_ENV=development&&npx sequelize-cli db:migrate:undo",
+    "prod:migrate:up": "set NODE_ENV=production && npx sequelize-cli db:migrate",
+    "prod:migrate:undo": "set NODE_ENV=production && npx sequelize-cli db:migrate:undo",
+    "dev:seed:all": "npx sequelize-cli db:seed:all",
+    "dev:seed:undo": "npx sequelize-cli db:seed:undo"
+  },
+  "gypfile": true,
+  "dependencies": {
+    "@repo/database": "*",
+    "@repo/logger": "*",
+    "axios": "^1.7.7",
+    "bcrypt": "^5.1.1",
+    "body-parser": "^1.20.3",
+    "cors": "^2.8.5",
+    "dayjs": "^1.11.13",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "express-validator": "^6.4.0",
+    "ioredis": "^5.4.1",
+    "jsonwebtoken": "^9.0.2",
+    "jwt-decode": "^2.2.0",
+    "lodash": "^4.17.21",
+    "node-addon-api": "^8.1.0",
+    "node-cron": "^3.0.3",
+    "pg": "^8.13.1",
+    "pg-hstore": "^2.3.4",
+    "sequelize": "^6.37.5",
+    "socket.io": "^4.8.0",
+    "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/body-parser": "^1.19.0",
+    "@types/cors": "^2.8.6",
+    "@types/crypto-js": "^3.1.44",
+    "@types/express": "^4.17.6",
+    "@types/ioredis": "^5.0.0",
+    "@types/jest": "^29.5.14",
+    "@types/jsonwebtoken": "^8.3.9",
+    "@types/jwt-decode": "^2.2.1",
+    "@types/node-cron": "^3.0.11",
+    "@types/socket.io": "^2.1.4",
+    "@types/uuid": "^10.0.0",
+    "jest": "^29.7.0",
+    "sequelize-cli": "^6.6.2",
+    "ts-jest": "^29.2.5",
+    "tsc-alias": "^1.8.10",
+    "tsup": "^8.3.5",
+    "typescript": "^5.3.3"
+  }
+}

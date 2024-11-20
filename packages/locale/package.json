@@ -1,0 +1,35 @@
+{
+  "name": "@repo/locale",
+  "type": "module",
+  "scripts": {
+    "build": "npm run clean && tsup && tsc-alias",
+    "dev": "tsup --watch",
+    "test": "jest --coverage",
+    "typecheck": "tsc --noEmit",
+    "clean": "rimraf .turbo && rimraf node_modules && rimraf dist",
+    "clear:force": "rimraf *.js --force"
+  },
+  "files": [
+    "dist/**"
+  ],
+  "exports": {
+    ".": {
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      },
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    }
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@repo/typescript-config": "*",
+    "rimraf": "^6.0.1",
+    "tsc-alias": "^1.8.10",
+    "tsup": "^8.2.4",
+    "typescript": "latest"
+  }
+}

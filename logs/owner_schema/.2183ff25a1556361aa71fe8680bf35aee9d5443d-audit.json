@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 14
+    },
+    "auditLog": "F:\\CODE\\pharamaceutial-software-distribution\\logs\\owner_schema\\.2183ff25a1556361aa71fe8680bf35aee9d5443d-audit.json",
+    "files": [
+        {
+            "date": 1731928470317,
+            "name": "F:\\CODE\\pharamaceutial-software-distribution\\logs\\owner_schema\\application-2024-11-18.log",
+            "hash": "ac03acb0fec38bfab2564dcb34308bbabc78fb02bd1828c9ac6f5c23387dee1e"
+        }
+    ],
+    "hashType": "sha256"
+}
