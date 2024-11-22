@@ -4,7 +4,6 @@
   "scripts": {
     "build": "npm run clean && tsup && tsc-alias",
     "dev": "tsup --watch",
-    "test": "jest --coverage",
     "typecheck": "tsc --noEmit",
     "clean": "rimraf dist",
     "clear:force": "rimraf *.js --force"
