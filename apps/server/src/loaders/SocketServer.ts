@@ -2,7 +2,7 @@ import * as SocketIo from 'socket.io';
 import { Server } from 'http';
 
 import { SocketEvent } from '../common/constants';
-import LiveBitcoinWebsocket from "../websockets/LiveBitcoinWebsocket";
+// import LiveBitcoinWebsocket from "../websockets/LiveBitcoinWebsocket";
 import RedisServer from "./RedisServer";
 
 class SocketServer {

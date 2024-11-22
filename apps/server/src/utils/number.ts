@@ -1,5 +1,5 @@
 export function separateNumber(number: number, range: number): number[] {
-    const result = [];
+    const result: number[] = [];
     const excess = number % range;
     const fullFits = Math.floor(number / range);
     for (let i = 0; i < fullFits; i++) {

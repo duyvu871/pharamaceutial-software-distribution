@@ -45,6 +45,7 @@ const toJSON = (schema: any) => {
 			delete ret.updatedAt;
 
 			if (transform) {
+				// @ts-ignore
 				return transform(doc, ret, options);
 			}
 		} // transform function

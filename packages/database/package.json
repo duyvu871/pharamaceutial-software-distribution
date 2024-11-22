@@ -6,7 +6,7 @@
     "dev": "tsup --watch",
     "test": "jest --coverage",
     "typecheck": "tsc --noEmit",
-    "clean": "rimraf .turbo && rimraf node_modules && rimraf dist",
+    "clean": "rimraf dist",
     "clear:force": "rimraf *.js --force"
   },
   "files": [
