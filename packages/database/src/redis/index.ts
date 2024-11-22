@@ -187,10 +187,10 @@ class RedisClient {
     }
 
     // Write multiple values (from Set, Map, or Iterable)
-    async writeMany(pairs: Iterable<[string, string]>): Promise<void> {
+    async writeMany(values: Set<string> | Map<string, string> | Iterable<[string, string]>): Promise<void> {
         try {
             const pipeline = this.getClient().pipeline();
-            for (const [key, value] of pairs) {
+            for (const [key, value] of values) {
                 pipeline.set(key, value);
             }
             await pipeline.exec();
@@ -199,6 +199,17 @@ class RedisClient {
             throw new Error('Failed to write multiple key-value pairs');
         }
     }
+
+    // async writeMany(pairs: Iterable<[string, string]>): Promise<void> {
+    //     try {
+    //         const pipeline = this.getClient().pipeline();
+    //
+    //         await pipeline.exec();
+    //     } catch (error) {
+    //         console.error('Error writing multiple key-value pairs:', error);
+    //         throw new Error('Failed to write multiple key-value pairs');
+    //     }
+    // }
 
     // Execute a custom Lua script
     async execute(script: string, keys: string[] = [], args: string[] = []): Promise<any> {

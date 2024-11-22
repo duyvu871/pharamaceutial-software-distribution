@@ -1,16 +1,17 @@
 import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { CookieAccessToken } from '@type/token.ts';
 import { ExternalLoginAPIResponse } from '@type/api/auth.ts';
 
 export async function POST(req: NextRequest) {
-	const incomingBody = await req.json() as { username: string, password: string };
+	const incomingBody = await req.json() as { username: string, password: string, role: string };
 
 	try {
-		const login = await axios.post<ExternalLoginAPIResponse>('http://localhost:4001/api/v1/login', {
+		const login = await axios.post<ExternalLoginAPIResponse>('http://localhost:4001/api/v1/auth/login', {
 			username: incomingBody.username,
-			password: incomingBody.password
+			password: incomingBody.password,
+			type: incomingBody.role,
 		});
 
 		console.log('login', login.data);
@@ -47,8 +48,9 @@ export async function POST(req: NextRequest) {
 			cookies().set('accessToken', JSON.stringify(cookieSet), {
 				httpOnly: true,
 				secure: true,
-				sameSite: 'strict',
-				maxAge: 60 * 60 * 24 * 7, // 1 week
+				sameSite: 'lax', // lax is default, is the most secure
+				expires: new Date(accessToken.expire_access_token),
+				maxAge: accessToken.expire_access_token || 60 * 60 * 24, // 1 day
 			});
 		}
 
@@ -59,10 +61,17 @@ export async function POST(req: NextRequest) {
 			}
 		});
 	} catch (error: any) {
-		console.log('error', error);
+		console.log('error', error.message, error.response.data);
+		if (error instanceof AxiosError) {
+			return new NextResponse(JSON.stringify(error.response?.data), {
+				status: error?.status || 500,
+				headers: {
+					'Content-Type': 'application/json',
+				}
+			});
+		}
 		return new NextResponse(JSON.stringify({
 			message: "Internal Server Error"
-
 		}), {
 			status: 500,
 			headers: {

@@ -20,7 +20,9 @@ export class AuthController {
 			const loginType = req.body.type;
 
 			try {
+				// delegate login task to specific task
 				const task = AuthTasks[loginType];
+				// Login user
 				const login = await task.login(req.body.username, req.body.password);
 				console.log('login', login);
 				// Generate access token and refresh token
@@ -29,6 +31,7 @@ export class AuthController {
 					TaskOwner[loginType],
 					config.sessionExpire
 				);
+				// Generate refresh token
 				const refreshToken = await TokenService.generateRefreshToken(
 					login.id,
 					TaskOwner[loginType],

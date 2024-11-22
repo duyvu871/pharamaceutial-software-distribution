@@ -4,6 +4,7 @@
     "build": "turbo build",
     "dev": "turbo dev --filter=server --filter=web",
     "dev:server": "turbo dev --filter=server",
+    "test": "turbo run test",
     "lint": "turbo lint",
     "type-check": "turbo type-check",
     "clean": "turbo clean",

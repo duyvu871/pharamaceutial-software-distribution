@@ -1,7 +1,11 @@
-import "./globals.css";
+import "@app/globals.css";
 import "@repo/ui/styles.css";
+import '@mantine/core/styles.css';
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { cn } from '@lib/tailwind-merge.ts';
+import React from 'react';
+import { ThemeProvider } from '@layout/global-theme.tsx';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -17,9 +21,17 @@ export default function RootLayout({
 }): JSX.Element {
 	return (
 		<html lang="en" suppressHydrationWarning>
-		<body className={inter.className}>
-		{children}
-		</body>
+			<body className={cn(inter.className, "flex justify-center items-center w-full min-h-screen h-fit font-sans")}>
+				<ThemeProvider
+					attribute="class"
+					defaultTheme="light"
+					disableTransitionOnChange
+					// enableSystem
+					forcedTheme={'light'}
+				>
+					{children}
+				</ThemeProvider>
+			</body>
 		</html>
 	);
 }

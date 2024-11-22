@@ -1,4 +1,5 @@
 import React from 'react';
+import 'react-toastify/dist/ReactToastify.css';
 import type { ToastContainerProps} from "react-toastify";
 import {ToastContainer} from "react-toastify";
 import {Toaster} from "@global/constant/default-component-props";

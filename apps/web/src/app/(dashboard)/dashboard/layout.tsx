@@ -36,12 +36,13 @@ export default function RootLayout({
 }): JSX.Element {
 	return (
 		<html lang="en" suppressHydrationWarning>
-		<body className={cn(fontSans.className, "flex justify-center items-center w-full min-h-screen h-fit font-sans antialiased bg-[#0c0d0f]")}>
+		<body className={cn(fontSans.className, "flex justify-center items-center w-full min-h-screen h-fit font-sans antialiased")}>
 		<ThemeProvider
 			attribute="class"
-			defaultTheme="system"
+			defaultTheme="light"
 			disableTransitionOnChange
-			enableSystem
+			// enableSystem
+			forcedTheme={'light'}
 		>
 			{children}
 		</ThemeProvider>

@@ -1,9 +1,14 @@
+"use client";
+
 import React, { createContext, useLayoutEffect, useState } from 'react';
 import axios, { InternalAxiosRequestConfig } from 'axios';
 import axiosWithAuth, { baseURL, checkCookie } from '@lib/axios';
 import { removeCookie, setCookie } from '@util/cookie.ts';
-import router from 'next/router';
+import {useRouter} from 'next/navigation';
 import { paths } from '@route/path.ts';
+import { LoginFormType, LoginPayloadType } from '@schema/user-schema.ts';
+import useToast from '@hook/client/use-toast-notification.ts';
+import { login } from '@api/auth.ts';
 
 type AuthProviderProps = {
 	children: React.ReactNode;
@@ -13,15 +18,19 @@ export type IAuthContext = {
 	isAuthenticated: boolean;
 	setToken: (newToken: string | null) => void;
 	token: string | null;
+	loginAction: (userPayload: LoginFormType, redirect: string) => void;
 }
 
 export const AuthContext = createContext<IAuthContext>({
 	isAuthenticated: false,
 	token: null,
-	setToken: () => {}
+	setToken: () => {},
+	loginAction: () => {},
 });
 
 const AuthProvider = ({children}: AuthProviderProps) => {
+	const toast = useToast();
+	const router = useRouter();
 	const [token, setTokenState] = React.useState<string | null>(
 		typeof window !== 'undefined' ? sessionStorage.getItem('token') : null
 	);
@@ -36,6 +45,21 @@ const AuthProvider = ({children}: AuthProviderProps) => {
 	};
 
 	const isAuthenticated = !!token;
+
+	const loginAction = async (userPayload: LoginFormType, redirect: string) => {
+		const signInResponse = await login({
+			username: userPayload.username,
+			password: userPayload.password,
+			role: userPayload.role,
+		}, redirect);
+		console.log(signInResponse);
+		if (signInResponse?.errorCode) {
+			toast.showErrorToast(signInResponse?.errorMessage ?? 'Login failed');
+			return;
+		}
+		toast.showSuccessToast('Đăng nhập thành công');
+		router.push(redirect);
+	};
 
 	useLayoutEffect(() => {
 		// Intercept request and add access token to header if it exists
@@ -76,7 +100,7 @@ const AuthProvider = ({children}: AuthProviderProps) => {
 						requestConfig.headers.Authorization = `${token_type} ${data.accessToken.access_token}`;
 					}
 				} else {
-					await router.replace(paths.auth.login);
+					router.replace(paths.auth.login);
 				}
 
 				return requestConfig;
@@ -116,9 +140,10 @@ const AuthProvider = ({children}: AuthProviderProps) => {
 		<AuthContext.Provider value={{
 			isAuthenticated,
 			token,
-			setToken
+			setToken,
+			loginAction,
 		}}>
-
+			{children}
 		</AuthContext.Provider>
 	);
 };

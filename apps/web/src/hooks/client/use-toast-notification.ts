@@ -39,10 +39,10 @@ const useToast = (): UseToast => {
                     type,
                     ...toastOptions,
                     ...options,
-                    onClose: () => setToastIds((prevIds) => ({ ...prevIds, [type]: null })),
+                    // onClose: () => setToastIds((prevIds) => ({ ...prevIds, [type]: null })),
                 });
 
-                setToastIds((prevIds) => ({ ...prevIds, [type]: id }));
+                // setToastIds((prevIds) => ({ ...prevIds, [type]: id }));
             },
         []
     );

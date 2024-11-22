@@ -19,7 +19,8 @@
     "skipLibCheck": true,
     "strict": true,
     "strictNullChecks": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "downlevelIteration": true
   },
   "exclude": ["node_modules"]
 }

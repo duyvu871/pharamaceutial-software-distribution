@@ -22,3 +22,11 @@ export type ExternalRefreshTokenAPIResponse = {
 		token_type: string;
 	};
 }
+
+export type AuthLoginSuccessResponse = {
+	id: string;
+	username: string;
+	email: string;
+	age: number;
+	phone_number: string;
+}
