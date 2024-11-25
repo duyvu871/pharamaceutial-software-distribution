@@ -16,7 +16,7 @@ process.env.SERVER_PORT = process.env.SERVER_PORT || "8080";
 process.env.DEFAULT_EXPIRE = process.env.DEFAULT_EXPIRE || "3600"; // 1 hour
 // redis
 process.env.REDIS_PORT = process.env.REDIS_PORT || "6379";
-process.env.REDIS_HOST = process.env.REDIS_HOST || "redis";
+process.env.REDIS_HOST = process.env.REDIS_HOST || "172.28.158.9";
 
 // mongodb
 process.env.DB_MONGO_URI = process.env.DB_MONGO_URI || "mongodb://localhost:27017/mongo";
