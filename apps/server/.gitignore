@@ -6,3 +6,4 @@ venv/
 build/
 playground/
 logs/
+.env.example/

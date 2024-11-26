@@ -1,5 +1,7 @@
+import AsyncMiddleware from 'server/utils/asyncHandler';
 import RedisServer from '../../loaders/RedisServer';
 import { Request, Response } from "express";
+import { SearchBody } from '../validations/SearchProduct';
 
 interface Product {
   id: string;
@@ -9,14 +11,18 @@ interface Product {
   price: string;
 }
 
-export const SearchProduct = async (req: Request, res: Response) => {
+
+export class SearchProduct {
+  public static search = AsyncMiddleware.asyncHandler(
+    async (req: Request<unknown, unknown, SearchBody>, res: Response) => {
+
   try {
     const redisServer: RedisServer = req.app.get('redis');
     const redis = redisServer.instance;
 
-    const { query } = req.body;
+    const { query } = req.query;
     console.log(query)
-    const searchQuery = `(@name:${query}*)|(@name:*${query}*)|(@name:*${query}*)`;
+    const searchQuery = `(@name:${query}*)|(@name:*${query}*)|(@name:*${query}*)`;  
 
     const result = await redis.call('FT.SEARCH', 'productIndex', searchQuery, 'LIMIT' , 0,5 ) as [number, ...(string | string[])[]];
 
@@ -34,9 +40,10 @@ export const SearchProduct = async (req: Request, res: Response) => {
       products.push(product);
     }
 
-    res.status(200).json({ products });
-  } catch (error) {
-    console.error('Error during search:', error);
-    res.status(500).json({ error: 'An error occurred while searching' });
+    return res.status(200).json({ products }).end();
+  } catch (error:any ) {
+    console.error(`Error during search:  ${error.errorMessage || error.message}`);
+    throw error; 
   }
+})
 };
