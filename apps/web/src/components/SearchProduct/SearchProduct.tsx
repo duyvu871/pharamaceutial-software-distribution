@@ -16,13 +16,13 @@ export default function SearchPage() {
       }
 
       try {
-        const res = await fetch('http://localhost:5000/api/search', {
-          method: 'POST',
+        const res = await fetch(`http://localhost:5000/api/search?query=${encodeURIComponent(debouncedQuery)}`, {
+          method: 'GET',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ query: debouncedQuery }),
         });
+        
 
         if (res.ok) {
           const data = await res.json();
