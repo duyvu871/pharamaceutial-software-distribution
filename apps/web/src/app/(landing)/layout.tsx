@@ -1,6 +1,8 @@
 import "@app/globals.css";
 import "@ui/styles.css";
 import '@mantine/core/styles.css';
+import { MantineProvider } from '@mantine/core';
+
 import type { Metadata } from "next";
 import { Inter as FontSans } from "next/font/google";
 import {cn} from "@lib/tailwind-merge";
@@ -44,7 +46,11 @@ export default function RootLayout({
 			// enableSystem
 			forcedTheme={'light'}
 		>
+			<MantineProvider>
+
 			{children}
+			</MantineProvider>
+
 		</ThemeProvider>
 		</body>
 		</html>
