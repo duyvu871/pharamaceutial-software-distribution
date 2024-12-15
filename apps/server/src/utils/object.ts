@@ -11,3 +11,16 @@ export function extractProperties<T extends AnyObject>(originalObject: T, proper
 
 	return extractedObject;
 }
+
+export function removeUndefinedProperties<T extends AnyObject>(object: T): T {
+	const cleanedObject: T = {} as T;
+
+	Object.keys(object).forEach(key => {
+		if (object[key] !== undefined) {
+			// @ts-ignore
+			cleanedObject[key] = object[key];
+		}
+	});
+
+	return cleanedObject;
+}

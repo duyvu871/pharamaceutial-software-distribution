@@ -16,6 +16,7 @@
             "services/*": ["./src/api/services/*"],
             "controllers/*": ["./src/api/controllers/*"],
             "models/*": ["./src/api/models/*"],
+            "repository/*": ["./src/repository/*"],
         }
     },
     "include": ["src/**/*"],

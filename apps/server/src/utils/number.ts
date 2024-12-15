@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 export function separateNumber(number: number, range: number): number[] {
     const result: number[] = [];
     const excess = number % range;
@@ -10,4 +12,18 @@ export function separateNumber(number: number, range: number): number[] {
     }
 
     return result;
+}
+
+export const validateNumber = (isPositive: boolean) => {
+    return z
+      .string()
+      .refine(
+        v => {
+            let n = Number(v);
+            return !isNaN(n)
+              && v?.length > 0
+              && (isPositive ? n > 0 : true);
+        },
+        {message: "Invalid number"}
+      ).innerType();
 }

@@ -1,9 +1,10 @@
 import * as zod from 'zod';
+import { BranchPermission } from 'server/repository/branch/schema';
 
 export const membershipPermission = zod.enum([
-	'Store.Read',
-	'Store.Update',
-	'Store.Create',
+	BranchPermission.READ,
+	BranchPermission.UPDATE,
+	BranchPermission.CREATE,
 	'Medicine.Read',
 	'Medicine.Update',
 	'Medicine.Create',
@@ -26,20 +27,20 @@ export const membershipPermission = zod.enum([
 ]);
 
 export const userPermission = zod.enum([
-	'Store.All',
 	'Report.All',
 	'Supplier.All',
 	'Medicine.All',
 	'Membership.All',
 	'Promotion.All',
 	'Customer.All',
+	BranchPermission.ALL,
 	'User.Read',
 	'User.Update',
 	'User.Create',
 ]);
 
 export const adminPermission = zod.enum([
-	'Store.All',
+	BranchPermission.ALL,
 	'Report.All',
 	'Supplier.All',
 	'Medicine.All',
@@ -49,71 +50,71 @@ export const adminPermission = zod.enum([
 	'Admin.All',
 ]);
 
-export const allPermission = {
-	ADMIN: {
-		ALL: 'Admin.All',
-		READ: 'Admin.Read',
-		UPDATE: 'Admin.Update',
-		CREATE: 'Admin.Create',
-		DELETE: 'Admin.Delete',
-	},
-	USER: {
-		ALL: 'User.All',
-		READ: 'User.Read',
-		UPDATE: 'User.Update',
-		CREATE: 'User.Create',
-		DELETE: 'User.Delete',
-	},
-	MEMBERSHIP: {
-		ALL: 'Membership.All',
-		READ: 'Membership.Read',
-		UPDATE: 'Membership.Update',
-		CREATE: 'Membership.Create',
-		DELETE: 'Membership.Delete',
-	},
-	CUSTOMER: {
-		ALL: 'Customer.All',
-		READ: 'Customer.Read',
-		UPDATE: 'Customer.Update',
-		CREATE: 'Customer.Create',
-		DELETE: 'Customer.Delete',
-	},
-	SUPPLIER: {
-		ALL: 'Supplier.All',
-		READ: 'Supplier.Read',
-		UPDATE: 'Supplier.Update',
-		CREATE: 'Supplier.Create',
-		DELETE: 'Supplier.Delete',
-	},
-	MEDICINE: {
-		ALL: 'Medicine.All',
-		READ: 'Medicine.Read',
-		UPDATE: 'Medicine.Update',
-		CREATE: 'Medicine.Create',
-		DELETE: 'Medicine.Delete',
-	},
-	PROMOTION: {
-		ALL: 'Promotion.All',
-		READ: 'Promotion.Read',
-		UPDATE: 'Promotion.Update',
-		CREATE: 'Promotion.Create',
-		DELETE: 'Promotion.Delete',
-	},
-	REPORT: {
-		ALL: 'Report.All',
-		READ: 'Report.Read',
-		UPDATE: 'Report.Update',
-		CREATE: 'Report.Create',
-		DELETE: 'Report.Delete',
-	},
-	STORE: {
-		ALL: 'Store.All',
-		READ: 'Store.Read',
-		UPDATE: 'Store.Update',
-		CREATE: 'Store.Create',
-		DELETE: 'Store.Delete',
-	},
-} as const;
+// export const allPermission = {
+// 	ADMIN: {
+// 		ALL: 'Admin.All',
+// 		READ: 'Admin.Read',
+// 		UPDATE: 'Admin.Update',
+// 		CREATE: 'Admin.Create',
+// 		DELETE: 'Admin.Delete',
+// 	},
+// 	USER: {
+// 		ALL: 'User.All',
+// 		READ: 'User.Read',
+// 		UPDATE: 'User.Update',
+// 		CREATE: 'User.Create',
+// 		DELETE: 'User.Delete',
+// 	},
+// 	MEMBERSHIP: {
+// 		ALL: 'Membership.All',
+// 		READ: 'Membership.Read',
+// 		UPDATE: 'Membership.Update',
+// 		CREATE: 'Membership.Create',
+// 		DELETE: 'Membership.Delete',
+// 	},
+// 	CUSTOMER: {
+// 		ALL: 'Customer.All',
+// 		READ: 'Customer.Read',
+// 		UPDATE: 'Customer.Update',
+// 		CREATE: 'Customer.Create',
+// 		DELETE: 'Customer.Delete',
+// 	},
+// 	SUPPLIER: {
+// 		ALL: 'Supplier.All',
+// 		READ: 'Supplier.Read',
+// 		UPDATE: 'Supplier.Update',
+// 		CREATE: 'Supplier.Create',
+// 		DELETE: 'Supplier.Delete',
+// 	},
+// 	MEDICINE: {
+// 		ALL: 'Medicine.All',
+// 		READ: 'Medicine.Read',
+// 		UPDATE: 'Medicine.Update',
+// 		CREATE: 'Medicine.Create',
+// 		DELETE: 'Medicine.Delete',
+// 	},
+// 	PROMOTION: {
+// 		ALL: 'Promotion.All',
+// 		READ: 'Promotion.Read',
+// 		UPDATE: 'Promotion.Update',
+// 		CREATE: 'Promotion.Create',
+// 		DELETE: 'Promotion.Delete',
+// 	},
+// 	REPORT: {
+// 		ALL: 'Report.All',
+// 		READ: 'Report.Read',
+// 		UPDATE: 'Report.Update',
+// 		CREATE: 'Report.Create',
+// 		DELETE: 'Report.Delete',
+// 	},
+// 	BRANCH: {
+// 		ALL: 'Branch.All',
+// 		READ: 'Branch.Read',
+// 		UPDATE: 'Branch.Update',
+// 		CREATE: 'Branch.Create',
+// 		DELETE: 'Branch.Delete',
+// 	}
+// } as const;
 
 export const getAuthPermission = (type: 'ADMIN' | 'USER' | 'MEMBERSHIP') => {
 	let permission: string[];

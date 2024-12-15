@@ -2,8 +2,6 @@ import React, { useEffect } from 'react';
 import { useAuth } from '@hook/auth/use-auth';
 import { useRouter } from 'next/router';
 
-//-----------------------------------------------------------------------------------------------
-
 const withAuth = <P extends object>(
 	WrappedComponent: React.ComponentType<P>
 ) => {

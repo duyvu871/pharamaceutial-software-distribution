@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { paths } from '@route/path.ts';
 import { cookies } from 'next/headers';
+import { parseJson } from '@util/parse-json.ts';
 // import { decrypt } from '@lib/session.ts';
 
 export const config = {
-	matcher: ['/((?!api|_next/static|_next/image|.*\\.png$).*)'],
+	matcher: ['/((?!api|_next/static|_next/image|.*\\.png$).*)'], // Match all routes except /api
 }
 
 const protectedRoutes = ['/dashboard']
@@ -33,36 +34,31 @@ export async function middleware(req: NextRequest) {
 
 
 	const cookie = cookies().get('accessToken')?.value;
+	// const refreshToken = cookies().get('refreshToken')?.value;
 	// console.log("cookie", cookie);
-	const parsedCookie = cookie ? JSON.parse(cookie) : null;
-
+	const parsedCookie = parseJson(cookie || '');
+	// const parsedRefreshToken = parseJson(refreshToken || '');
+	// console.log('url', new URL(paths.auth.login, req.nextUrl).href);
+	// console.log('nextUrl', req.nextUrl.href);
 	if (isProtectedRoute && !parsedCookie?.userId) {
-		return NextResponse.redirect(new URL('/login', req.nextUrl))
+		return NextResponse.redirect(new URL('/login', process.env.BASE_HOST))
 	}
 
 	if (
 		isPublicRoute &&
-		parsedCookie?.userI &&
+		parsedCookie?.userId &&
 		!req.nextUrl.pathname.startsWith('/dashboard')
 	) {
-		return NextResponse.redirect(new URL('/dashboard', req.nextUrl))
+		return NextResponse.redirect(new URL('/dashboard', process.env.BASE_HOST))
 	}
 
-	if (!cookie) {
-		return isPublicRoute
-			? NextResponse.next(initialRequest)
-			: NextResponse.redirect(new URL(paths.auth.login, req.nextUrl));
-	}
-	const urlIsSignIn = req.nextUrl.pathname === paths.auth.login;
-	// console.log('login url', loginUrl);
+	console.log('isProtectedRoute', isProtectedRoute);
+	console.log('isPublicRoute', isPublicRoute);
+	// if (!cookie) {
+	// 	return isPublicRoute
+	// 		? NextResponse.next(initialRequest)
+	// 		: NextResponse.redirect(new URL('/login', req.nextUrl));
+	// }
 
-	if (cookie) {
-		return urlIsSignIn
-			? NextResponse.redirect(new URL(paths.auth.login, req.nextUrl))
-			: NextResponse.next(initialRequest);
-	} else {
-		return urlIsSignIn
-			? NextResponse.next(initialRequest)
-			: NextResponse.redirect(new URL(paths.auth.login, req.nextUrl));
-	}
+	return NextResponse.next(initialRequest);
 }

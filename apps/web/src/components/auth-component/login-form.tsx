@@ -28,7 +28,8 @@ import { useAuth } from '@hook/auth';
 import NextImage from 'next/image';
 import { cn } from '@lib/tailwind-merge.ts';
 import { Typography } from '@component/Typography';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { Loader2 } from "lucide-react";
 
 export function LoginForm(props: PaperProps) {
 	const {className, ...others} = props;
@@ -48,12 +49,17 @@ export function LoginForm(props: PaperProps) {
 		resolver: zodResolver(loginSchema),
 	});
 
+	const [loading, setLoading] = useState<boolean>(false);
+
 	const onSubmit = () => {
 		// handle form submission
 		return handleSubmit((value, e) => {
 			e?.preventDefault();
 			// call login function
-			loginAction(value, direct || '/dashboard');
+			setLoading(true);
+			loginAction(value, direct || '/dashboard').then(() => {
+				setLoading(false);
+			});
 			console.log(value);
 		}, (errors) => {
 			console.log(errors);
@@ -62,6 +68,12 @@ export function LoginForm(props: PaperProps) {
 			}).join(', '));
 		});
 	};
+
+	const handleEnter = (event: React.KeyboardEvent<HTMLInputElement>) => {
+		if (event.key === 'Enter') {
+			onSubmit();
+		}
+	}
 
 	const backToMain = () => {
 		router.push('/');
@@ -110,6 +122,7 @@ export function LoginForm(props: PaperProps) {
 								radius="sm"
 								size="md"
 								onChange={(event) => setValue('role', event as any)}
+								onKeyDown={handleEnter}
 							/>
 							<TextInput
 								autoCapitalize="off"
@@ -120,6 +133,7 @@ export function LoginForm(props: PaperProps) {
 									<span className={"font-normal text-zinc-600"}>Tên đăng nhập</span>
 								}
 								onChange={(event) => setValue('username', event.currentTarget.value)}
+								onKeyDown={handleEnter}
 								// placeholder="contract@connectedbrain.com"
 								radius="sm"
 								size="md"
@@ -133,7 +147,7 @@ export function LoginForm(props: PaperProps) {
 								autoCorrect="off"
 								error={formState.errors?.password?.message}
 								label={
-									<span className={"font-normal text-zinc-600"}>Mat khau</span>
+									<span className={"font-normal text-zinc-600"}>Mật khẩu</span>
 								}
 								onChange={(event) => setValue('password', event.currentTarget.value)}
 								// placeholder="Your password"
@@ -144,11 +158,16 @@ export function LoginForm(props: PaperProps) {
 
 						</Stack>
 						<Group justify="space-between" mt="lg">
-							<Checkbox label="Lưu thong tin dang nhap" />
+							<Checkbox label="Lưu thông tin đăng nhập" />
 						</Group>
 						<Group justify="space-between" mt="xl">
 							<Button w={"100%"} radius="sm" size={"md"} type="submit" className={"!bg-teal-600"}>
-								{upperFirst('Đăng nhập')}
+								{loading ? (
+									<>
+										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+										Đang đăng nhập...
+									</>
+								) : upperFirst('Đăng nhập') ?? 'Đăng nhập'}
 							</Button>
 						</Group>
 

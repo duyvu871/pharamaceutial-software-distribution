@@ -7,9 +7,7 @@ export type Await<T> = T extends {
 class AsyncMiddleware {
     static asyncHandler(fn: (req: Request, res: Response, next: NextFunction) => Promise<any>) {
         return (req: Request, res: Response, next: NextFunction) => {
-            fn(req, res, next).catch(next).finally(() => {
-                next();
-            });
+            fn(req, res, next).catch(next);
         };
     }
 }

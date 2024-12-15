@@ -1,10 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
+import Forbidden from 'responses/clientErrors/Forbidden.ts';
 
 const routeNotFound = (req: Request, res: Response, next: NextFunction) => {
-    const error = new Error();
-    error.message = "Route not found";
-    // @ts-ignore
-    error.statusCode = 404;
+    const error = new Forbidden(
+        'ROUTE_NOT_FOUND',
+        'Route not found',
+        'Route not found'
+    );
+
     next(error);
 }
 

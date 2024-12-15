@@ -3,7 +3,6 @@ import Tokens from "server/configs/token";
 import { z } from 'zod';
 import dayjs from 'dayjs';
 import { toJSON } from 'utils/plugins/mongo';
-import { IDecodedToken } from 'server/common/interfaces/jsonwebtoken.ts';
 import config from 'config/app-config';
 
 const connection = mongoose;

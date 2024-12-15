@@ -12,14 +12,14 @@ class Success {
 
     get toJson(): ISuccessResponse {
 
-        const response: ISuccessResponse = {
-            status: this._statusCode,
-            message: this._message
-        };
+        // const response: ISuccessResponse = {
+        //     status: this._statusCode,
+        //     message: this._message
+        // };
 
-        if (this._data === null) {
-            return response;
-        }
+        // if (this._data === null) {
+        //     return response;
+        // }
 
         return {
             status: this._statusCode,

@@ -2,6 +2,8 @@ import { Request, Response, NextFunction } from 'express';
 import { ZodError, ZodObject } from 'zod';
 import { HttpStatusCode } from 'server/common/httpStatusCode';
 import appLogger from 'utils/logger';
+import InternalServerError from 'responses/serverErrors/InternalServerError';
+import BadRequest from 'responses/clientErrors/BadRequest';
 
 type ValidateType = 'body' | 'headers' | 'query' | 'params';
 
@@ -25,13 +27,16 @@ export const validate = (type: ValidateType, schema: ZodObject<any>) => {
 					const message = schema.shape[field]?.invalid ? schema.shape[field]?.invalid(undefined) : err.message;
 					return `Field ${field}: ${message}`;
 				}).join(', ');
-				return res.status(HttpStatusCode.BadRequest).json({
-					message: `${type} validation failed`,
-					errors: errorMessage,
-				});
+
+				throw new BadRequest('BAD_REQUEST', 'Bad request', errorMessage);
+				// return res.status(HttpStatusCode.BadRequest).json({
+				// 	message: `${type} validation failed`,
+				// 	errors: errorMessage,
+				// });
 			}
 			appLogger.error('validate middleware error:', error);
-			return res.status(HttpStatusCode.InternalServerError).json({ message: 'Internal server error' });
+			throw new InternalServerError('INTERNAL_SERVER_ERROR', 'Internal server error', 'Internal server error');
+			// return res.status(HttpStatusCode.InternalServerError).json({ message: 'Internal server error' });
 		}
 	};
 };

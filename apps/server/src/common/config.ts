@@ -14,6 +14,8 @@ if (isEnvFound.error) {
 process.env.NODE_ENV = process.env.NODE_ENV || "development";
 process.env.SERVER_PORT = process.env.SERVER_PORT || "8080";
 process.env.DEFAULT_EXPIRE = process.env.DEFAULT_EXPIRE || "3600"; // 1 hour
+process.env.ASSETS_URL = process.env.ASSETS_URL || "http://localhost:8080/storage";
+
 // redis
 process.env.REDIS_PORT = process.env.REDIS_PORT || "6379";
 process.env.REDIS_HOST = process.env.REDIS_HOST || "redis";
@@ -39,6 +41,7 @@ export default {
     isDev: process.env.NODE_ENV === "development",
     serverPort: parseInt(process.env.SERVER_PORT, 10),
     defaultExpire: parseInt(process.env.DEFAULT_EXPIRE, 10),
+    assetsUrl: process.env.ASSETS_URL,
     // redis port
     redisPort: parseInt(process.env.REDIS_PORT, 10),
     redisHost: process.env.REDIS_HOST,

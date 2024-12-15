@@ -1,12 +1,18 @@
 import "@app/globals.css";
 import "@ui/styles.css";
 import '@mantine/core/styles.css';
+import '@mantine/charts/styles.css';
+import '@mantine/dates/styles.css';
+import '@mantine/tiptap/styles.css';
 import type { Metadata } from "next";
-import { Inter as FontSans } from "next/font/google";
+import { Inter as FontSans, Montserrat } from "next/font/google";
 import {cn} from "@lib/tailwind-merge";
 import { ThemeProvider } from "@layout/global-theme";
+import 'dayjs/locale/vi';
+import dayjs from "dayjs";
+dayjs().locale('vi')
 
-const fontSans = FontSans({
+const fontSans = Montserrat({
 	subsets: ['latin', 'vietnamese'],
 	variable: '--font-sans',
 });
@@ -36,7 +42,7 @@ export default function RootLayout({
 }): JSX.Element {
 	return (
 		<html lang="en" suppressHydrationWarning>
-		<body className={cn(fontSans.className, "flex justify-center items-center w-full min-h-screen h-fit font-sans antialiased")}>
+		<body className={cn(fontSans.className, "min-h-screen h-fit font-sans antialiased bg-[#ffffff]")}>
 		<ThemeProvider
 			attribute="class"
 			defaultTheme="light"
