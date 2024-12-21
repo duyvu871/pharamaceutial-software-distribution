@@ -7,8 +7,6 @@ import { ProductAttributes } from 'server/repository/product/schema';
 import { Op } from 'sequelize';
 import { BranchIdParam } from 'validations/Branch.ts';
 // import StoreSchema from 'server/repository/store/schema';
-import ProductUnitSchema from 'repository/product/product-unit/schema.ts';
-import GroupSchema from 'repository/group/schema.ts';
 // import {models} from 'repository/association.ts';
 import prisma from 'repository/prisma.ts';
 import { ConsumerAttributes } from 'repository/consumer/schema.ts';

@@ -28,13 +28,13 @@ export class AuthController {
 				console.log('login', login);
 				// Generate access token and refresh token
 				const accessToken = await TokenService.generateAuthToken(
-					login.id,
+					login?.id as string,
 					TaskOwner[loginType],
 					config.sessionExpire
 				);
 				// Generate refresh token
 				const refreshToken = await TokenService.generateRefreshToken(
-					login.id,
+					login?.id as string,
 					TaskOwner[loginType],
 					config.refreshExpire
 				);

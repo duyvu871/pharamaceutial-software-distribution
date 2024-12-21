@@ -29,40 +29,40 @@ export interface MembershipAttributes {
 
 interface MembershipCreationAttributes extends Optional<MembershipAttributes, 'id'> {}
 
-// export const MembershipZodSchema = zod.object({
-// 	id: zod.string(),
-// 	first_name: zod.string({
-// 		required_error: vi.name_is_required,
-// 		invalid_type_error: vi.name_must_be_a_string
-// 	}).min(3),
-// 	last_name: zod.string({
-// 		required_error: vi.name_is_required,
-// 		invalid_type_error: vi.name_must_be_a_string
-// 	}).min(3),
-// 	username: zod.string({
-// 		required_error: vi.name_is_required,
-// 		invalid_type_error: vi.name_must_be_a_string
-// 	}).min(3),
-// 	password: zod.string({
-// 		required_error: vi.password_is_required,
-// 		invalid_type_error: vi.please_enter_your_email_and_password
-// 	}).min(6),
-// 	email: zod.string({
-// 		required_error: vi.email_is_required,
-// 		invalid_type_error: vi.please_enter_your_email_and_password
-// 	}).email(vi.email_is_invalid),
-// 	phone_number: zod.string().min(10).max(10),
-// 	hire_date: zod.date(),
-// 	avatar: zod.string().optional(),
-// 	notes: zod.string().optional(),
-// 	permission: membershipPermission,
-// 	employee_status: zod.enum(['active', 'inactive']),
-// 	reset_token: zod.string().optional(),
-// 	branch_id: zod.string(),
-//
-// 	createdAt: zod.date(),
-// 	updatedAt: zod.date().optional()
-// });
+export const MembershipZodSchema = zod.object({
+	id: zod.string(),
+	first_name: zod.string({
+		required_error: vi.name_is_required,
+		invalid_type_error: vi.name_must_be_a_string
+	}).min(3),
+	last_name: zod.string({
+		required_error: vi.name_is_required,
+		invalid_type_error: vi.name_must_be_a_string
+	}).min(3),
+	username: zod.string({
+		required_error: vi.name_is_required,
+		invalid_type_error: vi.name_must_be_a_string
+	}).min(3),
+	password: zod.string({
+		required_error: vi.password_is_required,
+		invalid_type_error: vi.please_enter_your_email_and_password
+	}).min(6),
+	email: zod.string({
+		required_error: vi.email_is_required,
+		invalid_type_error: vi.please_enter_your_email_and_password
+	}).email(vi.email_is_invalid),
+	phone_number: zod.string().min(10).max(10),
+	hire_date: zod.date(),
+	avatar: zod.string().optional(),
+	notes: zod.string().optional(),
+	permission: membershipPermission,
+	employee_status: zod.enum(['active', 'inactive']),
+	reset_token: zod.string().optional(),
+	branch_id: zod.string(),
+
+	createdAt: zod.date(),
+	updatedAt: zod.date().optional()
+});
 //
 // export default function(sequelize: Sequelize) {
 // 	class MembershipSchema extends Model<MembershipAttributes, MembershipCreationAttributes> implements MembershipAttributes {

@@ -1,6 +1,5 @@
 import { DataTypes, Model, Optional, Sequelize } from 'sequelize';
 // import sequelize from 'server/repository';
-import { BranchSchema } from 'server/repository/branch';
 
 export interface BranchDetailAttributes {
 	id: string; // UUID

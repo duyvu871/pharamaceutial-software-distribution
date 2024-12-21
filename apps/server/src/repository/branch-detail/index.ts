@@ -1,1 +1,1 @@
-export {default as BranchDetailSchema} from './schema';
+// export {default as BranchDetailSchema} from './schema';
