@@ -21,7 +21,7 @@ export interface UserAttributes {
 	reset_token:string | null;
 
 	createdAt: Date | null;
-	updatedAt: Date | nulls;
+	updatedAt: Date | null;
 }
 
 interface UserCreationAttributes extends Omit<UserAttributes, 'id'> {}
