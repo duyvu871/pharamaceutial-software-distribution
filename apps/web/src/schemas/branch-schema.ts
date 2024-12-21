@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { phoneRegex } from '@util/validator.ts';
+import { phoneRegex } from '@util/validator';
 
 export interface Branch {
 	branch_id: string
