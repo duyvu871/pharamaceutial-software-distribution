@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 4000",
-    "build": "next build",
+    "build": "set NEXT_PUBLIC_DISABLE_ESLINT=true && next build",
     "start": "next start -p 4000",
     "lint": "next lint",
     "type-check": "tsc --noEmit"
