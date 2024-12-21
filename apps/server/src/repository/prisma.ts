@@ -6,7 +6,14 @@ const prismaClientSingleton = (): PrismaClient => {
 
 declare global {
 	var prisma: undefined | ReturnType<typeof prismaClientSingleton>;
+	interface BigInt {
+		toJSON(): string;
+	}
 }
+
+BigInt.prototype.toJSON = function () {
+	return this.toString();
+};
 
 const prisma = globalThis.prisma ?? prismaClientSingleton();
 

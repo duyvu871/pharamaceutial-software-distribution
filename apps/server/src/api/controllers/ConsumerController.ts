@@ -1,18 +1,20 @@
 import { Request, Response } from 'express';
 import AsyncMiddleware from 'utils/asyncHandler';
-import { ConsumerSchema } from 'server/repository/consumer';
+// import { ConsumerSchema } from 'server/repository/consumer';
 import Success from 'responses/successful/Success';
 import BadRequest from 'responses/clientErrors/BadRequest';
 import { ConsumerValidation, CreateConsumer, GetConsumerParam, GetConsumersQuery } from 'validations/Consumer.ts';
 import { Op } from 'sequelize';
 import { ConsumerAttributes } from 'server/repository/consumer/schema.ts';
+import prisma from 'repository/prisma.ts';
+import {Prisma} from '@repo/orm';
 
 export class ConsumerController {
 	public static getConsumers = AsyncMiddleware.asyncHandler(
 		async (req: Request<GetConsumerParam, any, any, GetConsumersQuery>, res: Response) => {
 			try {
 				const { branchId } = req.params;
-				console.log(req.jwtPayload);
+				console.log("jwt payload:", req.jwtPayload);
 				const { page = '1', limit = '10', orderBy = 'createdAt:ASC', search } = req.query;
 				const parsedPage = parseInt(page, 10);
 				const parsedLimit = parseInt(limit, 10);
@@ -26,23 +28,33 @@ export class ConsumerController {
 					}
 					return [column, direction];
 				}) as [keyof ConsumerAttributes, 'ASC' | 'DESC'][];
-				//
-				const whereClause: any = { branch_id: branchId };
+				let conditions = [Prisma.sql`branch_id = ${branchId}::uuid`];
+				let params: (string | number)[] = [];
+
 				if (search) {
-					whereClause.consumer_name = { [Op.iLike]: `%${search}%` };
+					conditions.push(Prisma.sql`to_tsvector('english', consumer_name || ' ' || COALESCE(company_name, '') || ' ' || COALESCE(address, '') || ' ' || COALESCE(notes, '')) @@ to_tsquery('english', ${search})`);
 				}
-				const consumers = await ConsumerSchema.findAll({
-					where: whereClause,
-					limit: parsedLimit,
-					offset,
-					order: orders
-				});
-				const parsedConsumers = consumers.map((consumer) => consumer.dataValues);
-				const response = new Success(parsedConsumers).toJson;
+
+				const whereClause = Prisma.sql`WHERE ${Prisma.join(conditions, ' AND ')}`;
+				// console.log("whereClause", whereClause.text);
+				const orderParse = orders.map((order, index) => `"${order[0]}" ${order[1].toUpperCase()}`).join(', ')
+				const orderBySql = Prisma.sql([orderParse]);
+
+				const query = Prisma.sql`SELECT * FROM consumers ${whereClause} ORDER BY ${orderBySql} LIMIT CAST(${limit} AS bigint) OFFSET CAST(${offset} AS bigint)`;
+
+				// console.log("query", query.text);
+				const consumers = await prisma.$queryRaw<ConsumerAttributes[]>(query);
+				// console.log("consumers", consumers);
+				const response = new Success(consumers).toJson;
 				return res.status(200).json(response).end();
 			} catch (error: any) {
-				console.error(`Error fetching consumers: ${error.message}`);
-				throw error;
+				if (error instanceof Prisma.PrismaClientKnownRequestError) {
+					console.error(`Error getting consumer: ${error.message} ${error.code}`);
+					throw new BadRequest('get_failed', 'Get failed', "Error getting consumer");
+				} else {
+					console.error(`Error getting consumer: ${error.message}`);
+					throw error;
+				}
 			}
 		}
 	);
@@ -56,12 +68,19 @@ export class ConsumerController {
 					branch_id: req.params.branchId,
 				} as unknown as ConsumerAttributes;
 
-				const consumer = await ConsumerSchema.create(consumerObj);
+				const consumer = await prisma.consumers.create({
+					data: consumerObj
+				});
 				const response = new Success(consumer).toJson;
 				return res.status(201).json(response).end();
 			} catch (error: any) {
-				console.error(`Error creating consumer: ${error.message}`);
-				throw error;
+				if (error instanceof Prisma.PrismaClientKnownRequestError) {
+					console.error(`Error creating consumer: ${error.message} ${error.code}`);
+					throw new BadRequest('create_failed', 'Create failed', "Error creating consumer");
+				} else {
+					console.error(`Error creating consumer: ${error.message}`);
+					throw error;
+				}
 			}
 		}
 	);
@@ -70,18 +89,26 @@ export class ConsumerController {
 		async (req: Request<{ id: string }>, res: Response) => {
 			try {
 				const { id } = req.params;
-				const [updated] = await ConsumerSchema.update(req.body, {
-					where: { id }
+				const updated = await prisma.consumers.update({
+					where: { id },
+					data: req.body
 				});
 				if (!updated) {
 					throw new BadRequest('update_failed', 'Update failed', 'Consumer not found');
 				}
-				const updatedConsumer = await ConsumerSchema.findByPk(id);
+				const updatedConsumer = await prisma.consumers.findUnique({
+					where: { id }
+				});
 				const response = new Success(updatedConsumer).toJson;
 				return res.status(200).json(response).end();
 			} catch (error: any) {
-				console.error(`Error updating consumer: ${error.message}`);
-				throw error;
+				if (error instanceof Prisma.PrismaClientKnownRequestError) {
+					console.error(`Error updating consumer: ${error.message} ${error.code}`);
+					throw new BadRequest('update_failed', 'Update failed', "Error updating consumer");
+				} else {
+					console.error(`Error updating consumer: ${error.message}`);
+					throw error;
+				}
 			}
 		}
 	);

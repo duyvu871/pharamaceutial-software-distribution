@@ -1,12 +1,14 @@
 import { Request, Response } from 'express';
 import AsyncMiddleware from 'utils/asyncHandler';
-import MembershipSchema from 'server/repository/membership/schema';
+// import MembershipSchema from 'server/repository/membership/schema';
 import Success from 'responses/successful/Success';
 import BadRequest from 'responses/clientErrors/BadRequest';
 import { MembershipAttributes } from 'server/repository/membership/schema';
 import { Op } from 'sequelize';
 import { BranchIdParam } from 'validations/Branch.ts';
 import { CreateMembership } from 'validations/Membership.ts';
+import prisma from 'repository/prisma.ts';
+import { Prisma } from '@repo/orm';
 
 export class MembershipController {
 	public static getMemberships = AsyncMiddleware.asyncHandler(
@@ -25,13 +27,16 @@ export class MembershipController {
 					whereClause.username = { [Op.like]: `%${search}%` };
 				}
 
-				const memberships = await MembershipSchema.findAll({
+				const memberships = await prisma.memberships.findMany({
 					where: { ...whereClause },
-					limit: parsedLimit,
-					offset,
-					order: orders,
-					attributes: {
-						exclude: ['password', 'reset_token']
+					orderBy: {
+						[orders[0][0]]: orders[0][1].toLowerCase() as 'asc' | 'desc',
+					},
+					skip: offset,
+					take: parsedLimit,
+					omit: {
+						password: true,
+						reset_token: true,
 					}
 				});
 
@@ -50,9 +55,12 @@ export class MembershipController {
 				const removedUndefined = Object.fromEntries(
 					Object.entries(req.body).filter(([_, value]) => value !== undefined),
 				) as unknown as MembershipAttributes;
+				// const removedUndefined = req.body;
 				removedUndefined.branch_id = req.params.branchId;
 				removedUndefined.employee_status = 'active';
-				const membership = await MembershipSchema.create(removedUndefined);
+				const membership = await prisma.memberships.create({
+					data: removedUndefined as unknown as Prisma.membershipsCreateInput
+				});
 				const response = new Success(membership).toJson;
 				return res.status(201).json(response).end();
 			} catch (error: any) {
@@ -66,14 +74,16 @@ export class MembershipController {
 		async (req: Request<{ id: string }>, res: Response) => {
 			try {
 				const { id } = req.params;
-				const [updated] = await MembershipSchema.update(req.body, {
-					where: { id }
-				});
+				const updated = await prisma.memberships.update(
+					{
+						where: { id },
+						data: req.body
+					}
+				);
 				if (!updated) {
 					throw new BadRequest('update_failed', 'Update failed', 'Membership not found');
 				}
-				const updatedMembership = await MembershipSchema.findByPk(id);
-				const response = new Success(updatedMembership).toJson;
+				const response = new Success(updated).toJson;
 				return res.status(200).json(response).end();
 			} catch (error: any) {
 				console.error(`Error updating membership: ${error.message}`);

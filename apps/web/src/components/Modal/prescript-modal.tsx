@@ -6,8 +6,9 @@ import 'dayjs/locale/vi'
 import { Typography } from '@component/Typography';
 import ProductForm from '@component/Form/product-form.tsx';
 import ProductFormV2 from '@component/Form/product-form-v2.tsx';
+import PrescriptionForm from '@component/Form/prescript-form.tsx';
 
-export function ProductModal(
+export function PrescriptModal(
 	{ children, branchId, data }:
 		{ children: React.ReactNode; branchId?: string; data?: any; }
 ) {
@@ -20,12 +21,12 @@ export function ProductModal(
 				onClose={close}
 				title={
 					<Typography size={'h6'} weight={'semibold'}>
-						Thêm sản phẩm
+						Bán thuốc theo đơn
 					</Typography>
 				}
 				size="xl"
 			>
-				<ProductFormV2 />
+				<PrescriptionForm />
 			</Modal>
 			<div className={'cursor-pointer flex justify-center items-center'} onClick={open}>
 				{children}

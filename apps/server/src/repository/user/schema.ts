@@ -8,7 +8,7 @@ import { userPermission } from 'server/repository/permission';
 export interface UserAttributes {
 	id: string;
 	username: string;
-	password: string | null;
+	password: string;
 	email: string | null;
 	age: number | null;
 	phone_number: string | null;
@@ -16,12 +16,12 @@ export interface UserAttributes {
 	avatar: string | null;
 	notes: string | null;
 	is_active: boolean;
-	permission: zod.infer<typeof userPermission>;
+	permission: zod.infer<typeof userPermission>[];
 	last_login: Date | null;
 	reset_token:string | null;
 
 	createdAt: Date | null;
-	updatedAt: Date;
+	updatedAt: Date | nulls;
 }
 
 interface UserCreationAttributes extends Omit<UserAttributes, 'id'> {}

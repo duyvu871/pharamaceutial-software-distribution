@@ -1,18 +1,15 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["omitApi"]
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
-//
-// model SequelizeMeta {
-//   name String @id @db.VarChar(255)
-// }
 
 model branches {
-  branch_id     String                      @id @db.Uuid
+  branch_id     String                      @id @default(uuid()) @db.Uuid
   branch_name   String                      @db.VarChar(255)
   address       String                      @db.VarChar(255)
   phone_number  String                      @db.VarChar(255)
@@ -24,10 +21,13 @@ model branches {
   consumers     consumers[]
   memberships   memberships[]
   stores        stores[]
+
+  @@index([branch_name])
+  @@index([owner_id])
 }
 
 model consumers {
-  id             String                 @id @db.Uuid
+  id             String                 @id @default(uuid()) @db.Uuid
   branch_id      String                 @db.Uuid
   revenue        BigInt?                @default(0)
   debit          BigInt?                @default(0)
@@ -47,10 +47,15 @@ model consumers {
   createdAt      DateTime?              @db.Timestamptz(6)
   updatedAt      DateTime?              @db.Timestamptz(6)
   branches       branches               @relation(fields: [branch_id], references: [branch_id], onDelete: Cascade)
+
+  @@index([branch_id])
+  @@index([consumer_name])
+  @@index([consumer_email])
+  @@index([phone_number])
 }
 
 model groups {
-  id             String           @id @db.Uuid
+  id             String           @id @default(uuid()) @db.Uuid
   store_id       String           @db.Uuid
   group_name     String           @db.VarChar(255)
   description    String?          @db.VarChar(255)
@@ -62,10 +67,13 @@ model groups {
   stores         stores           @relation(fields: [store_id], references: [id])
   product_groups product_groups[]
   products       products[]
+
+  @@index([store_id])
+  @@index([group_name])
 }
 
 model memberships {
-  id              String                           @id @db.Uuid
+  id              String                           @id @default(uuid()) @db.Uuid
   username        String                           @db.VarChar(255)
   first_name      String                           @db.VarChar(255)
   last_name       String                           @db.VarChar(255)
@@ -82,6 +90,11 @@ model memberships {
   createdAt       DateTime?                        @db.Timestamptz(6)
   updatedAt       DateTime?                        @db.Timestamptz(6)
   branches        branches                         @relation(fields: [branch_id], references: [branch_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([branch_id])
+  @@index([username])
+  @@index([email])
+  @@index([phone_number])
 }
 
 model product_groups {
@@ -93,9 +106,9 @@ model product_groups {
   products   products @relation(fields: [product_id], references: [id], onDelete: Cascade)
 
   @@id([product_id, group_id])
+  @@index([group_id])
 }
 
-// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model product_unit_labels {
   product_id    String        @db.Uuid
   product_unit  String        @db.Uuid
@@ -104,11 +117,11 @@ model product_unit_labels {
   products      products      @relation(fields: [product_id], references: [id], onDelete: Cascade)
   product_units product_units @relation(fields: [product_unit], references: [id], onDelete: Cascade)
 
-  @@ignore
+  @@ignore // ignore because no id
 }
 
 model product_units {
-  id                     String                @id @db.Uuid
+  id                     String                @id @default(uuid()) @db.Uuid
   store_id               String                @db.Uuid
   name                   String                @db.VarChar(255)
   value                  Int
@@ -121,10 +134,13 @@ model product_units {
   product_unit_labels    product_unit_labels[] @ignore
   stores                 stores                @relation(fields: [store_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   products               products[]
+
+  @@index([store_id])
+  @@index([name])
 }
 
 model products {
-  id                  String                @id @db.Uuid
+  id                  String                @id @default(uuid()) @db.Uuid
   store_id            String                @db.Uuid
   product_type        String                @db.VarChar(255)
   medicine_id         String?               @db.VarChar(255)
@@ -159,10 +175,17 @@ model products {
   groups              groups?               @relation(fields: [group_id], references: [id])
   product_units       product_units         @relation(fields: [productUnit], references: [id])
   stores              stores                @relation(fields: [store_id], references: [id])
+
+  @@index([store_id])
+  @@index([group_id])
+  @@index([product_name])
+  @@index([barcode])
+  @@index([product_no])
+  @@index([medicine_id])
 }
 
 model stores {
-  id            String          @id @db.Uuid
+  id            String          @id @default(uuid()) @db.Uuid
   branch_id     String          @db.Uuid
   store_name    String          @db.VarChar(255)
   address       String          @db.VarChar(255)
@@ -178,10 +201,68 @@ model stores {
   product_units product_units[]
   products      products[]
   branches      branches        @relation(fields: [branch_id], references: [branch_id], onDelete: NoAction, onUpdate: NoAction)
+  providers     providers[]
+  clinics       clinics[]
+  doctors       doctors[]
+
+  @@index([branch_id])
+  @@index([store_name])
+}
+
+model clinics {
+  id          String    @id @default(uuid()) @db.Uuid
+  store_id    String    @db.Uuid
+  clinic_name String    @db.VarChar(255)
+  address     String    @db.VarChar(255)
+  phone       String?   @db.VarChar(255)
+  email       String?   @db.VarChar(255)
+  created_at  DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime  @default(now()) @db.Timestamptz(6)
+  status      Int       @default(1)
+  description String?   @db.VarChar(255)
+  deleted_at  DateTime? @db.Timestamptz(6)
+  store       stores    @relation(fields: [store_id], references: [id])
+
+  @@index([store_id])
+}
+
+model doctors {
+  id             String    @id @default(uuid()) @db.Uuid
+  store_id       String    @db.Uuid
+  doctor_name    String    @db.VarChar(255)
+  specialization String?   @db.VarChar(255)
+  phone          String?   @db.VarChar(255)
+  email          String?   @db.VarChar(255)
+  created_at     DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime  @default(now()) @db.Timestamptz(6)
+  status         Int       @default(1)
+  deleted_at     DateTime? @db.Timestamptz(6)
+  store          stores    @relation(fields: [store_id], references: [id])
+
+  @@index([store_id])
+}
+
+model providers {
+  id          String     @id @default(uuid()) @db.Uuid // Primary key
+  companyName String // Tên công ty
+  phoneNumber String // Số điện thoại
+  email       String? // Email (có thể null)
+  taxCode     String? // Mã số thuế (có thể null)
+  address     String? // Địa chỉ (có thể null)
+  city        String // Thành phố
+  district    String // Quận/huyện
+  wards       String // Xã/phường
+  note        String? // Ghi chú (có thể null)
+  storeId     String  @db.Uuid // ID cửa hàng (liên kết đến bảng Store)
+
+  createdAt DateTime @default(now()) // Thời điểm tạo
+  updatedAt DateTime @updatedAt // Thời điểm cập nhật tự động
+
+  store stores @relation(fields: [storeId], references: [id])
 }
 
 model users {
-  id           String     @id @db.Uuid
+  id           String     @id @default(uuid()) @db.Uuid
   username     String     @db.VarChar(255)
   password     String     @db.VarChar(255)
   email        String?    @db.VarChar(255)
@@ -197,6 +278,10 @@ model users {
   createdAt    DateTime?  @db.Timestamptz(6)
   updatedAt    DateTime?  @db.Timestamptz(6)
   branches     branches[]
+
+  @@index([username])
+  @@index([email])
+  @@index([phone_number])
 }
 
 enum enum_branches_branch_status {

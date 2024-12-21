@@ -4,7 +4,20 @@ import { useDebounce } from "@uidotdev/usehooks";
 import { cva, type VariantProps } from "class-variance-authority";
 import { tv } from '@lib/tailwind-variants.ts';
 
+/**
+ * Defines the available sizes for the autocomplete component.
+ */
+type AutocompleteSize = 'none' | 'xs' | 'sm' | 'md' | 'lg';
+
+/**
+ * Defines the available themes for the autocomplete component.
+ */
+type AutocompleteTheme = 'light' | 'dark';
+
 // Define Tailwind variants
+/**
+ * Defines the Tailwind variants for the autocomplete container.
+ */
 const autocompleteVariants = tv(
 	{
 		base: "w-full relative",
@@ -28,6 +41,9 @@ const autocompleteVariants = tv(
 	}
 );
 
+/**
+ * Defines the Tailwind variants for the list items.
+ */
 const listItemVariants = cva(
 	"w-full rounded-md cursor-pointer transition-colors",
 	{
@@ -43,22 +59,50 @@ const listItemVariants = cva(
 	}
 );
 
+/**
+ * Defines the props for the AutocompleteSearch component.
+ * @template T The type of data being searched.
+ */
 interface AutocompleteSearchProps<T> extends VariantProps<typeof autocompleteVariants> {
+	/** Placeholder text for the input field. Defaults to "Search...". */
 	placeholder?: string;
+	/** Label for the input field. */
 	label?: React.ReactNode;
+	/** Array of data to render in the list if no search term is entered. */
 	data?: T[];
+	/** Key to access a value from the item for setting the input field. */
 	valueKey?: string;
+	/** Function to perform the search. Should return a Promise that resolves with an array of the results. */
 	onSearch: (term: string) => Promise<T[]>;
+	/** Function called when an item is selected. */
 	onSelect: (item: T) => void;
+	/** Function to render each item in the list. */
 	renderItem: (item: T) => React.ReactNode;
+	/** Function to get the displayed text value from an item. */
 	getItemValue: (item: T) => string;
+	/** Debounce time (in milliseconds) before performing a search. Defaults to 300. */
 	debounceMs?: number;
+	/** If true, display recent searches. Defaults to false. */
 	recent?: boolean;
+	/** Key used for storing recent searches in local storage. Defaults to "recentSearches". */
 	recentKey?: string;
+	/** Label for the recent searches section. Defaults to "Recent searches". */
 	recentLabel?: string;
+	/** Additional props to pass down to the TextInput component. */
 	inputProps?: TextInputProps;
+	/** The size of the autocomplete component, can be `none`, `xs`, `sm`, `md`, or `lg`. */
+	size?: AutocompleteSize;
+	/** The theme of the autocomplete component, can be `light` or `dark`. */
+	theme?: AutocompleteTheme;
+
 }
 
+/**
+ * A generic autocomplete search component with debounced search, recent searches, and various customization options.
+ * @template T The type of data being searched.
+ * @param {AutocompleteSearchProps<T>} props - The props for the component.
+ * @returns {React.ReactNode} The AutocompleteSearch component.
+ */
 function AutocompleteSearch<T>({
 																 placeholder = "Search...",
 																 label,
@@ -75,7 +119,7 @@ function AutocompleteSearch<T>({
 																 recentKey = "recentSearches",
 																 recentLabel = "Recent searches",
 																 inputProps,
-															 }: AutocompleteSearchProps<T>) {
+															 }: AutocompleteSearchProps<T>): React.ReactNode {
 	const [searchTerm, setSearchTerm] = useState<string>("");
 	const [results, setResults] = useState<T[]>([]);
 	const [recentResults, setRecentResults] = useState<T[]>([]);
@@ -123,7 +167,7 @@ function AutocompleteSearch<T>({
 			}
 		};
 
-		searchItems();
+		void searchItems();
 	}, [debouncedSearchTerm, onSearch]);
 
 	useEffect(() => {
@@ -134,7 +178,7 @@ function AutocompleteSearch<T>({
 		if (recentSearches) {
 			setRecentResults(JSON.parse(recentSearches));
 		}
-	}, [recent]);
+	}, [recent, recentKey]);
 
 	return (
 		<div className={autocompleteVariants({ size, theme })}>
@@ -216,4 +260,3 @@ function AutocompleteSearch<T>({
 }
 
 export default AutocompleteSearch;
-

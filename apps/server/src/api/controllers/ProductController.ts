@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import AsyncMiddleware from 'utils/asyncHandler';
-import ProductSchema from 'server/repository/product/schema';
+// import ProductSchema from 'server/repository/product/schema';
 import Success from 'responses/successful/Success';
 import BadRequest from 'responses/clientErrors/BadRequest';
 import { ProductAttributes } from 'server/repository/product/schema';
@@ -9,7 +9,11 @@ import { BranchIdParam } from 'validations/Branch.ts';
 // import StoreSchema from 'server/repository/store/schema';
 import ProductUnitSchema from 'repository/product/product-unit/schema.ts';
 import GroupSchema from 'repository/group/schema.ts';
-import {models} from 'repository/association.ts';
+// import {models} from 'repository/association.ts';
+import prisma from 'repository/prisma.ts';
+import { ConsumerAttributes } from 'repository/consumer/schema.ts';
+import { Prisma } from '@repo/orm';
+import { CreateProduct, DeleteProductParams } from 'validations/Product.ts';
 
 export class ProductController {
 	public static getProducts = AsyncMiddleware.asyncHandler(
@@ -20,41 +24,56 @@ export class ProductController {
 				const parsedPage = parseInt(page, 10);
 				const parsedLimit = parseInt(limit, 10);
 				const offset = (parsedPage - 1) * parsedLimit;
-				const orders = orderBy.split(',').map((order) => order.split(':')) as [string, 'ASC' | 'DESC'][];
+				// const orders = orderBy.split(',').map((order) => order.split(':')) as [string, 'ASC' | 'DESC'][];
+				const validColumns = ['created_at', 'updated_at', 'consumer_name',]; // Define allowed columns
+				const orders = orderBy.split(',').map((order) => {
+					const [column, direction] = order.split(':') as [keyof ProductAttributes, 'ASC' | 'DESC'];
+					if (!validColumns.includes(column) || !['ASC', 'DESC'].includes(direction)) {
+						throw new BadRequest('invalid_order_by', 'Invalid orderBy parameter', 'Invalid orderBy parameter');
+					}
+					return [column, direction];
+				}) as [keyof ProductAttributes, 'ASC' | 'DESC'][];
+				let params: (string | number)[] = [];
 
-				const store = await models.StoreSchema.findOne({ where: { branch_id: branchId } });
+				let conditions = [
+					// Prisma.sql`store_id = (SELECT store_id FROM branches WHERE branch_id = ${branchId}::uuid)`
+					Prisma.sql`store_id = (SELECT id FROM stores WHERE branch_id = ${branchId}::uuid)`
+				];
 
-				if (!store) {
-					throw new BadRequest('invalid_branch', 'Invalid branchId', 'Branch not found');
-				}
-
-				const whereClause: any = {};
 				if (search) {
-					whereClause.product_name = { [Op.like]: `%${search}%` };
+					conditions.push(
+						Prisma.sql`to_tsvector('english', consumer_name || ' ' || COALESCE(company_name, '') || ' ' || COALESCE(address, '') || ' ' || COALESCE(notes, '')) @@ to_tsquery('english', ${search})`
+					);
 				}
 
-				const products = await ProductSchema.findAll({
-					where: {
-						...whereClause,
-						store_id: branchId
-					},
-					limit: parsedLimit,
-					offset,
-					order: orders,
-					include: [
-						{
-							model: ProductUnitSchema,
-							as: 'productUnit',
-						},
-						{
-							model: GroupSchema,
-							as: 'group_id',
-							through: { attributes: [] }
-						}
-					]
+				const whereClause = Prisma.sql`WHERE ${Prisma.join(conditions, ' AND ')}`;
+				const orderParse = orders
+					.map((order) => `"${order[0]}" ${order[1].toUpperCase()}`)
+					.join(', ');
+				const orderBySql = Prisma.sql([orderParse]);
+
+				const query = Prisma.sql`
+            SELECT *
+            FROM products 
+                ${whereClause}
+            ORDER BY ${orderBySql}
+                LIMIT CAST(${limit} AS bigint)
+            OFFSET CAST(${offset} AS bigint)
+				`;
+				console.log(query.sql);
+				const products = await prisma.$queryRaw<ProductAttributes[]>(query);
+				const productUnitIds = products
+					.map((consumer) => consumer.productUnit)
+					.filter((id) => Boolean(id)) as string[] ;
+				const productUnits = await prisma.product_units.findMany({
+					where: { id: { in: productUnitIds } }
 				});
 
-				const response = new Success(products).toJson;
+				const joinedProductUnits = products.map((product, index) => {
+					return { ...product, productUnit: productUnits[index] || null };
+				})
+
+				const response = new Success(joinedProductUnits).toJson;
 				return res.status(200).json(response).end();
 			} catch (error: any) {
 				console.error(`Error fetching products: ${error.message}`);
@@ -64,9 +83,9 @@ export class ProductController {
 	);
 
 	public static createProduct = AsyncMiddleware.asyncHandler(
-		async (req: Request, res: Response) => {
+		async (req: Request<any, any, any>, res: Response) => {
 			try {
-				const product = await ProductSchema.create(req.body);
+				const product = await prisma.products.create(req.body);
 				const response = new Success(product).toJson;
 				return res.status(201).json(response).end();
 			} catch (error: any) {
@@ -80,13 +99,16 @@ export class ProductController {
 		async (req: Request<{ id: string }>, res: Response) => {
 			try {
 				const { id } = req.params;
-				const [updated] = await ProductSchema.update(req.body, {
-					where: { id }
+				const updated = await prisma.products.update({
+					where: { id },
+					data: req.body
 				});
 				if (!updated) {
 					throw new BadRequest('update_failed', 'Update failed', 'Product not found');
 				}
-				const updatedProduct = await ProductSchema.findByPk(id);
+				const updatedProduct = await prisma.products.findUnique(
+					{ where: { id } }
+				);
 				const response = new Success(updatedProduct).toJson;
 				return res.status(200).json(response).end();
 			} catch (error: any) {
@@ -97,11 +119,25 @@ export class ProductController {
 	);
 
 	public static deleteProduct = AsyncMiddleware.asyncHandler(
-		async (req: Request<{ id: string }>, res: Response) => {
+		async (req: Request<DeleteProductParams>, res: Response) => {
 			try {
-				const { id } = req.params;
-				const deleted = await ProductSchema.destroy({
-					where: { id }
+				const { branchId, productId } = req.params;
+				let id;
+				const storeId = await prisma.stores.findFirst({
+					where: { branch_id: branchId },
+				});
+
+				if (!storeId) {
+					throw new BadRequest('store_not_found', 'Store not found', 'Store not found');
+				}
+
+				id = storeId.id;
+
+				const deleted = await prisma.products.delete({
+					where: {
+						id: productId,
+						store_id: id
+					},
 				});
 				if (!deleted) {
 					throw new BadRequest('delete_failed', 'Delete failed', 'Product not found');

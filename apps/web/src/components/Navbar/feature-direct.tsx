@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { LayoutDashboard, Package, Receipt, Users, ShoppingCart, Store, StoreIcon as Shop, Wallet, BarChart2, PieChart, TrendingUp, List, PlusCircle, History, FileText, UserPlus, Truck, ShoppingBag, Building, Info, Settings, DollarSign, Minus, BarChart, LineChart } from 'lucide-react'
+import { LayoutDashboard, Package, Receipt, Users, ShoppingCart, Store, StoreIcon as Shop, Wallet, BarChart2, PieChart, TrendingUp, List, PlusCircle, History, FileText, UserPlus, Truck, ShoppingBag, Building, Info, Settings, DollarSign, Minus, BarChart, LineChart, Undo2, Pill, Building2, Stethoscope, UserCircle, PiggyBank, Calendar, BookOpen } from 'lucide-react'
 import { LiaFileInvoiceDollarSolid } from "react-icons/lia";
 import { Typography } from '@component/Typography';
 import { usePathname } from '@route/hooks';
@@ -10,6 +10,7 @@ import { cn } from '@lib/tailwind-merge.ts';
 import { Menu } from '@mantine/core';
 import { useDashboard } from '@hook/dashboard/use-dasboard.ts';
 import { pathToRegex } from '@util/regex.ts';
+import { FaFileInvoiceDollar } from 'react-icons/fa6';
 
 export type MenuItems = Array<{
 	title: string,
@@ -34,22 +35,22 @@ export function NavbarFeatureDirect() {
 		{
 			title: 'Quản lý kho',
 			icon: Package,
-			path: `/dashboard/products/${branchId}`,
+			path: `/dashboard/products/${branchId}/list`,
 			href: pathToRegex(`/dashboard/products/${branchId}`),
-			dropdownItems: [
-				{
-					title: 'Danh sách',
-					path: `/dashboard/products/${branchId}/list`,
-					href: pathToRegex(`/dashboard/products/${branchId}/list`),
-					icon: List,
-				},
-				{
-					title: 'Thêm mới',
-					path: `/dashboard/products/${branchId}/new`,
-					href: pathToRegex(`/dashboard/products/${branchId}/new`),
-					icon: PlusCircle,
-				},
-			],
+			// dropdownItems: [
+			// 	{
+			// 		title: 'Danh sách',
+			// 		path: `/dashboard/products/${branchId}/list`,
+			// 		href: pathToRegex(`/dashboard/products/${branchId}/list`),
+			// 		icon: List,
+			// 	},
+			// 	{
+			// 		title: 'Thêm mới',
+			// 		path: `/dashboard/products/${branchId}/new`,
+			// 		href: pathToRegex(`/dashboard/products/${branchId}/new`),
+			// 		icon: PlusCircle,
+			// 	},
+			// ],
 		},
 		{
 			title: 'Giao dịch',
@@ -58,10 +59,16 @@ export function NavbarFeatureDirect() {
 			href: pathToRegex('/dashboard/transactions'),
 			dropdownItems: [
 				{
-					title: 'Hóa đơn',
+					title: 'Hóa đơn bán',
 					path: `/dashboard/transactions/${branchId}/invoices`,
 					href: pathToRegex(`/dashboard/transactions/${branchId}/invoices`),
 					icon: LiaFileInvoiceDollarSolid,
+				},
+				{
+					title: "Hóa đơn nhập",
+					path: `/dashboard/transactions/${branchId}/bills`,
+					href: pathToRegex(`/dashboard/transactions/${branchId}/bills`),
+					icon: FaFileInvoiceDollar ,
 				},
 				{
 					title: 'Lịch sử',
@@ -70,10 +77,16 @@ export function NavbarFeatureDirect() {
 					icon: History,
 				},
 				{
-					title: 'Báo cáo',
-					path: `/dashboard/transactions/${branchId}/reports`,
-					href: pathToRegex(`/dashboard/transactions/${branchId}/reports`),
-					icon: FileText,
+					title: "Trả hàng",
+					path: `/dashboard/transactions/${branchId}/returns`,
+					href: pathToRegex(`/dashboard/transactions/${branchId}/returns`),
+					icon: Undo2
+				},
+				{
+					title: 'Thuốc bán theo đơn',
+					path: `/dashboard/transactions/${branchId}/prescriptions`,
+					href: pathToRegex(`/dashboard/transactions/${branchId}/prescriptions`),
+					icon: Pill,
 				},
 			],
 		},
@@ -120,22 +133,22 @@ export function NavbarFeatureDirect() {
 		{
 			title: 'Bán hàng',
 			icon: Store,
-			path: '/dashboard/sales',
-			href: pathToRegex('/dashboard/sales'),
-			dropdownItems: [
-				{
-					title: 'Bán lẻ',
-					path: `/dashboard/sales/${branchId}/retail`,
-					href: pathToRegex(`/dashboard/sales/${branchId}/retail`),
-					icon: ShoppingBag,
-				},
-				{
-					title: 'Bán sỉ',
-					path: `/dashboard/sales/${branchId}/wholesale`,
-					href: pathToRegex(`/dashboard/sales/${branchId}/wholesale`),
-					icon: Building,
-				},
-			],
+			path: `/dashboard/sales/${branchId}/retail`,
+			href: pathToRegex(`/dashboard/sales/${branchId}/retail`),
+			// dropdownItems: [
+			// 	{
+			// 		title: 'Bán lẻ',
+			// 		path: `/dashboard/sales/${branchId}/retail`,
+			// 		href: pathToRegex(`/dashboard/sales/${branchId}/retail`),
+			// 		icon: ShoppingBag,
+			// 	},
+			// 	{
+			// 		title: 'Bán sỉ',
+			// 		path: `/dashboard/sales/${branchId}/wholesale`,
+			// 		href: pathToRegex(`/dashboard/sales/${branchId}/wholesale`),
+			// 		icon: Building,
+			// 	},
+			// ],
 		},
 		{
 			title: 'Cửa hàng',
@@ -177,23 +190,79 @@ export function NavbarFeatureDirect() {
 				},
 			],
 		},
+		// {
+		// 	title: 'Báo cáo',
+		// 	icon: BarChart2,
+		// 	path: '/dashboard/reports',
+		// 	href: pathToRegex('/dashboard/reports'),
+		// 	dropdownItems: [
+		// 		{
+		// 			title: 'Doanh thu',
+		// 			path: `/dashboard/reports/${branchId}/revenue`,
+		// 			href: pathToRegex(`/dashboard/reports/${branchId}/revenue`),
+		// 			icon: BarChart,
+		// 		},
+		// 		{
+		// 			title: 'Lợi nhuận',
+		// 			path: `/dashboard/reports/${branchId}/profit`,
+		// 			href: pathToRegex(`/dashboard/reports/${branchId}/profit`),
+		// 			icon: LineChart,
+		// 		},
+		// 	],
+		// },
 		{
-			title: 'Báo cáo',
-			icon: BarChart2,
+			title: 'Sổ sách nhà thuốc',
+			icon: BookOpen,
 			path: '/dashboard/reports',
 			href: pathToRegex('/dashboard/reports'),
 			dropdownItems: [
 				{
-					title: 'Doanh thu',
-					path: `/dashboard/reports/${branchId}/revenue`,
-					href: pathToRegex(`/dashboard/reports/${branchId}/revenue`),
-					icon: BarChart,
+					title: 'Báo cáo cuối ngày',
+					path: `/dashboard/reports/${branchId}/end-of-day`,
+					href: pathToRegex(`/dashboard/reports/${branchId}/end-of-day`),
+					icon: Calendar,
 				},
 				{
-					title: 'Lợi nhuận',
-					path: `/dashboard/reports/${branchId}/profit`,
-					href: pathToRegex(`/dashboard/reports/${branchId}/profit`),
-					icon: LineChart,
+					title: 'Báo cáo bán hàng',
+					path: `/dashboard/reports/${branchId}/sales`,
+					href: pathToRegex(`/dashboard/reports/${branchId}/sales`),
+					icon: BarChart2,
+				},
+				{
+					title: 'Báo cáo hàng hóa',
+					path: `/dashboard/reports/${branchId}/inventory`,
+					href: pathToRegex(`/dashboard/reports/${branchId}/inventory`),
+					icon: Package,
+				},
+				{
+					title: 'Báo cáo khách hàng',
+					path: `/dashboard/reports/${branchId}/customers`,
+					href: pathToRegex(`/dashboard/reports/${branchId}/customers`),
+					icon: Users,
+				},
+				{
+					title: 'Báo cáo nhà cung cấp',
+					path: `/dashboard/reports/${branchId}/suppliers`,
+					href: pathToRegex(`/dashboard/reports/${branchId}/suppliers`),
+					icon: Building2,
+				},
+				{
+					title: 'Báo cáo bác sĩ',
+					path: `/dashboard/reports/${branchId}/doctors`,
+					href: pathToRegex(`/dashboard/reports/${branchId}/doctors`),
+					icon: Stethoscope,
+				},
+				{
+					title: 'Báo cáo nhân viên',
+					path: `/dashboard/reports/${branchId}/staff`,
+					href: pathToRegex(`/dashboard/reports/${branchId}/staff`),
+					icon: UserCircle,
+				},
+				{
+					title: 'Báo cáo tài chính',
+					path: `/dashboard/reports/${branchId}/finance`,
+					href: pathToRegex(`/dashboard/reports/${branchId}/finance`),
+					icon: PiggyBank,
 				},
 			],
 		},

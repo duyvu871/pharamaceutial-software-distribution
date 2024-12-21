@@ -33,25 +33,31 @@ export default function ProductDashboard({branchId}: {branchId: string}) {
 		}
 	}
 
+	const toggleDetail = (transformedProduct: ProductRender) =>
+		setProductDetailActive(
+			productDetailActive === transformedProduct.id ? null : transformedProduct.id
+		)
+
 	const transformProduct = (product: Product): ProductRender =>
 		({
 			id: product.id.toString(),
 			code: product.barcode || product.product_no,
 			name: product.product_name,
-			unit: product.productUnit.name,
+			unit: product?.productUnit?.name || product.base_unit,
 			costPrice: product.original_price,
 			sellPrice: product.sell_price,
 			stock: product.quantity_of_stock,
-			status: product.status === 10 ? 'active' : 'inactive',
+			status: product.status === 1 ? 'active' : 'inactive',
 		});
 
 	useEffect(() => {
 		if (branchId) {
 			getProductList({
+				branchId,
 				page: activePage,
 				limit: parseInt(itemsPerPage),
 				perPage: parseInt(itemsPerPage),
-			}).then((data) => {
+			}, false).then((data) => {
 				setProducts(data);
 			})
 		}
@@ -64,7 +70,7 @@ export default function ProductDashboard({branchId}: {branchId: string}) {
 				inner: 'flex flex-col w-full max-w-full h-full'
 			}}
 		>
-			<Group align={'start'} className="h-full overflow-hidden" gap={0}>
+			<Group align={'start'} className="h-full overflow-hidden !flex-nowrap" gap={0}>
 				{/* Sidebar */}
 				<div className="w-64 h-full bg-white border-r border-gray-200 p-4">
 					<div className="space-y-6">
@@ -72,48 +78,60 @@ export default function ProductDashboard({branchId}: {branchId: string}) {
 							<h3 className="text-sm font-medium text-gray-700 mb-2">Phân loại</h3>
 							<div className="space-y-2">
 								<label className="flex items-center space-x-2">
-									<input type="checkbox" className="rounded border-gray-300" defaultChecked />
+									<input type="checkbox" className="rounded border-gray-300 pt-1" defaultChecked />
 									<span>Thuốc</span>
 								</label>
-								<label className="flex items-center space-x-2">
-									<input type="checkbox" className="rounded border-gray-300" defaultChecked />
-									<span>Hàng hóa</span>
+								<label className="flex items-start space-x-2">
+									<input type="checkbox" className="rounded border-gray-300 pt-1" />
+									<span>Thực phẩm chức năng</span>
+								</label>
+								<label className="flex items-start space-x-2">
+									<input type="checkbox" className="rounded border-gray-300 pt-1" />
+									<span>Mỹ phẩm</span>
+								</label>
+								<label className="flex items-start space-x-2">
+									<input type="checkbox" className="rounded border-gray-300 pt-1" />
+									<span>Dụng cụ y tế</span>
+								</label>
+								<label className="flex items-start space-x-2">
+									<input type="checkbox" className="rounded border-gray-300 pt-1" />
+									<span>Hàng hóa khác</span>
 								</label>
 							</div>
 						</div>
 
-						<div>
-							<h3 className="text-sm font-medium text-gray-700 mb-2">Trạng thái</h3>
-							<div className="space-y-2">
-								<label className="flex items-center space-x-2">
-									<input type="checkbox" className="rounded border-gray-300" defaultChecked />
-									<span>Kinh doanh</span>
-								</label>
-								<label className="flex items-center space-x-2">
-									<input type="checkbox" className="rounded border-gray-300" defaultChecked />
-									<span>Ngưng kinh doanh</span>
-								</label>
-							</div>
-						</div>
+						{/*<div>*/}
+						{/*	<h3 className="text-sm font-medium text-gray-700 mb-2">Trạng thái</h3>*/}
+						{/*	<div className="space-y-2">*/}
+						{/*		<label className="flex items-center space-x-2">*/}
+						{/*			<input type="checkbox" className="rounded border-gray-300" defaultChecked />*/}
+						{/*			<span>Kinh doanh</span>*/}
+						{/*		</label>*/}
+						{/*		<label className="flex items-center space-x-2">*/}
+						{/*			<input type="checkbox" className="rounded border-gray-300" defaultChecked />*/}
+						{/*			<span>Ngưng kinh doanh</span>*/}
+						{/*		</label>*/}
+						{/*	</div>*/}
+						{/*</div>*/}
 
-						<div>
-							<h3 className="text-sm font-medium text-gray-700 mb-2">Nhóm hàng</h3>
-							<div className="space-y-2">
-								<label className="flex items-center space-x-2">
-									<input type="radio" name="group" className="border-gray-300" />
-									<span>Thuốc Bổ</span>
-								</label>
-								<label className="flex items-center space-x-2">
-									<input type="radio" name="group" className="border-gray-300" />
-									<span>Thuốc Cơ - Xương khớp</span>
-								</label>
-								<label className="flex items-center space-x-2">
-									<input type="radio" name="group" className="border-gray-300" />
-									<span>Thuốc Hô Hấp</span>
-								</label>
-								{/* Add more groups as needed */}
-							</div>
-						</div>
+						{/*<div>*/}
+						{/*	<h3 className="text-sm font-medium text-gray-700 mb-2">Nhóm hàng</h3>*/}
+						{/*	<div className="space-y-2">*/}
+						{/*		<label className="flex items-center space-x-2">*/}
+						{/*			<input type="radio" name="group" className="border-gray-300" />*/}
+						{/*			<span>Thuốc Bổ</span>*/}
+						{/*		</label>*/}
+						{/*		<label className="flex items-center space-x-2">*/}
+						{/*			<input type="radio" name="group" className="border-gray-300" />*/}
+						{/*			<span>Thuốc Cơ - Xương khớp</span>*/}
+						{/*		</label>*/}
+						{/*		<label className="flex items-center space-x-2">*/}
+						{/*			<input type="radio" name="group" className="border-gray-300" />*/}
+						{/*			<span>Thuốc Hô Hấp</span>*/}
+						{/*		</label>*/}
+						{/*		/!* Add more groups as needed *!/*/}
+						{/*	</div>*/}
+						{/*</div>*/}
 					</div>
 				</div>
 
@@ -159,9 +177,9 @@ export default function ProductDashboard({branchId}: {branchId: string}) {
 					</div>
 
 					{/* Table */}
-					<div className="bg-white rounded-md  shadow overflow-y-auto overflow-x-auto">
-						<ScrollArea  pos={'relative'} id={'table'} className="flex flex-grow h-full overflow-hidden overflow-x-auto">
-							<Box className={'p-2'}>
+					<div className="bg-white rounded-md  shadow overflow-y-auto">
+						<ScrollArea scrollbars={"xy"}  pos={'relative'} id={'table'} className="flex flex-grow">
+							{/*<div className={'p-2 min-w-full table'}>*/}
 								<Table striped highlightOnHover>
 									<Table.Thead role={'rowgroup'}>
 										<Table.Tr>
@@ -173,14 +191,15 @@ export default function ProductDashboard({branchId}: {branchId: string}) {
 													onChange={toggleSelectAll}
 												/>
 											</Table.Th>
-											<Table.Th>#</Table.Th>
-											<Table.Th>Mã hàng</Table.Th>
-											<Table.Th>Tên hàng</Table.Th>
-											<Table.Th>Đơn vị</Table.Th>
-											<Table.Th>Giá vốn</Table.Th>
-											<Table.Th>Giá bán</Table.Th>
-											<Table.Th>Tồn kho</Table.Th>
-											<Table.Th>Trạng thái</Table.Th>
+											<Table.Th className="whitespace-nowrap">#</Table.Th>
+											<Table.Th className="whitespace-nowrap">Mã hàng</Table.Th>
+											<Table.Th className="whitespace-nowrap">Tên hàng</Table.Th>
+											<Table.Th className="whitespace-nowrap">Đơn vị</Table.Th>
+											<Table.Th className="whitespace-nowrap">Giá vốn</Table.Th>
+											<Table.Th className="whitespace-nowrap">Giá bán</Table.Th>
+											<Table.Th className="whitespace-nowrap">Tồn kho</Table.Th>
+											<Table.Th className="whitespace-nowrap">Trạng thái</Table.Th>
+											<Table.Th className={"whitespace-nowrap"}>Liên thông</Table.Th>
 										</Table.Tr>
 									</Table.Thead>
 									<Table.Tbody role={'rowgroup'}>
@@ -190,11 +209,7 @@ export default function ProductDashboard({branchId}: {branchId: string}) {
 												<>
 													<Table.Tr
 														key={product.id} h={50}
-														onClick={() =>
-															setProductDetailActive(
-																productDetailActive === transformedProduct.id ? null : transformedProduct.id
-															)
-														}
+
 													>
 														<Table.Td>
 															<input
@@ -204,22 +219,48 @@ export default function ProductDashboard({branchId}: {branchId: string}) {
 																onChange={() => toggleSelectItem(transformedProduct.id)}
 															/>
 														</Table.Td>
-														<Table.Td>{index + 1}</Table.Td>
-														<Table.Td className={'whitespace-nowrap '}>{transformedProduct.code}</Table.Td>
-														<Table.Td className="max-w-md truncate">{transformedProduct.name}</Table.Td>
-														<Table.Td className={'whitespace-nowrap '}>{transformedProduct.unit}</Table.Td>
-														<Table.Td className={'whitespace-nowrap '}>{transformedProduct.costPrice.toLocaleString('vi-VN')}</Table.Td>
-														<Table.Td className={'whitespace-nowrap '}>{transformedProduct.sellPrice.toLocaleString('vi-VN')}</Table.Td>
-														<Table.Td className="text-center whitespace-nowrap '">{transformedProduct.stock}</Table.Td>
-														<Table.Td>
-														<span className={cn(
-															'px-2 whitespace-nowrap py-1 rounded-md text-sm',
-															transformedProduct.status === 'active'
-																? 'bg-teal-500/10 text-teal-500'
-																: 'bg-gray-500/10 text-gray-500'
-														)}>
-															Kinh doanh
+														<Table.Td onClick={() => toggleDetail(transformedProduct)}>{index + 1}</Table.Td>
+														<Table.Td
+															onClick={() => toggleDetail(transformedProduct)}
+															className={'whitespace-nowrap '}
+														>{transformedProduct.code}</Table.Td>
+														<Table.Td
+															onClick={() => toggleDetail(transformedProduct)}
+															className="max-w-md truncate"
+														>{transformedProduct.name}</Table.Td>
+														<Table.Td
+															onClick={() => toggleDetail(transformedProduct)}
+															className={'whitespace-nowrap '}
+														>{transformedProduct.unit}</Table.Td>
+														<Table.Td
+															onClick={() => toggleDetail(transformedProduct)}
+															className={'whitespace-nowrap '}
+														>{transformedProduct.costPrice.toLocaleString('vi-VN')}</Table.Td>
+														<Table.Td
+															onClick={() => toggleDetail(transformedProduct)}
+															className={'whitespace-nowrap '}
+														>{transformedProduct.sellPrice.toLocaleString('vi-VN')}</Table.Td>
+														<Table.Td
+															onClick={() => toggleDetail(transformedProduct)}
+															className="text-center whitespace-nowrap "
+														>{transformedProduct.stock}</Table.Td>
+														<Table.Td onClick={() => toggleDetail(transformedProduct)}>
+															<span className={cn(
+																'px-2 whitespace-nowrap py-1 rounded-md text-sm',
+																transformedProduct.status === 'active'
+																	? 'bg-teal-500/10 text-teal-500'
+																	: 'bg-gray-500/10 text-gray-500'
+															)}>
+																Kinh doanh
 														</span>
+														</Table.Td>
+														<Table.Td className={"text-center"}>
+															<input
+																type="checkbox"
+																className="rounded border-gray-300"
+																checked={selectedItems.includes(transformedProduct.id)}
+																onChange={() => toggleSelectItem(transformedProduct.id)}
+															/>
 														</Table.Td>
 													</Table.Tr>
 													<Table.Tr
@@ -253,7 +294,7 @@ export default function ProductDashboard({branchId}: {branchId: string}) {
 										})}
 									</Table.Tbody>
 								</Table>
-							</Box>
+							{/*</div>*/}
 						</ScrollArea>
 					</div>
 
@@ -281,6 +322,7 @@ export default function ProductDashboard({branchId}: {branchId: string}) {
 							total={1}
 							siblings={1}
 							boundaries={1}
+							color={'rgb(20 184 166)'}
 						/>
 					</div>
 				</div>

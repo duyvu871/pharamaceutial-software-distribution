@@ -1,27 +1,42 @@
-import { BranchSchema } from 'server/repository/branch';
 import type { BranchAttributes } from 'server/repository/branch/schema';
-import { UserSchema } from 'server/repository/user';
+import { UserTask } from 'repository/user';
+import prisma from 'repository/prisma';
 
 export class BranchTask {
 
 	public static async createBranch(ownerId: string, branchInit: BranchAttributes) {
 		try {
-			const user = await UserSchema.findByPk(ownerId);
-			if (!user) throw new Error('User not found');
-			return await BranchSchema.create({
-				...branchInit,
-				owner_id: ownerId,
+			await UserTask.throwErrorIfUserNotExist(ownerId);
+			return await prisma.branches.create({
+				data: {
+					...branchInit,
+					owner_id: ownerId,
+				}
 			});
 		} catch (error) {
 			throw error;
 		}
 	}
 
+	public static async findBranch(branchId: string) {
+		try {
+			return await prisma.branches.findUnique({
+				where: { branch_id: branchId }
+			});
+		} catch (error) {
+			console.log(error);
+			return null;
+		}
+	}
+
 	public static async updateBranch(branchId: string, branchUpdate: Partial<BranchAttributes>) {
 		try {
-			const branch = await BranchSchema.findByPk(branchId);
+			const branch = await this.findBranch(branchId);
 			if (!branch) throw new Error('Branch not found');
-			return await branch.update(branchUpdate);
+			return await  prisma.branches.update({
+				where: { branch_id: branchId },
+				data: branchUpdate
+			});
 		} catch (error) {
 			throw error;
 		}
@@ -29,7 +44,7 @@ export class BranchTask {
 	// get branch by branch id
 	public static async getBranch(userId: string, branchId: string) {
 		try {
-			const branch = await BranchSchema.findByPk(branchId);
+			const branch = await this.findBranch(branchId);
 			if (!branch) return null;
 			if (branch.owner_id !== userId) return null;
 			return branch;
@@ -40,9 +55,9 @@ export class BranchTask {
 	// get all branches by owner id
 	public static async getBranchesByOwner(ownerId: string) {
 		try {
-			return await BranchSchema.findAll({
+			return await prisma.branches.findMany({
 				where: { owner_id: ownerId },
-				order: [['createdAt', 'DESC']], // order by created_at desc
+				orderBy: { createdAt: 'desc' } // order by created date
 			});
 
 		} catch (error) {

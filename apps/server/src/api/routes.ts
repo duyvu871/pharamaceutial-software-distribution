@@ -18,6 +18,8 @@ import { MembershipController } from 'controllers/MembershipController';
 import { PaginationValidation } from 'validations/Pagination';
 import { MembershipValidation } from 'validations/Membership';
 import { ProductController } from 'controllers/ProductController';
+import { ProductValidation } from 'validations/Product.ts';
+import { ProviderController } from 'controllers/ProviderController.ts';
 
 const apiRouter = Router();
 const pageRouter = Router();
@@ -89,7 +91,22 @@ apiRouter.route('/product/:branchId').get(
   ...authChain,
   validateQuery(PaginationValidation.paginationQuery),
   ProductController.getProducts);
+apiRouter.route('/product/:branchId').post(
+  ...authChain,
+  validateParams(BranchValidation.branchIdParam),
+  validateBody(ProductValidation.createProduct),
+  ProductController.createProduct);
+apiRouter.route('/product/:branchId/delete/:productId').delete(
+  ...authChain,
+  validateParams(ProductValidation.deleteProductParams),
+  ProductController.deleteProduct);
 
+
+// Provider routes
+apiRouter.route('/provider/:branchId').get(
+  ...authChain,
+  validateQuery(PaginationValidation.paginationQuery),
+  ProviderController.getProviders);
 export default {
     apiRoutes: apiRouter,
     pageRoutes: pageRouter

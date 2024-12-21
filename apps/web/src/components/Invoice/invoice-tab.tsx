@@ -296,7 +296,7 @@ function InvoiceTab() {
 					<div className={''}>
 						{}
 					</div>
-					<button className="w-full py-3 bg-green-500 text-white rounded text-lg hover:bg-green-600">
+					<button className="w-full py-3 bg-teal-500 text-white rounded text-lg hover:bg-teal-600">
 						Thanh toán (F7)
 					</button>
 

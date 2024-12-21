@@ -8,6 +8,7 @@ import { Product, ProductRender } from '@schema/product-schema.ts';
 
 export const getProductList = async (
 	filter: {
+		branchId: string;
 		page: number;
 		perPage: number;
 		limit: number;
@@ -25,8 +26,13 @@ export const getProductList = async (
 	if (typeof isMock === 'undefined' && useMock) {
 		return mockProductDetails;
 	}
+
+	if (!filter.branchId) {
+		return [];
+	}
+
 	try {
-		const response = await axiosWithAuth.get<SuccessResponse<Product[]>>('/autocomplete/region-all', {
+		const response = await axiosWithAuth.get<SuccessResponse<Product[]>>(`/product/${filter.branchId}`, {
 			params: {
 				page: filter.page,
 				perPage: filter.perPage,
