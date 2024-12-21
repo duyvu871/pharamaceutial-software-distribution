@@ -1,5 +1,4 @@
 import { DataTypes, Model, Optional, Sequelize } from 'sequelize';
-import {UserSchema} from 'server/repository/user';
 import * as zod from 'zod';
 
 export interface BranchAttributes {
