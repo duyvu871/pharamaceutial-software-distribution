@@ -1,16 +1,16 @@
 import AsyncMiddleware from 'utils/asyncHandler.ts';
-import { CreateBranchType } from 'web/src/schemas/branch-schema.ts';
+// import { CreateBranchType } from 'web/src/schemas/branch-schema.ts';
 import Unauthorized from 'responses/clientErrors/Unauthorized.ts';
 import { UserTask } from 'server/repository/user';
 import Success from 'responses/successful/Success.ts';
 import type { Request } from 'express';
 import { BranchTask } from 'server/repository/branch';
 import Forbidden from 'responses/clientErrors/Forbidden.ts';
-import { GetBranchesQuery } from 'validations/Branch.ts';
+import { CreateBranchBody, GetBranchesQuery } from 'validations/Branch.ts';
 
 export class BranchController {
 	public static createBranch = AsyncMiddleware.asyncHandler(
-		async (req: Request<any, any, any, CreateBranchType>, res) => {
+		async (req: Request<any, any, any, CreateBranchBody>, res) => {
 			try {
 				const userId = req.jwtPayload?.id;
 				if (!userId) {
