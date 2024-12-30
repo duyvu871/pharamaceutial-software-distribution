@@ -91,15 +91,23 @@ const AuthProvider = ({ children, refreshToken }: AuthProviderProps) => {
 
 	useEffect(() => {
 		const { cookieParse, hasCookie } = checkCookie();
+		console.log('cookieParse', cookieParse);
 		if (hasCookie) {
 			const { accessToken } = cookieParse;
 			!token && setToken(accessToken.access_token);
 		}
 	}, [setToken, token]);
 
-
+	useEffect(() => {
+		console.log("block 1");
+		const userSessionInfo = getLocalStorage<AuthSessionInfo>('user-session-info')
+		if (userSessionInfo) {
+			setAuthProfile(userSessionInfo);
+		}
+	}, []);
 
 	useEffect(() => {
+		console.log('refreshToken', refreshToken);
 		if (!refreshToken) {
 			return router.replace(paths.auth.login);
 		}
@@ -197,7 +205,7 @@ const AuthProvider = ({ children, refreshToken }: AuthProviderProps) => {
 				return Promise.reject(error);
 			}
 		);
-		setAuthProfile(getLocalStorage<AuthSessionInfo>('user-session-info') || null);
+
 		return () => {
 			axiosWithAuth.interceptors.request.eject(requestInterceptor);
 			axiosWithAuth.interceptors.response.eject(responseInterceptor);
