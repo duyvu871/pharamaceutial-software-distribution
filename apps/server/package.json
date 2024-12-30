@@ -24,9 +24,7 @@
     "prod:migrate:up": "set NODE_ENV=production && npx sequelize-cli db:migrate",
     "prod:migrate:undo": "set NODE_ENV=production && npx sequelize-cli db:migrate:undo",
     "dev:seed:all": "npx sequelize-cli db:seed:all",
-    "dev:seed:undo": "npx sequelize-cli db:seed:undo",
-    "prisma:db:push": "npx prisma db push",
-    "postinstall": "prisma generate"
+    "dev:seed:undo": "npx sequelize-cli db:seed:undo"
   },
   "gypfile": true,
   "dependencies": {
