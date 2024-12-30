@@ -1,4 +1,4 @@
-export const parseJson = <Parsed extends any>(jsonString: string): Parsed | any | null => {
+export const parseJson = <Parsed extends any>(jsonString: string): Parsed | null => {
 		try {
 				return JSON.parse(jsonString);
 		} catch (error) {

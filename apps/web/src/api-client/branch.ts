@@ -11,7 +11,7 @@ export const getBranches = async (branchId: string): Promise<BranchType> => {
 		const cookieBranchId = `branch_id_${branchId}`;
 		const cookiedBranchStored = getCookie(cookieBranchId);
 		if (cookiedBranchStored) {
-			return parseJson<BranchType>(cookiedBranchStored);
+			return parseJson<BranchType>(cookiedBranchStored) as BranchType;
 		}
 		const response = await axiosWithAuth.get(`/branch/detail`, {
 			params: {

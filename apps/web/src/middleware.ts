@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { paths } from '@route/path.ts';
 import { cookies } from 'next/headers';
 import { parseJson } from '@util/parse-json.ts';
+import { CookieAccessToken } from '@type/token.ts';
 // import { decrypt } from '@lib/session.ts';
 
 export const config = {
@@ -39,7 +40,7 @@ export async function middleware(req: NextRequest) {
 	if (isProtectedRoute && !cookie) {
 		return NextResponse.redirect(loginUrl);
 	}
-	const parsedCookie = parseJson(cookie || '');
+	const parsedCookie = parseJson<CookieAccessToken>(cookie || '');
 	// const parsedRefreshToken = parseJson(refreshToken || '');
 	// console.log('url', new URL(paths.auth.login, req.nextUrl).href);
 	// console.log('nextUrl', req.nextUrl.href);

@@ -49,7 +49,7 @@ function ConsumerSearch({makeOptional, setValue, key}: ConsumerAutocompletePropT
 	useEffect(() => {
 		const recentConsumers = localStorage.getItem('recentConsumers');
 		if (recentConsumers) {
-			setRecentConsumers(parseJson<ConsumerAttributes[]>(recentConsumers));
+			setRecentConsumers(parseJson<ConsumerAttributes[]>(recentConsumers) || []);
 		}
 	}, []);
 

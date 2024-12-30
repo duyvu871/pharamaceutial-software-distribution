@@ -125,7 +125,7 @@ const ExternalProductAutocomplete = () => {
 	useEffect(() => {
 		const recentSearches = localStorage.getItem("recentSearches");
 		if (recentSearches) {
-			setRecentResults(parseJson(recentSearches));
+			setRecentResults(parseJson<SearchProductType[]>(recentSearches) || []);
 		}
 		console.log('rerender');
 	}, []);

@@ -111,98 +111,98 @@ const AuthProvider = ({ children, refreshToken }: AuthProviderProps) => {
 			return router.replace(paths.auth.login);
 		}
 
-		const requestInterceptor = axiosWithAuth.interceptors.request.use(
-			async (requestConfig) => {
-
-				// if (isRefreshing) return requestConfig; // Prevent multiple refresh requests
-
-				const { cookieParse, hasCookie } = checkCookie();
-
-				if (!hasCookie) {
-					router.replace(paths.auth.login);
-					return requestConfig; // stop request
-				}
-
-				const {
-					userId,
-					accessToken: {
-						access_token,
-						expire_access_token,
-						token_type,
-					},
-				} = cookieParse;
-
-
-				if (new Date() < new Date(expire_access_token)) {
-					requestConfig.headers.Authorization = `${token_type} ${access_token}`;
-					return requestConfig;
-
-				} else if (new Date() < new Date(refreshToken.refreshToken.expire_refresh_token)) {
-					setIsRefreshing(true);
-					try {
-						const response = await axios.post(
-							`/api/v1/auth/refresh`,
-							{
-								refreshToken: refreshToken.refreshToken.refresh_token,
-								userId,
-							}
-						);
-
-						const data = response.data;
-
-						setCookie(
-							"accessToken",
-							JSON.stringify(data),
-							data.accessToken.expires_access_token
-						);
-
-						requestConfig.headers.Authorization = `${token_type} ${data.accessToken.access_token}`;
-						setToken(data.accessToken.access_token);
-
-
-					} catch (error) {
-						removeCookie("accessToken");
-						setToken(null);
-						router.replace(paths.auth.login);
-						return Promise.reject(error);
-					} finally {
-						setIsRefreshing(false);
-					}
-
-					return requestConfig;
-				} else {
-					removeCookie("accessToken");
-					setToken(null);
-					router.replace(paths.auth.login);
-					return requestConfig;
-				}
-			},
-			(error) => {
-				return Promise.reject(error);
-			}
-		);
-
-
-		const responseInterceptor = axiosWithAuth.interceptors.response.use(
-			(response) => {
-				return response;
-			},
-			(error) => {
-				switch (error?.response?.status) {
-					case 401:
-						removeCookie("accessToken");
-						setToken(null);
-						router.replace(paths.auth.login);
-						break;
-					// case 400: //TODO handle case 400 if required
-					//     break;
-					default:
-						break;
-				}
-
-				return Promise.reject(error);
-			}
-		);
+		// const requestInterceptor = axiosWithAuth.interceptors.request.use(
+		// 	async (requestConfig) => {
+		//
+		// 		// if (isRefreshing) return requestConfig; // Prevent multiple refresh requests
+		//
+		// 		const { cookieParse, hasCookie } = checkCookie();
+		//
+		// 		if (!hasCookie) {
+		// 			router.replace(paths.auth.login);
+		// 			return requestConfig; // stop request
+		// 		}
+		//
+		// 		const {
+		// 			userId,
+		// 			accessToken: {
+		// 				access_token,
+		// 				expire_access_token,
+		// 				token_type,
+		// 			},
+		// 		} = cookieParse;
+		//
+		//
+		// 		if (new Date() < new Date(expire_access_token)) {
+		// 			requestConfig.headers.Authorization = `${token_type} ${access_token}`;
+		// 			return requestConfig;
+		//
+		// 		} else if (new Date() < new Date(refreshToken.refreshToken.expire_refresh_token)) {
+		// 			setIsRefreshing(true);
+		// 			try {
+		// 				const response = await axios.post(
+		// 					`/api/v1/auth/refresh`,
+		// 					{
+		// 						refreshToken: refreshToken.refreshToken.refresh_token,
+		// 						userId,
+		// 					}
+		// 				);
+		//
+		// 				const data = response.data;
+		//
+		// 				setCookie(
+		// 					"accessToken",
+		// 					JSON.stringify(data),
+		// 					data.accessToken.expires_access_token
+		// 				);
+		//
+		// 				requestConfig.headers.Authorization = `${token_type} ${data.accessToken.access_token}`;
+		// 				setToken(data.accessToken.access_token);
+		//
+		//
+		// 			} catch (error) {
+		// 				removeCookie("accessToken");
+		// 				setToken(null);
+		// 				router.replace(paths.auth.login);
+		// 				return Promise.reject(error);
+		// 			} finally {
+		// 				setIsRefreshing(false);
+		// 			}
+		//
+		// 			return requestConfig;
+		// 		} else {
+		// 			removeCookie("accessToken");
+		// 			setToken(null);
+		// 			router.replace(paths.auth.login);
+		// 			return requestConfig;
+		// 		}
+		// 	},
+		// 	(error) => {
+		// 		return Promise.reject(error);
+		// 	}
+		// );
+		//
+		//
+		// const responseInterceptor = axiosWithAuth.interceptors.response.use(
+		// 	(response) => {
+		// 		return response;
+		// 	},
+		// 	(error) => {
+		// 		switch (error?.response?.status) {
+		// 			case 401:
+		// 				removeCookie("accessToken");
+		// 				setToken(null);
+		// 				router.replace(paths.auth.login);
+		// 				break;
+		// 			// case 400: //TODO handle case 400 if required
+		// 			//     break;
+		// 			default:
+		// 				break;
+		// 		}
+		//
+		// 		return Promise.reject(error);
+		// 	}
+		// );
 
 		setIsAuthenticated(true);
 
