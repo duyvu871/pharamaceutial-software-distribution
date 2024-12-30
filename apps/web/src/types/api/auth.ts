@@ -30,5 +30,5 @@ export type AuthLoginSuccessResponse = {
 	age: number;
 	phone_number: string;
 	avatar: string;
-	role: string;
+	role: "admin" | "user" | "membership";
 }

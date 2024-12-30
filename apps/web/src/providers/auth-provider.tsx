@@ -1,21 +1,21 @@
 "use client";
 
-import React, { createContext, useEffect, useLayoutEffect, useState } from 'react';
-import axios, { InternalAxiosRequestConfig } from 'axios';
-import axiosWithAuth, { baseURL, checkCookie } from '@lib/axios';
+import React, { createContext, useEffect, useState, useMemo, useCallback } from 'react';
+import axios from 'axios';
+import axiosWithAuth, { checkCookie } from '@lib/axios';
 import { removeCookie, setCookie } from '@util/cookie.ts';
-import {useRouter} from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { paths } from '@route/path.ts';
-import { AuthSessionInfo, authSessionInfoSchema, LoginFormType, LoginPayloadType } from '@schema/user-schema.ts';
+import { AuthSessionInfo, LoginFormType } from '@schema/user-schema.ts';
 import useToast from '@hook/client/use-toast-notification.ts';
 import { login } from '@api/auth.ts';
-import { CookieAccessToken, CookieRefreshToken } from '@type/token.ts';
+import { CookieRefreshToken } from '@type/token.ts';
 import { getLocalStorage, removeLocalStorage, setLocalStorage } from '@util/localstorage.ts';
 
 type AuthProviderProps = {
 	children: React.ReactNode;
 	refreshToken?: CookieRefreshToken | null;
-}
+};
 
 export type IAuthContext = {
 	isAuthenticated: boolean;
@@ -24,107 +24,115 @@ export type IAuthContext = {
 	setToken: (newToken: string | null) => void;
 	loginAction: (userPayload: LoginFormType, redirect: string) => Promise<void>;
 	logout: () => void;
-}
+};
 
 export const AuthContext = createContext<IAuthContext>({
 	isAuthenticated: false,
 	token: null,
 	userSessionInfo: null,
-	setToken: () => {},
+	setToken: () => { },
 	loginAction: () => Promise.resolve(),
-	logout: () => {},
+	logout: () => { },
 });
 
-const AuthProvider = ({children, refreshToken}: AuthProviderProps) => {
+const AuthProvider = ({ children, refreshToken }: AuthProviderProps) => {
 	const toast = useToast();
 	const router = useRouter();
-	const [token, setTokenState] = useState<string | null>(
-		typeof window !== 'undefined'
-			? getLocalStorage<CookieAccessToken>('accessToken')?.accessToken?.access_token || null
-			: null
-	);
-
+	const [token, setTokenState] = useState<string | null>(null);
 	const [authProfile, setAuthProfile] = useState<AuthSessionInfo | null>(null);
+	const [refreshTokenState, setRefreshTokenState] = useState<CookieRefreshToken | null>(refreshToken || null);
+	const [isRefreshing, setIsRefreshing] = useState(false);
 
-	const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
-	const [refreshTokenState, setRefreshTokenState] = React.useState<CookieRefreshToken | null>(refreshToken || null);
+	const isAuthenticated = useMemo(() => !!token && !!authProfile, [token, authProfile]);
 
-	// const userSessionInfo = getLocalStorage<AuthSessionInfo>('user-session-info');
-
-	const setToken = (newToken: string | null) => {
+	const setToken = useCallback((newToken: string | null) => {
 		setTokenState(newToken);
 		if (newToken) {
 			sessionStorage.setItem('token', newToken);
 		} else {
 			sessionStorage.removeItem('token');
 		}
-	};
-
-	const loginAction = async (userPayload: LoginFormType, redirect: string) => {
-		const signInResponse = await login({
-			username: userPayload.username,
-			password: userPayload.password,
-			role: userPayload.role,
-		}, redirect);
-		console.log(signInResponse);
-		if (signInResponse?.errorCode) {
-			toast.showErrorToast(signInResponse?.errorMessage ?? 'Login failed');
-			return;
-		}
-		setLocalStorage('user-session-info', signInResponse?.data);
-		toast.showSuccessToast('Đăng nhập thành công');
-		router.push(redirect);
-	};
-
-	const logout = () => {
-		removeCookie('accessToken');
-		removeLocalStorage('user-session-info');
-		router.replace(paths.auth.login);
-	}
-
-	// useEffect(() => {
-	// }, []);
-
-	useLayoutEffect(() => {
-		(async () => {
-			const { cookieParse, hasCookie } = checkCookie();
-			if (hasCookie) {
-				const { accessToken } = cookieParse;
-				console.log('accessToken', accessToken);
-				!token && setToken(accessToken.access_token);
-				// // console.log('userSessionInfo', userSessionInfo);
-				// if (userSessionInfo) {
-				// 	setAuthProfile(userSessionInfo);
-				// }
-			}
-		})();
 	}, []);
 
-	useLayoutEffect(() => {
+	const loginAction = async (userPayload: LoginFormType, redirect: string) => {
+		try {
+			const signInResponse = await login({
+				username: userPayload.username,
+				password: userPayload.password,
+				role: userPayload.role,
+			}, redirect);
+
+			if (signInResponse?.errorCode) {
+				toast.showErrorToast(signInResponse?.errorMessage ?? 'Login failed');
+				return;
+			}
+
+			setLocalStorage('user-session-info', signInResponse.data);
+			setAuthProfile(signInResponse.data);
+			toast.showSuccessToast('Đăng nhập thành công');
+			router.push(redirect);
+
+		} catch (error) {
+			console.error("Login error:", error)
+			toast.showErrorToast('Login failed');
+		}
+
+	};
+
+	const logout = useCallback(() => {
+		removeCookie('accessToken');
+		removeLocalStorage('user-session-info');
+		setAuthProfile(null);
+		setToken(null);
+		router.replace(paths.auth.login);
+	}, [router, setToken]);
+
+
+	useEffect(() => {
+		const { cookieParse, hasCookie } = checkCookie();
+		if (hasCookie) {
+			const { accessToken } = cookieParse;
+			!token && setToken(accessToken.access_token);
+		}
+	}, [setToken, token]);
+
+
+
+	useEffect(() => {
 		if (!refreshToken) {
 			return router.replace(paths.auth.login);
 		}
-		// Intercept request and add access token to header if it exists
-		// If access token is expired, use refresh token to get a new access token
-		axiosWithAuth.interceptors.request.use(
-			async (requestConfig) => {
-				// console.log('requestConfig', requestConfig);
-				const { cookieParse, hasCookie } = checkCookie();
-				console.log('cookieParse', cookieParse);
-				if (hasCookie) {
-					const {
-						userId,
-						accessToken: {
-							access_token,
-							expire_access_token,
-							token_type,
-						},
-					} = cookieParse;
 
-					if (new Date() < new Date(expire_access_token)) {
-						requestConfig.headers.Authorization = `${token_type} ${access_token}`;
-					} else if (new Date() < new Date(refreshToken?.refreshToken?.expire_refresh_token)) {
+		const requestInterceptor = axiosWithAuth.interceptors.request.use(
+			async (requestConfig) => {
+
+				if (isRefreshing) return requestConfig; // Prevent multiple refresh requests
+
+				const { cookieParse, hasCookie } = checkCookie();
+
+				if (!hasCookie) {
+					router.replace(paths.auth.login);
+					return requestConfig; // stop request
+				}
+
+				const {
+					userId,
+					accessToken: {
+						access_token,
+						expire_access_token,
+						token_type,
+					},
+				} = cookieParse;
+
+
+				if (new Date() < new Date(expire_access_token)) {
+					requestConfig.headers.Authorization = `${token_type} ${access_token}`;
+					return requestConfig;
+
+				} else if (new Date() < new Date(refreshToken.refreshToken.expire_refresh_token)) {
+					setIsRefreshing(true);
+					try {
 						const response = await axios.post(
 							`/api/v1/auth/refresh`,
 							{
@@ -134,27 +142,42 @@ const AuthProvider = ({children, refreshToken}: AuthProviderProps) => {
 						);
 
 						const data = response.data;
+
 						setCookie(
 							"accessToken",
 							JSON.stringify(data),
 							data.accessToken.expires_access_token
 						);
-						requestConfig.headers.Authorization = `${token_type} ${data.accessToken.access_token}`;
-					}
-				} else {
-					router.replace(paths.auth.login);
-				}
 
-				return requestConfig;
+						requestConfig.headers.Authorization = `${token_type} ${data.accessToken.access_token}`;
+						setToken(data.accessToken.access_token);
+
+
+					} catch (error) {
+						removeCookie("accessToken");
+						setToken(null);
+						router.replace(paths.auth.login);
+						return Promise.reject(error);
+					} finally {
+						setIsRefreshing(false);
+
+					}
+
+					return requestConfig;
+				} else {
+					removeCookie("accessToken");
+					setToken(null);
+					router.replace(paths.auth.login);
+					return requestConfig;
+				}
 			},
 			(error) => {
 				return Promise.reject(error);
 			}
 		);
 
-		// Intercept response and handle error globally for axios instance with auth
-		// If the response status is 401, remove the access token cookie and redirect to login page
-		axiosWithAuth.interceptors.response.use(
+
+		const responseInterceptor = axiosWithAuth.interceptors.response.use(
 			(response) => {
 				return response;
 			},
@@ -162,13 +185,11 @@ const AuthProvider = ({children, refreshToken}: AuthProviderProps) => {
 				switch (error?.response?.status) {
 					case 401:
 						removeCookie("accessToken");
+						setToken(null);
 						router.replace(paths.auth.login);
 						break;
-
-					case 400:
-						// alert(error.response?.data?.error);
-						break;
-
+					// case 400: //TODO handle case 400 if required
+					//     break;
 					default:
 						break;
 				}
@@ -177,9 +198,12 @@ const AuthProvider = ({children, refreshToken}: AuthProviderProps) => {
 			}
 		);
 		setAuthProfile(getLocalStorage<AuthSessionInfo>('user-session-info') || null);
-		setIsAuthenticated(!!token);
+		return () => {
+			axiosWithAuth.interceptors.request.eject(requestInterceptor);
+			axiosWithAuth.interceptors.response.eject(responseInterceptor);
+		};
+	}, [refreshToken, router, setToken, isRefreshing]);
 
-	}, [token]);
 
 	return (
 		<AuthContext.Provider value={{
