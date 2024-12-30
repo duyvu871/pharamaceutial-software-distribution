@@ -18,13 +18,13 @@ const fontSans = Montserrat({
 });
 
 export const metadata: Metadata = {
-	title: "Connected Brain",
-	description: "A platform for connecting brain to handle native language processing",
-	generator: 'Connected Brain',
-	applicationName: 'Connected Brain',
+	title: "Erado",
+	description: "Erado - phần mềm quản lý nhà thuốc",
+	generator: 'Erado',
+	applicationName: 'Erado',
 	referrer: 'origin-when-cross-origin',
-	keywords: ['connected-brain', 'connected', 'brain'],
-	authors: [{ name: 'DuBui' }, { name: 'Du', url: 'connectedbrain.com.vn' }],
+	keywords: ['Erado', 'era8', 'erp', 'phần mềm quản lý nhà thuốc'],
+	authors: [{ name: 'DuBui' }],
 	creator: 'BuiDu',
 	publisher: 'BuiDu',
 	formatDetection: {
@@ -42,17 +42,17 @@ export default function RootLayout({
 }): JSX.Element {
 	return (
 		<html lang="en" suppressHydrationWarning>
-		<body className={cn(fontSans.className, "min-h-screen h-fit font-sans antialiased bg-[#ffffff]")}>
-		<ThemeProvider
-			attribute="class"
-			defaultTheme="light"
-			disableTransitionOnChange
-			// enableSystem
-			forcedTheme={'light'}
-		>
-			{children}
-		</ThemeProvider>
-		</body>
+			<body className={cn(fontSans.className, "min-h-screen h-fit font-sans antialiased bg-[#ffffff]")}>
+				<ThemeProvider
+					attribute="class"
+					defaultTheme="light"
+					disableTransitionOnChange
+					// enableSystem
+					forcedTheme={'light'}
+				>
+					{children}
+				</ThemeProvider>
+			</body>
 		</html>
 	);
 }
