@@ -128,8 +128,8 @@ export function NavbarFeatureDirect() {
 				},
 				{
 					title: 'Nhà cung cấp',
-					path: `/dashboard/partners/${branchId}/suppliers`,
-					href: pathToRegex(`/dashboard/partners/${branchId}/suppliers`),
+					path: `/dashboard/partners/${branchId}/providers`,
+					href: pathToRegex(`/dashboard/partners/${branchId}/providers`),
 					icon: Factory,
 				},
 				{
