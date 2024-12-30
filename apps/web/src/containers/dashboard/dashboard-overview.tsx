@@ -25,7 +25,7 @@ function DashboardOverview() {
 	// const [openDrawerState, setOpenDrawerState] = useState<boolean>(false);
 	const [openDrawerState, { open: openDrawer, close: closeDrawer }] = useDisclosure(false);
 	useEffect(() => {
-		console.log('userSessionInfo', userSessionInfo);
+		// console.log('userSessionInfo', userSessionInfo);
 		if (!isAuthenticated) return;
 		(async () => {
 			const userId = userSessionInfo?.id;

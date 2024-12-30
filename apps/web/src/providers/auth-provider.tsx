@@ -91,8 +91,8 @@ const AuthProvider = ({children, refreshToken}: AuthProviderProps) => {
 			const { cookieParse, hasCookie } = checkCookie();
 			if (hasCookie) {
 				const { accessToken } = cookieParse;
+				console.log('accessToken', accessToken);
 				!token && setToken(accessToken.access_token);
-
 				// // console.log('userSessionInfo', userSessionInfo);
 				// if (userSessionInfo) {
 				// 	setAuthProfile(userSessionInfo);
@@ -177,9 +177,9 @@ const AuthProvider = ({children, refreshToken}: AuthProviderProps) => {
 			}
 		);
 		setAuthProfile(getLocalStorage<AuthSessionInfo>('user-session-info') || null);
-
 		setIsAuthenticated(!!token);
-	}, []);
+
+	}, [token]);
 
 	return (
 		<AuthContext.Provider value={{
