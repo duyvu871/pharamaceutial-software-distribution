@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { Inter as FontSans } from "next/font/google";
 import {cn} from "@lib/tailwind-merge";
 import { ThemeProvider } from "@layout/global-theme";
+import { redirect } from "next/navigation";
 
 const fontSans = FontSans({
 	subsets: ['latin', 'vietnamese'],
@@ -34,19 +35,20 @@ export default function RootLayout({
 																	 }: {
 	children: React.ReactNode;
 }): JSX.Element {
-	return (
-		<html lang="en" suppressHydrationWarning>
-		<body className={cn(fontSans.className, "flex justify-center items-center w-full min-h-screen h-fit font-sans antialiased")}>
-		<ThemeProvider
-			attribute="class"
-			defaultTheme="light"
-			disableTransitionOnChange
-			// enableSystem
-			forcedTheme={'light'}
-		>
-			{children}
-		</ThemeProvider>
-		</body>
-		</html>
-	);
+	return redirect('/login');
+	// return (
+	// 	<html lang="en" suppressHydrationWarning>
+	// 	<body className={cn(fontSans.className, "flex justify-center items-center w-full min-h-screen h-fit font-sans antialiased")}>
+	// 	<ThemeProvider
+	// 		attribute="class"
+	// 		defaultTheme="light"
+	// 		disableTransitionOnChange
+	// 		// enableSystem
+	// 		forcedTheme={'light'}
+	// 	>
+	// 		{children}
+	// 	</ThemeProvider>
+	// 	</body>
+	// 	</html>
+	// );
 }
