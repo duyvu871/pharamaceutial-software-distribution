@@ -19,13 +19,14 @@ import { cn } from '@lib/tailwind-merge.ts';
 
 function DashboardOverview() {
 	const router = useRouter();
-	const {userSessionInfo} = useAuth();
+	const {userSessionInfo, isAuthenticated} = useAuth();
 	const {generateUID} = useUID();
 	const [userProfile, setUserProfile] = useAtom(userProfileAtom);
 	// const [openDrawerState, setOpenDrawerState] = useState<boolean>(false);
 	const [openDrawerState, { open: openDrawer, close: closeDrawer }] = useDisclosure(false);
 	useEffect(() => {
 		console.log('userSessionInfo', userSessionInfo);
+		if (!isAuthenticated) return;
 		(async () => {
 			const userId = userSessionInfo?.id;
 			if (!userId) return;
@@ -33,7 +34,7 @@ function DashboardOverview() {
 			console.log('userProfile', userProfile);
 			setUserProfile(userProfile);
 		})();
-	}, [userSessionInfo]);
+	}, [userSessionInfo, isAuthenticated]);
 
 	const directToBranch = (branchId: string) => {
 		console.log('directToBranch', branchId);

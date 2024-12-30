@@ -83,9 +83,8 @@ const AuthProvider = ({children, refreshToken}: AuthProviderProps) => {
 		router.replace(paths.auth.login);
 	}
 
-	useEffect(() => {
-		setAuthProfile(getLocalStorage<AuthSessionInfo>('user-session-info') || null);
-	}, []);
+	// useEffect(() => {
+	// }, []);
 
 	useLayoutEffect(() => {
 		(async () => {
@@ -177,6 +176,7 @@ const AuthProvider = ({children, refreshToken}: AuthProviderProps) => {
 				return Promise.reject(error);
 			}
 		);
+		setAuthProfile(getLocalStorage<AuthSessionInfo>('user-session-info') || null);
 
 		setIsAuthenticated(!!token);
 	}, []);
