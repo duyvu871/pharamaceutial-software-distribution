@@ -36,6 +36,9 @@ export async function middleware(req: NextRequest) {
 	const cookie = cookies().get('accessToken')?.value;
 	// const refreshToken = cookies().get('refreshToken')?.value;
 	// console.log("cookie", cookie);
+	if (isProtectedRoute && !cookie) {
+		return NextResponse.redirect(loginUrl);
+	}
 	const parsedCookie = parseJson(cookie || '');
 	// const parsedRefreshToken = parseJson(refreshToken || '');
 	// console.log('url', new URL(paths.auth.login, req.nextUrl).href);
