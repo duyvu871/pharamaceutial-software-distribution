@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useLayoutEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import { userProfileAtom } from '@store/state/profile/user-profile.ts';
 import { useAtom } from 'jotai';
 import { getUserProfile } from '@api/user.ts';
@@ -24,7 +24,7 @@ function DashboardOverview() {
 	const [userProfile, setUserProfile] = useAtom(userProfileAtom);
 	// const [openDrawerState, setOpenDrawerState] = useState<boolean>(false);
 	const [openDrawerState, { open: openDrawer, close: closeDrawer }] = useDisclosure(false);
-	useLayoutEffect(() => {
+	useEffect(() => {
 		console.log('userSessionInfo', userSessionInfo);
 		(async () => {
 			const userId = userSessionInfo?.id;
