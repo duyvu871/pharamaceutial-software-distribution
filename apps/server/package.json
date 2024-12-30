@@ -16,7 +16,7 @@
   "license": "ISC",
   "scripts": {
     "dev": "set NODE_ENV=development&&set PORT=4001&&tsup --watch --onSuccess \"node --inspect --max-old-space-size=8194 dist/server.js\"",
-    "start": "node --max-old-space-size=8194 dist/server.js",
+    "start": "node dist/server.js",
     "build": "tsc && tsc-alias",
     "test": "jest",
     "dev:migrate:up": "set NODE_ENV=development&&npx sequelize-cli db:migrate",
