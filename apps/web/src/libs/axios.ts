@@ -32,7 +32,7 @@ export const checkCookie = (): CheckCookieResult => {
 	const cookie = getCookie("accessToken" as string);
 
 	return cookie
-		? { hasCookie: true, cookieParse: JSON.parse(cookie) }
+		? { hasCookie: true, cookieParse: JSON.parse(cookie)}
 		: { hasCookie: false, cookieParse: undefined };
 };
 

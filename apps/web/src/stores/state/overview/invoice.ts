@@ -1,11 +1,13 @@
 import { atom } from 'jotai';
-import { InvoiceType } from '@schema/invoice-schema.ts';
-import { v4 as uuidV4 } from 'uuid';
+import { InvoiceType, PrescriptionFormData } from '@schema/invoice-schema.ts';
+import { v4 as uuidV4, v1 as uuid} from 'uuid';
+import { generateTimeBasedId } from '@util/uid.ts';
 
 export type InvoiceState = {
 	id: string;
 	name: string;
 	time: Date;
+	unit?: string;
 	invoiceData: InvoiceType;
 }
 
@@ -32,7 +34,7 @@ const defaultInvoice: InvoiceType = {
 	items: [],
 }
 const defaultInvoiceState: InvoiceState = {
-	id: uuidV4(),
+	id: generateTimeBasedId(),//uuidV4(),
 	name: 'Hóa đơn 1',
 	time: new Date(),
 	invoiceData: defaultInvoice,
@@ -68,7 +70,7 @@ export const invoiceActionAtom = atom(
 			}
 
 			const newTab: InvoiceState = {
-				id: uuidV4(),
+				id: generateTimeBasedId(),//uuidV4(),
 				name,
 				time: new Date(),
 				invoiceData: defaultInvoice,
@@ -334,3 +336,5 @@ export const calculateInvoicePrice = (
 		otherCharges
 	};
 };
+
+export const prescriptionSaleAtom = atom<PrescriptionFormData | null>(null);

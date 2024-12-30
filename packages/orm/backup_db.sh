@@ -26,4 +26,4 @@ pg_dump -U "$DB_POSTGRES_USER" -h localhost -p "$DB_POSTGRES_PORT" -Fc "$DB_POST
 
 echo "Backup created: $BACKUP_FILE"
 
-# pg_dump -U postgres -h localhost -p 5432 -Fc quan_ly_nha_thuoc > ./backups/mydatabase_backup.sql
+# pg_dump -U postgres -h localhost -p 5432 -Fc quan_ly_nha_thuoc > "./backups/mydatabase_backup_$(date +%Y-%m-%d_%H-%M-%S).sql"

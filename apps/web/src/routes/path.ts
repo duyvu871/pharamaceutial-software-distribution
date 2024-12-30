@@ -26,6 +26,9 @@ export const apiPaths = {
 	},
 	stat: {
 		get: '/stat',
+	},
+	invoice: {
+		get: '/invoice',
+		getDetail: '/invoice/detail',
 	}
-
 }

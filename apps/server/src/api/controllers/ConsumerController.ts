@@ -3,11 +3,18 @@ import AsyncMiddleware from 'utils/asyncHandler';
 // import { ConsumerSchema } from 'server/repository/consumer';
 import Success from 'responses/successful/Success';
 import BadRequest from 'responses/clientErrors/BadRequest';
-import { ConsumerValidation, CreateConsumer, GetConsumerParam, GetConsumersQuery } from 'validations/Consumer.ts';
+import {
+	ConsumerValidation,
+	CreateConsumer,
+	DeleteConsumer,
+	GetConsumerParam,
+	GetConsumersQuery,
+} from 'validations/Consumer.ts';
 import { Op } from 'sequelize';
 import { ConsumerAttributes } from 'server/repository/consumer/schema.ts';
 import prisma from 'repository/prisma.ts';
 import {Prisma} from '@repo/orm';
+import { BranchIdParam } from 'validations/Branch.ts';
 
 export class ConsumerController {
 	public static getConsumers = AsyncMiddleware.asyncHandler(
@@ -32,7 +39,10 @@ export class ConsumerController {
 				let params: (string | number)[] = [];
 
 				if (search) {
-					conditions.push(Prisma.sql`to_tsvector('english', consumer_name || ' ' || COALESCE(company_name, '') || ' ' || COALESCE(address, '') || ' ' || COALESCE(notes, '')) @@ to_tsquery('english', ${search})`);
+					conditions.push(
+						// Prisma.sql`to_tsvector('english', consumer_name || ' ' || COALESCE(company_name, '') || ' ' || COALESCE(address, '') || ' ' || COALESCE(notes, '')) @@ to_tsquery('english', ${search})`
+						Prisma.sql`(consumer_name ILIKE ${`%${search}%`} OR phone_number ILIKE ${`%${search}%`}) OR consumer_email ILIKE ${`%${search}%`}`
+					);
 				}
 
 				const whereClause = Prisma.sql`WHERE ${Prisma.join(conditions, ' AND ')}`;
@@ -42,7 +52,7 @@ export class ConsumerController {
 
 				const query = Prisma.sql`SELECT * FROM consumers ${whereClause} ORDER BY ${orderBySql} LIMIT CAST(${limit} AS bigint) OFFSET CAST(${offset} AS bigint)`;
 
-				// console.log("query", query.text);
+				console.log("query", query.text);
 				const consumers = await prisma.$queryRaw<ConsumerAttributes[]>(query);
 				// console.log("consumers", consumers);
 				const response = new Success(consumers).toJson;
@@ -107,6 +117,33 @@ export class ConsumerController {
 					throw new BadRequest('update_failed', 'Update failed', "Error updating consumer");
 				} else {
 					console.error(`Error updating consumer: ${error.message}`);
+					throw error;
+				}
+			}
+		}
+	);
+
+	public static deleteConsumer = AsyncMiddleware.asyncHandler(
+		async (req: Request<BranchIdParam & DeleteConsumer>, res: Response) => {
+			try {
+				const { branchId, consumerId } = req.params;
+				const deleted = await prisma.consumers.delete({
+					where: {
+						branch_id: branchId,
+						id: consumerId
+					}
+				});
+				if (!deleted) {
+					throw new BadRequest('delete_failed', 'Delete failed', 'Consumer not found');
+				}
+				const response = new Success({ message: 'Consumer deleted successfully' }).toJson;
+				return res.status(200).json(response).end();
+			} catch (error: any) {
+				if (error instanceof Prisma.PrismaClientKnownRequestError) {
+					console.error(`Error deleting consumer: ${error.message} ${error.code}`);
+					throw new BadRequest('delete_failed', 'Delete failed', "Error deleting consumer");
+				} else {
+					console.error(`Error deleting consumer: ${error.message}`);
 					throw error;
 				}
 			}

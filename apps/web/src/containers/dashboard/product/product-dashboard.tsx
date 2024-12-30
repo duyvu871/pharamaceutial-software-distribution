@@ -10,7 +10,7 @@ import { CenterBox } from '@component/CenterBox';
 import ProductDetail from '@component/product/product-detail.tsx';
 import { ProductModal } from '@component/Modal/product-modal.tsx';
 
-export default function ProductDashboard({branchId}: {branchId: string}) {
+export default function ProductDashboard({branchId, type}: {branchId: string, type?: string}) {
 	const [activePage, setActivePage] = useState(1)
 	const [itemsPerPage, setItemsPerPage] = useState('20')
 	const [selectedItems, setSelectedItems] = useState<string[]>([])
@@ -51,6 +51,7 @@ export default function ProductDashboard({branchId}: {branchId: string}) {
 		});
 
 	useEffect(() => {
+		console.log('fetching products with type', type);
 		if (branchId) {
 			getProductList({
 				branchId,
@@ -71,69 +72,69 @@ export default function ProductDashboard({branchId}: {branchId: string}) {
 			}}
 		>
 			<Group align={'start'} className="h-full overflow-hidden !flex-nowrap" gap={0}>
-				{/* Sidebar */}
-				<div className="w-64 h-full bg-white border-r border-gray-200 p-4">
-					<div className="space-y-6">
-						<div>
-							<h3 className="text-sm font-medium text-gray-700 mb-2">Phân loại</h3>
-							<div className="space-y-2">
-								<label className="flex items-center space-x-2">
-									<input type="checkbox" className="rounded border-gray-300 pt-1" defaultChecked />
-									<span>Thuốc</span>
-								</label>
-								<label className="flex items-start space-x-2">
-									<input type="checkbox" className="rounded border-gray-300 pt-1" />
-									<span>Thực phẩm chức năng</span>
-								</label>
-								<label className="flex items-start space-x-2">
-									<input type="checkbox" className="rounded border-gray-300 pt-1" />
-									<span>Mỹ phẩm</span>
-								</label>
-								<label className="flex items-start space-x-2">
-									<input type="checkbox" className="rounded border-gray-300 pt-1" />
-									<span>Dụng cụ y tế</span>
-								</label>
-								<label className="flex items-start space-x-2">
-									<input type="checkbox" className="rounded border-gray-300 pt-1" />
-									<span>Hàng hóa khác</span>
-								</label>
-							</div>
-						</div>
+				{/*/!* Sidebar *!/*/}
+				{/*<div className="w-64 h-full bg-white border-r border-gray-200 p-4">*/}
+				{/*	<div className="space-y-6">*/}
+				{/*		<div>*/}
+				{/*			<h3 className="text-sm font-medium text-gray-700 mb-2">Phân loại</h3>*/}
+				{/*			<div className="space-y-2">*/}
+				{/*				<label className="flex items-center space-x-2">*/}
+				{/*					<input type="checkbox" className="rounded border-gray-300 pt-1" defaultChecked />*/}
+				{/*					<span>Thuốc</span>*/}
+				{/*				</label>*/}
+				{/*				<label className="flex items-start space-x-2">*/}
+				{/*					<input type="checkbox" className="rounded border-gray-300 pt-1" />*/}
+				{/*					<span>Thực phẩm chức năng</span>*/}
+				{/*				</label>*/}
+				{/*				<label className="flex items-start space-x-2">*/}
+				{/*					<input type="checkbox" className="rounded border-gray-300 pt-1" />*/}
+				{/*					<span>Mỹ phẩm</span>*/}
+				{/*				</label>*/}
+				{/*				<label className="flex items-start space-x-2">*/}
+				{/*					<input type="checkbox" className="rounded border-gray-300 pt-1" />*/}
+				{/*					<span>Dụng cụ y tế</span>*/}
+				{/*				</label>*/}
+				{/*				<label className="flex items-start space-x-2">*/}
+				{/*					<input type="checkbox" className="rounded border-gray-300 pt-1" />*/}
+				{/*					<span>Hàng hóa khác</span>*/}
+				{/*				</label>*/}
+				{/*			</div>*/}
+				{/*		</div>*/}
 
-						{/*<div>*/}
-						{/*	<h3 className="text-sm font-medium text-gray-700 mb-2">Trạng thái</h3>*/}
-						{/*	<div className="space-y-2">*/}
-						{/*		<label className="flex items-center space-x-2">*/}
-						{/*			<input type="checkbox" className="rounded border-gray-300" defaultChecked />*/}
-						{/*			<span>Kinh doanh</span>*/}
-						{/*		</label>*/}
-						{/*		<label className="flex items-center space-x-2">*/}
-						{/*			<input type="checkbox" className="rounded border-gray-300" defaultChecked />*/}
-						{/*			<span>Ngưng kinh doanh</span>*/}
-						{/*		</label>*/}
-						{/*	</div>*/}
-						{/*</div>*/}
+				{/*		/!*<div>*!/*/}
+				{/*		/!*	<h3 className="text-sm font-medium text-gray-700 mb-2">Trạng thái</h3>*!/*/}
+				{/*		/!*	<div className="space-y-2">*!/*/}
+				{/*		/!*		<label className="flex items-center space-x-2">*!/*/}
+				{/*		/!*			<input type="checkbox" className="rounded border-gray-300" defaultChecked />*!/*/}
+				{/*		/!*			<span>Kinh doanh</span>*!/*/}
+				{/*		/!*		</label>*!/*/}
+				{/*		/!*		<label className="flex items-center space-x-2">*!/*/}
+				{/*		/!*			<input type="checkbox" className="rounded border-gray-300" defaultChecked />*!/*/}
+				{/*		/!*			<span>Ngưng kinh doanh</span>*!/*/}
+				{/*		/!*		</label>*!/*/}
+				{/*		/!*	</div>*!/*/}
+				{/*		/!*</div>*!/*/}
 
-						{/*<div>*/}
-						{/*	<h3 className="text-sm font-medium text-gray-700 mb-2">Nhóm hàng</h3>*/}
-						{/*	<div className="space-y-2">*/}
-						{/*		<label className="flex items-center space-x-2">*/}
-						{/*			<input type="radio" name="group" className="border-gray-300" />*/}
-						{/*			<span>Thuốc Bổ</span>*/}
-						{/*		</label>*/}
-						{/*		<label className="flex items-center space-x-2">*/}
-						{/*			<input type="radio" name="group" className="border-gray-300" />*/}
-						{/*			<span>Thuốc Cơ - Xương khớp</span>*/}
-						{/*		</label>*/}
-						{/*		<label className="flex items-center space-x-2">*/}
-						{/*			<input type="radio" name="group" className="border-gray-300" />*/}
-						{/*			<span>Thuốc Hô Hấp</span>*/}
-						{/*		</label>*/}
-						{/*		/!* Add more groups as needed *!/*/}
-						{/*	</div>*/}
-						{/*</div>*/}
-					</div>
-				</div>
+				{/*		/!*<div>*!/*/}
+				{/*		/!*	<h3 className="text-sm font-medium text-gray-700 mb-2">Nhóm hàng</h3>*!/*/}
+				{/*		/!*	<div className="space-y-2">*!/*/}
+				{/*		/!*		<label className="flex items-center space-x-2">*!/*/}
+				{/*		/!*			<input type="radio" name="group" className="border-gray-300" />*!/*/}
+				{/*		/!*			<span>Thuốc Bổ</span>*!/*/}
+				{/*		/!*		</label>*!/*/}
+				{/*		/!*		<label className="flex items-center space-x-2">*!/*/}
+				{/*		/!*			<input type="radio" name="group" className="border-gray-300" />*!/*/}
+				{/*		/!*			<span>Thuốc Cơ - Xương khớp</span>*!/*/}
+				{/*		/!*		</label>*!/*/}
+				{/*		/!*		<label className="flex items-center space-x-2">*!/*/}
+				{/*		/!*			<input type="radio" name="group" className="border-gray-300" />*!/*/}
+				{/*		/!*			<span>Thuốc Hô Hấp</span>*!/*/}
+				{/*		/!*		</label>*!/*/}
+				{/*		/!*		/!* Add more groups as needed *!/*!/*/}
+				{/*		/!*	</div>*!/*/}
+				{/*		/!*</div>*!/*/}
+				{/*	</div>*/}
+				{/*</div>*/}
 
 				{/* Main Content */}
 				<div className="flex-1 p-4 h-full flex flex-col">
@@ -284,7 +285,7 @@ export default function ProductDashboard({branchId}: {branchId: string}) {
 																	origin: product.made_in || '',
 																	description: product.description || '',
 																	location: '',
-																	image: product.default_image || '',
+																	image: product.default_image || '/images/placeholder.png',
 																}} />
 															</Box>
 														</Table.Td>

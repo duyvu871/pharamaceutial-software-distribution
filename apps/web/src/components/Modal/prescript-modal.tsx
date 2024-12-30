@@ -1,6 +1,6 @@
 'use client'
 
-import { Modal, TextInput, Radio, Textarea } from '@mantine/core';
+import { Modal, TextInput, Radio, Textarea, Group, Button } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import 'dayjs/locale/vi'
 import { Typography } from '@component/Typography';
@@ -26,7 +26,10 @@ export function PrescriptModal(
 				}
 				size="xl"
 			>
-				<PrescriptionForm />
+				<PrescriptionForm onSubmit={(data) => {
+					console.log(data)
+				}}/>
+
 			</Modal>
 			<div className={'cursor-pointer flex justify-center items-center'} onClick={open}>
 				{children}

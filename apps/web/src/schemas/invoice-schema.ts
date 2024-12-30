@@ -15,6 +15,7 @@ export const invoiceSchema = z.object({
 		message: "Giờ bán hàng phải là chuỗi"
 	}),
 	customerName: z.string().optional(),
+	customerId: z.string().optional(),
 	priceList: z.string().optional(),
 	isPrescriptionSale: z.boolean().optional(),
 	totalPrice: z.number().refine(val => !isNaN(val), {
@@ -35,7 +36,7 @@ export const invoiceSchema = z.object({
 	autoPrintInvoice: z.boolean().optional(), // Auto print invoice after sale
 	printBatchNumber: z.boolean().optional(), // Batch number is a unique number assigned to a group of products
 	user: z.object({
-		type: z.enum(['user', 'membership']),
+		type: z.enum(['user', 'membership', 'admin']).default('user'),
 		id: z.string().optional(),
 	}).optional(),
 	items: z.array(z.object({
@@ -52,8 +53,31 @@ export const invoiceSchema = z.object({
 		total: z.number().refine(val => !isNaN(val), {
 			message: "Tổng giá phải là số"
 		}),
+		unit: z.string().refine(val => val.length > 0, {
+			message: "Đơn vị là bắt buộc"
+		}),
 		note: z.string().optional(),
 	})),
 });
 
 export type InvoiceType = z.infer<typeof invoiceSchema>;
+
+export const prescriptionSchema = z.object({
+	prescriptionId: z.string(),
+	prescriptionDate: z.date({ required_error: 'Ngày kê đơn là bắt buộc' }),
+	doctor: z.string().min(1, { message: 'Bác sĩ kê đơn là bắt buộc' }),
+	facility: z.string().min(1, { message: 'Cơ sở khám bệnh là bắt buộc' }),
+	diagnosis: z.string(),
+	patientName: z.string().min(1, { message: 'Tên bệnh nhân là bắt buộc' }),
+	birthDate: z.date({ required_error: 'Ngày sinh là bắt buộc' }),
+	age: z.number().min(0),
+	ageMonths: z.number().min(0),
+	weight: z.number().nonnegative({ message: 'Cân nặng phải lớn hơn 0' }),
+	gender: z.string().min(1, { message: 'Giới tính là bắt buộc' }),
+	address: z.string().min(1, { message: 'Địa chỉ là bắt buộc' }),
+	insuranceCard: z.string(),
+	phone: z.string(),
+	guardianInfo: z.string(),
+})
+
+export type PrescriptionFormData = z.infer<typeof prescriptionSchema>;

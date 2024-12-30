@@ -20,6 +20,9 @@ import { MembershipValidation } from 'validations/Membership';
 import { ProductController } from 'controllers/ProductController';
 import { ProductValidation } from 'validations/Product.ts';
 import { ProviderController } from 'controllers/ProviderController.ts';
+import { InvoiceController } from 'controllers/InvoiceController.ts';
+import { InvoiceId, InvoiceValidation } from 'validations/Invoice.ts';
+import uploadMiddleware from 'server/configs/upload.ts';
 
 const apiRouter = Router();
 const pageRouter = Router();
@@ -67,14 +70,18 @@ apiRouter.route('/consumer/:branchId').get(
   validateQuery(ConsumerValidation.getConsumersQuery),
   validateParams(ConsumerValidation.getConsumerParam),
   ConsumerController.getConsumers);
-
 apiRouter.route('/consumer/:branchId').post(
   ...authChain,
   validateParams(ConsumerValidation.getConsumerParam),
   validateBody(ConsumerValidation.createConsumer),
   ConsumerController.createConsumer);
+apiRouter.route('/consumer/:branchId/delete/:consumerId').delete(
+  ...authChain,
+  validateParams(ConsumerValidation.getConsumerParam),
+  validateParams(ConsumerValidation.deleteConsumer),
+  ConsumerController.deleteConsumer);
 
-// membership routes
+// Membership routes
 apiRouter.route('/membership/:branchId').get(
   ...authChain,
   validateParams(BranchValidation.branchIdParam),
@@ -89,6 +96,7 @@ apiRouter.route('/membership/:branchId').post(
 // Product routes
 apiRouter.route('/product/:branchId').get(
   ...authChain,
+  validateParams(BranchValidation.branchIdParam),
   validateQuery(PaginationValidation.paginationQuery),
   ProductController.getProducts);
 apiRouter.route('/product/:branchId').post(
@@ -98,8 +106,15 @@ apiRouter.route('/product/:branchId').post(
   ProductController.createProduct);
 apiRouter.route('/product/:branchId/delete/:productId').delete(
   ...authChain,
+  validateParams(BranchValidation.branchIdParam),
   validateParams(ProductValidation.deleteProductParams),
   ProductController.deleteProduct);
+// Product upload image
+apiRouter.route('/product/:branchId/upload/image').post(
+  ...authChain,
+  uploadMiddleware({ mimetype: /image/}).single('image'),
+  validateParams(BranchValidation.branchIdParam),
+  ProductController.uploadImage);
 
 
 // Provider routes
@@ -107,6 +122,31 @@ apiRouter.route('/provider/:branchId').get(
   ...authChain,
   validateQuery(PaginationValidation.paginationQuery),
   ProviderController.getProviders);
+
+
+// Invoice routes
+apiRouter.route('/invoice/:branchId').get(
+  ...authChain,
+  validateParams(BranchValidation.branchIdParam),
+  validateQuery(PaginationValidation.paginationQuery),
+  InvoiceController.getInvoices);
+apiRouter.route('/invoice/:branchId').post(
+  ...authChain,
+  validateParams(BranchValidation.branchIdParam),
+  validateBody(InvoiceValidation.createInvoice),
+  InvoiceController.createInvoice);
+apiRouter.route('/invoice/:branchId/update/:invoiceId').post(
+  ...authChain,
+  validateParams(BranchValidation.branchIdParam),
+  validateParams(InvoiceValidation.invoiceId),
+  validateBody(InvoiceValidation.updateInvoice),
+  InvoiceController.updateInvoice);
+apiRouter.route('/invoice/:branchId/delete/:invoiceId').delete(
+  ...authChain,
+  validateParams(BranchValidation.branchIdParam),
+  validateParams(InvoiceValidation.invoiceId),
+  InvoiceController.deleteInvoice);
+
 export default {
     apiRoutes: apiRouter,
     pageRoutes: pageRouter

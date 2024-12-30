@@ -34,8 +34,8 @@ const productSchema = z.object({
 	type: z.enum(['thuoc', 'thuc_pham_chuc_nang', 'my_pham', 'dung_cu_y_te', 'hang_hoa_khac']),
 	code: z.string(),
 	registrationNumber: z.string().min(1, { message: 'Số đăng kí là bắt buộc' }),
-	purchasePrice: z.number().positive({ message: 'Giá nhập phải lớn hơn 0' }),
-	sellingPrice: z.number().positive({ message: 'Giá bán phải lớn hơn 0' }),
+	purchasePrice: z.number().nonnegative({ message: 'Giá nhập phải lớn hơn 0' }),
+	sellingPrice: z.number().nonnegative({ message: 'Giá bán phải lớn hơn 0' }),
 	manufacturer: z.string().min(1, { message: 'Công ty sản xuất là bắt buộc' }),
 	usage: z.string().optional(),
 	ingredients: z.string().optional(),
@@ -44,7 +44,7 @@ const productSchema = z.object({
 	content: z.string().optional(),
 	lotNumber: z.string().min(1, { message: 'Số lô là bắt buộc' }),
 	expiryDate: z.date({ required_error: 'Hạn sử dụng là bắt buộc' }),
-	quantity: z.number().int().positive({ message: 'Số lượng nhập phải là số nguyên dương' }),
+	quantity: z.number().int().nonnegative({ message: 'Số lượng nhập phải là số nguyên dương' }),
 	importDate: z.date({ required_error: 'Ngày nhập hàng là bắt buộc' }),
 	useBefore: z.string(),
 	vat: z.string(),
@@ -55,7 +55,15 @@ const productSchema = z.object({
 
 type ProductFormData = z.infer<typeof productSchema>
 
-export default function ProductFormV2() {
+export type ProductFormProps = {
+	onSubmit?: (data: ProductFormData) => void;
+	modalProps?: {
+		opened?: boolean;
+		onClose?: () => void;
+	}
+}
+
+export default function ProductFormV2({onSubmit, modalProps}: ProductFormProps) {
 	const { control, handleSubmit, formState: { errors }, watch, getValues, setValue } = useForm<ProductFormData>({
 		resolver: zodResolver(productSchema),
 		defaultValues: {
@@ -69,7 +77,8 @@ export default function ProductFormV2() {
 	})
 	const [files, setFiles] = useState<FileWithPath[]>([])
 
-	const onSubmit = (data: ProductFormData) => {
+	const submit = (data: ProductFormData) => {
+		onSubmit && onSubmit(data)
 		console.log(data)
 	}
 
@@ -95,6 +104,31 @@ export default function ProductFormV2() {
 
 	const removeImage = (index: number) => {
 		setFiles((currentFiles) => currentFiles.filter((_, i) => i !== index))
+	}
+
+	const clearForm = () => {
+		setFiles([])
+		setValue('name', '')
+		setValue('type', 'thuoc')
+		setValue('code', 'HH-0000014')
+		setValue('registrationNumber', '')
+		setValue('purchasePrice', 0)
+		setValue('sellingPrice', 0)
+		setValue('manufacturer', '')
+		setValue('usage', '')
+		setValue('ingredients', '')
+		setValue('packaging', '')
+		setValue('activeIngredient', '')
+		setValue('content', '')
+		setValue('lotNumber', '')
+		setValue('expiryDate', new Date())
+		setValue('quantity', 0)
+		setValue('importDate', new Date())
+		setValue('useBefore', '30')
+		setValue('vat', '10')
+		setValue('unit', 'vien')
+		setValue('largerUnit', '10')
+		setValue('largerUnitValue', '')
 	}
 
 	const previews = files.map((file, index) => {
@@ -138,7 +172,7 @@ export default function ProductFormV2() {
 
 	return (
 		<Paper maw={1200} mx="auto">
-			<form onSubmit={handleSubmit(onSubmit)}>
+			<form onSubmit={handleSubmit(submit)}>
 				<Stack gap="md">
 					<Grid>
 						<Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
@@ -512,7 +546,10 @@ export default function ProductFormV2() {
 
 
 					<Flex justify="space-between" pt="md" className="border-t">
-						<Button variant="outline" type="button" color={'teal'}>
+						<Button onClick={() => {
+							clearForm()
+							modalProps?.onClose && modalProps.onClose()
+						}} variant="outline" type="button" color={'teal'}>
 							Hủy bỏ
 						</Button>
 						<Group>

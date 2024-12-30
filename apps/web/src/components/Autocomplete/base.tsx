@@ -185,7 +185,7 @@ function AutocompleteSearch<T>({
 			<Popover
 				opened={popoverOpened}
 				onClose={() => setPopoverOpened(false)}
-				position="top-start"
+				position="bottom-start"
 				withArrow
 				shadow="md"
 			>
@@ -201,7 +201,7 @@ function AutocompleteSearch<T>({
 						{...inputProps}
 					/>
 				</Popover.Target>
-				<Popover.Dropdown w={200} p={0}  className={`w-full !max-h-[300px] ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
+				<Popover.Dropdown p={0} className={`w-full min-w-[300px] !max-w-3xl !max-h-[300px] ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
 					<ScrollArea.Autosize mah={250} mih={100} mx="auto">
 						<List className="w-full" p={10}>
 							{results.map((item, index) => (

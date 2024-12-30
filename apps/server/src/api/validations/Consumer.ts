@@ -20,7 +20,7 @@ export class ConsumerValidation {
 				{
 					message: 'Invalid order value provided'
 				}
-			).innerType()
+			).innerType(),
 	});
 	public static getConsumerParam = z.object({
 		branchId: z.string().uuid()
@@ -60,8 +60,15 @@ export class ConsumerValidation {
 		district: z.string().optional(),
 		ward: z.string().optional(),
 	});
+
+	public static updateConsumer = this.createConsumer.partial();
+	public static deleteConsumer = z.object({
+		consumerId: z.string().uuid()
+	});
 }
 
 export type GetConsumersQuery = z.infer<typeof ConsumerValidation.getConsumersQuery>;
 export type GetConsumerParam = z.infer<typeof ConsumerValidation.getConsumerParam>;
 export type CreateConsumer = z.infer<typeof ConsumerValidation.createConsumer>;
+export type UpdateConsumer = z.infer<typeof ConsumerValidation.updateConsumer>;
+export type DeleteConsumer = z.infer<typeof ConsumerValidation.deleteConsumer>;

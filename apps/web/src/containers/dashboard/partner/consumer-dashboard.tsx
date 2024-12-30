@@ -7,6 +7,7 @@ import { AddCustomerModal } from '@component/Modal/add-new-user.tsx';
 import { getConsumerList } from '@api/consumer.ts';
 import { cn } from '@lib/tailwind-merge.ts';
 import { ConsumerAttributes } from '@schema/consumer-schema.ts';
+import { genderVi } from '@global/locale.ts';
 
 interface Customer {
 	id: string
@@ -25,7 +26,7 @@ export default function CustomerDashboard({branchId}: {branchId: string}) {
 	const [consumers, setConsumers] = useState<ConsumerAttributes[]>([]);
 	useLayoutEffect(() => {
 		if (branchId) {
-			getConsumerList({search: '', orderBy: 'createdAt:ASC', limit: 20, page: 1}, branchId).then(consumerList => {
+			getConsumerList({branchId, search: '', orderBy: 'createdAt:ASC', limit: 20, page: 1}).then(consumerList => {
 				// const transformedData: Customer[] = consumerList.map(consumer => ({
 				// 	id: consumer.id,
 				// 	name: consumer.consumer_name,
@@ -110,7 +111,7 @@ export default function CustomerDashboard({branchId}: {branchId: string}) {
 										{Number(consumer.revenue).toLocaleString('vi-VN')} ₫</Table.Td>
 									<Table.Td className={cn(`font-semibold ${Number(consumer.debit) > 0 ? 'text-red-400' : 'text-zinc-700'}`)}>
 										{Number(consumer.debit).toLocaleString('vi-VN')} ₫</Table.Td>
-									<Table.Td>{consumer.gender}</Table.Td>
+									<Table.Td>{genderVi[consumer.gender]}</Table.Td>
 									<Table.Td>{consumer.address}</Table.Td>
 									<Table.Td>
 										<AddCustomerModal data={consumer}>
@@ -147,7 +148,7 @@ export default function CustomerDashboard({branchId}: {branchId: string}) {
 				<Pagination
 					value={activePage}
 					onChange={setActivePage}
-					total={10}
+					total={1}
 					siblings={1}
 					boundaries={1}
 				/>

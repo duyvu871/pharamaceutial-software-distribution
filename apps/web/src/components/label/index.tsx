@@ -50,8 +50,8 @@ type LabelProps = {
 };
 
 const defaultClassNames = {
-	wrapper: 'w-full flex justify-center',
-	label: 'text-zinc-700',
+	wrapper: 'w-full flex justify-start',
+	label: 'text-md text-zinc-700 flex-shirk-0 whitespace-nowrap',
 }
 
 export function Label({
@@ -119,7 +119,7 @@ export function Label({
 		>{label}</span>;
 
 	return (
-		<div className={cn('flex items-center', wrapper, className)} {...props}>
+		<div className={cn('flex items-center', wrapper, className, classNames?.wrapper)} {...props}>
 			{(position === 'left' || position === 'top') && labelComponent}
 			{children}
 			{(position === 'right' || position === 'bottom') && labelComponent}

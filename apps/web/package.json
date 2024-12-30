@@ -51,6 +51,7 @@
     "@mantine/dates": "^7.14.3",
     "@mantine/dropzone": "^7.14.3",
     "@mantine/tiptap": "^7.14.3",
+    "mantine-datatable": "^7.11.2",
     "@tiptap/react": "^2.10.3",
     "@tiptap/starter-kit": "^2.10.3",
     "@tiptap/extension-highlight": "^2.10.3",
@@ -64,7 +65,8 @@
     "bcrypt": "^5.1.1",
     "js-cookie": "^3.0.5",
     "read-vietnamese-number": "^2.1.4",
-    "fuse.js": "^7.0.0"
+    "fuse.js": "^7.0.0",
+    "react-to-print": "^3.0.2"
   },
   "devDependencies": {
     "@next/eslint-plugin-next": "^14.2.3",

@@ -9,16 +9,18 @@ export async function getProviders(
 		perPage: number;
 		limit: number;
 		search?: string;
+		orderBy?: string;
 	},
 	isMock?: boolean,)
 {
 	try {
-		const response = await axiosWithAuth.get<SuccessResponse<Provider[]>>(`/product/${filter.branchId}`, {
+		const response = await axiosWithAuth.get<SuccessResponse<Provider[]>>(`/provider/${filter.branchId}`, {
 			params: {
 				page: filter.page,
 				perPage: filter.perPage,
 				limit: filter.limit,
 				search: filter.search,
+				orderBy: filter.orderBy || 'createdAt:DESC',
 			},
 		});
 

@@ -7,11 +7,10 @@
     "typecheck": "tsc --noEmit",
     "clean": "rimraf dist",
     "clear:force": "rimraf *.js --force",
-    "postinstall": "prisma generate",
     "db:generate": "prisma generate",
     "db:push": "prisma db push --skip-generate",
     "prisma:generate": "prisma generate",
-    "prisma:migrate:dev": "prisma migrate dev",
+    "prisma:migrate:dev": "prisma migrate dev --create-only",
     "prisma:migrate:reset": "prisma migrate reset --force",
     "prisma:migrate:deploy": "prisma migrate deploy",
     "prisma:migrate:status": "prisma migrate status",
@@ -35,6 +34,7 @@
     }
   },
   "dependencies": {
+    "@faker-js/faker": "^9.3.0",
     "@prisma/client": "^6.0.1"
   },
   "devDependencies": {

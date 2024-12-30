@@ -13,12 +13,19 @@ export const getConsumer = async (id: string): Promise<ConsumerAttributes> => {
 }
 
 export const getConsumerList = async (
-	query:{search: string, orderBy: string, limit: number, page: number},
-	branchId: string
+	query:{	branchId: string, search: string, orderBy?: string, limit?: number, page?: number},
 ): Promise<ConsumerAttributes[]> => {
+	if (!query.branchId) {
+		return [];
+	}
 	try {
-		const response = await axiosWithAuth.get<SuccessResponse<ConsumerAttributes[]>>(`/consumer/${branchId}`, {
-			params: query
+		const response = await axiosWithAuth.get<SuccessResponse<ConsumerAttributes[]>>(`/consumer/${query.branchId}`, {
+			params: {
+				search: query.search,
+				limit: query.limit || 10,
+				page: query.page || 1,
+				orderBy: query.orderBy || 'created_at:ASC',
+			}
 		});
 		return response.data.data;
 	} catch (error: any) {

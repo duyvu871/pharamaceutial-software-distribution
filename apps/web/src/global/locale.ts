@@ -1,3 +1,5 @@
+import * as console from 'node:console';
+
 export const localeVi = {
 	branch: {
 		active: 'Hoạt động',
@@ -33,3 +35,9 @@ export const wordVi = {
 	activity: 'Hoạt động',
 	noti: 'Thông báo',
 } as const;
+
+export const genderVi = {
+	male: 'Nam',
+	female: 'Nữ',
+	other: 'Khác',
+} as const

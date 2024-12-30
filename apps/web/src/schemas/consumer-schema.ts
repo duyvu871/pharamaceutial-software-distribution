@@ -5,13 +5,13 @@ export const ConsumerZodSchema = z.object({
 		required_error: 'Tên khách hàng không được để trống',
 		invalid_type_error: 'Tên khách hàng phải là chuỗi'
 	}).min(3, { message: 'Tên khách hàng phải có ít nhất 3 ký tự' }),
-	gender: z.enum(['male', 'female'], {
+	gender: z.enum(['male', 'female', 'other'], {
 		required_error: 'Giới tính là bắt buộc',
 		invalid_type_error: 'Giới tính phải là male hoặc female'
-	}).nullable(),
+	}),
 	consumer_email: z.string({
 		invalid_type_error: 'Email phải là chuỗi'
-	}).email({ message: 'Email không hợp lệ' }).nullable(),
+	}).email({ message: 'Email không hợp lệ' }),
 	phone_number: z.string({
 		required_error: 'Số điện thoại không được để trống',
 		invalid_type_error: 'Số điện thoại phải là chuỗi'
@@ -19,15 +19,15 @@ export const ConsumerZodSchema = z.object({
 		.min(10, { message: 'Số điện thoại quá ngắn' })
 		.max(11, { message: 'Số điện thoại quá dài' })
 		.regex(/((09|03|07|08|05)+([0-9]{8})\b)/g, { message: 'Số điện thoại không hợp lệ' }),
-	tax_code: z.string().nullable(),
-	company_name: z.string().nullable(),
-	date_of_birth: z.date().nullable(),
-	facebook: z.string().nullable(),
-	address: z.string().nullable(),
-	notes: z.string().nullable(),
-	province_city: z.string().nullable(),
-	district: z.string().nullable(),
-	ward: z.string().nullable(),
+	tax_code: z.string(),
+	company_name: z.string(),
+	date_of_birth: z.string(),
+	facebook: z.string(),
+	address: z.string(),
+	notes: z.string(),
+	province_city: z.string(),
+	district: z.string(),
+	ward: z.string(),
 
 });
 

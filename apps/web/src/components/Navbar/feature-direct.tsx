@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { LayoutDashboard, Package, Receipt, Users, ShoppingCart, Store, StoreIcon as Shop, Wallet, BarChart2, PieChart, TrendingUp, List, PlusCircle, History, FileText, UserPlus, Truck, ShoppingBag, Building, Info, Settings, DollarSign, Minus, BarChart, LineChart, Undo2, Pill, Building2, Stethoscope, UserCircle, PiggyBank, Calendar, BookOpen } from 'lucide-react'
+import { LayoutDashboard, Package, Receipt, Users, ShoppingCart, Store, StoreIcon as Shop, Wallet, BarChart2, PieChart, TrendingUp, List, PlusCircle, History, FileText, UserPlus, Truck, ShoppingBag, Building, Info, Settings, DollarSign, Minus, BarChart, LineChart, Undo2, Pill, Building2, Stethoscope, UserCircle, PiggyBank, Calendar, BookOpen, UndoDot, ShoppingBasket, Factory, Hospital } from 'lucide-react'
 import { LiaFileInvoiceDollarSolid } from "react-icons/lia";
 import { Typography } from '@component/Typography';
 import { usePathname } from '@route/hooks';
@@ -10,11 +10,11 @@ import { cn } from '@lib/tailwind-merge.ts';
 import { Menu } from '@mantine/core';
 import { useDashboard } from '@hook/dashboard/use-dasboard.ts';
 import { pathToRegex } from '@util/regex.ts';
-import { FaFileInvoiceDollar } from 'react-icons/fa6';
+import { FaFileInvoiceDollar, FaUserDoctor } from 'react-icons/fa6';
 
 export type MenuItems = Array<{
 	title: string,
-	icon: React.ElementType,
+	icon?: React.ElementType,
 	href?: string | RegExp,
 	path?: string,
 	dropdownItems?: { title: string, href: string | RegExp, path: string, icon?: React.ElementType }[]
@@ -37,20 +37,38 @@ export function NavbarFeatureDirect() {
 			icon: Package,
 			path: `/dashboard/products/${branchId}/list`,
 			href: pathToRegex(`/dashboard/products/${branchId}`),
-			// dropdownItems: [
-			// 	{
-			// 		title: 'Danh sách',
-			// 		path: `/dashboard/products/${branchId}/list`,
-			// 		href: pathToRegex(`/dashboard/products/${branchId}/list`),
-			// 		icon: List,
-			// 	},
-			// 	{
-			// 		title: 'Thêm mới',
-			// 		path: `/dashboard/products/${branchId}/new`,
-			// 		href: pathToRegex(`/dashboard/products/${branchId}/new`),
-			// 		icon: PlusCircle,
-			// 	},
-			// ],
+			dropdownItems: [
+				{
+					title: 'Thuốc',
+					path: `/dashboard/products/${branchId}/thuoc`,
+					href: pathToRegex(`/dashboard/products/${branchId}/thuoc`),
+					// icon: List,
+				},
+				{
+					title: 'Thực phẩm chức năng',
+					path: `/dashboard/products/${branchId}/thuc-pham-chuc-nang`,
+					href: pathToRegex(`/dashboard/products/${branchId}/thuc-pham-chuc-nang`),
+					// icon: PlusCircle,
+				},
+				{
+					title: 'Mỹ phẩm',
+					path: `/dashboard/products/${branchId}/my-pham`,
+					href: pathToRegex(`/dashboard/products/${branchId}/my-pham`),
+					// icon: PlusCircle,
+				},
+				{
+					title: 'Dụng cụ y tế',
+					path: `/dashboard/products/${branchId}/dung-cu-y-te`,
+					href: pathToRegex(`/dashboard/products/${branchId}/dung-cu-y-te`),
+					// icon: PlusCircle,
+				},
+				{
+					title: 'Hàng hóa khác',
+					path: `/dashboard/products/${branchId}/hang-hoa-khac`,
+					href: pathToRegex(`/dashboard/products/${branchId}/hang-hoa-khac`),
+					// icon: PlusCircle,
+				},
+			],
 		},
 		{
 			title: 'Giao dịch',
@@ -83,6 +101,12 @@ export function NavbarFeatureDirect() {
 					icon: Undo2
 				},
 				{
+					title: "Trả hàng nhà cung cấp",
+					path: `/dashboard/transactions/${branchId}/returns-to-provider`,
+					href: pathToRegex(`/dashboard/transactions/${branchId}/returns-to-provider`),
+					icon: UndoDot
+				},
+				{
 					title: 'Thuốc bán theo đơn',
 					path: `/dashboard/transactions/${branchId}/prescriptions`,
 					href: pathToRegex(`/dashboard/transactions/${branchId}/prescriptions`),
@@ -106,33 +130,45 @@ export function NavbarFeatureDirect() {
 					title: 'Nhà cung cấp',
 					path: `/dashboard/partners/${branchId}/suppliers`,
 					href: pathToRegex(`/dashboard/partners/${branchId}/suppliers`),
-					icon: Truck,
+					icon: Factory,
+				},
+				{
+					title: 'Cơ sở khám chữa bệnh',
+					path: `/dashboard/partners/${branchId}/clinics`,
+					href: pathToRegex(`/dashboard/partners/${branchId}/clinics`),
+					icon: Hospital,
+				},
+				{
+					title: 'Bác sĩ/dược sĩ',
+					path: `/dashboard/partners/${branchId}/doctors`,
+					href: pathToRegex(`/dashboard/partners/${branchId}/doctors`),
+					icon: FaUserDoctor,
 				},
 			],
 		},
 		{
 			title: 'Nhập hàng',
-			icon: ShoppingCart,
-			path: '/dashboard/import',
-			href: pathToRegex('/dashboard/import'),
-			dropdownItems: [
-				{
-					title: 'Tạo đơn',
-					path: `/dashboard/import/${branchId}/create`,
-					href: pathToRegex(`/dashboard/import/${branchId}/create`),
-					icon: PlusCircle,
-				},
-				{
-					title: 'Danh sách',
-					path: `/dashboard/import/${branchId}/list`,
-					href: pathToRegex(`/dashboard/import/${branchId}/list`),
-					icon: List,
-				},
-			],
+			icon: Truck,//ShoppingCart,
+			path: `/dashboard/import/${branchId}/create`,
+			href: pathToRegex(`/dashboard/import/${branchId}/create`),
+			// dropdownItems: [
+			// 	{
+			// 		title: 'Tạo đơn',
+			// 		path: `/dashboard/import/${branchId}/create`,
+			// 		href: pathToRegex(`/dashboard/import/${branchId}/create`),
+			// 		icon: PlusCircle,
+			// 	},
+			// 	{
+			// 		title: 'Danh sách',
+			// 		path: `/dashboard/import/${branchId}/list`,
+			// 		href: pathToRegex(`/dashboard/import/${branchId}/list`),
+			// 		icon: List,
+			// 	},
+			// ],
 		},
 		{
 			title: 'Bán hàng',
-			icon: Store,
+			icon: ShoppingCart,
 			path: `/dashboard/sales/${branchId}/retail`,
 			href: pathToRegex(`/dashboard/sales/${branchId}/retail`),
 			// dropdownItems: [
@@ -242,8 +278,8 @@ export function NavbarFeatureDirect() {
 				},
 				{
 					title: 'Báo cáo nhà cung cấp',
-					path: `/dashboard/reports/${branchId}/suppliers`,
-					href: pathToRegex(`/dashboard/reports/${branchId}/suppliers`),
+					path: `/dashboard/reports/${branchId}/providers`,
+					href: pathToRegex(`/dashboard/reports/${branchId}/providers`),
 					icon: Building2,
 				},
 				{
@@ -272,12 +308,18 @@ export function NavbarFeatureDirect() {
 			path: `/dashboard/staff/${branchId}`,
 			href: pathToRegex('/dashboard/staff'),
 		},
+		{
+			title: "Bán buôn",
+			icon: ShoppingBasket,
+			path: `/dashboard/sales/${branchId}/wholesale`,
+			href: pathToRegex(`/dashboard/sales/${branchId}/wholesale`),
+		}
 	];
 
 
 	return (
 		<nav className="bg-white shadow h-fit border-b border-b-zinc-200">
-			<div className="max-w-7xl px-2 py-2">
+			<div className="max-w-full px-2 py-2">
 				<div className="flex justify-between">
 					<div className="flex justify-between flex-1">
 						<div className="flex flex-wrap items-center gap-2">
@@ -314,14 +356,14 @@ export function NavbarFeatureDirect() {
 												? 'text-white bg-teal-500 hover:bg-teal-600'
 												: 'text-gray-700 hover:bg-gray-50 group transition-colors'}`}
 										>
-											<item.icon className={cn("h-5 w-5", {
+											{item.icon && <item.icon className={cn('h-5 w-5', {
 												'group-hover:text-teal-500': !active,
 												'text-white': active,
-											})} />
+											})} />}
 											<Typography
 												size={'content'}
 												color={active ? 'white' : 'text'}
-												className={cn("whitespace-nowrap", {
+												className={cn('whitespace-nowrap', {
 													"group-hover:text-teal-500": !active,
 												})}
 											>{item.title}</Typography>
@@ -350,13 +392,13 @@ export function NavbarFeatureDirect() {
 														? 'text-white bg-teal-500 hover:bg-teal-600'
 														: 'text-gray-700 hover:bg-gray-50 group transition-colors'}`}
 												>
-													<item.icon className={cn("h-5 w-5", {
+													{item.icon && <item.icon className={cn('h-5 w-5', {
 														'group-hover:text-teal-500': !active,
 														'text-white': active,
-													})} />
+													})} />}
 													<span
-														className={cn("whitespace-nowrap", {
-															"group-hover:text-teal-500": !active,
+														className={cn('whitespace-nowrap', {
+															'group-hover:text-teal-500': !active,
 														})}
 													>{item.title}</span>
 												</Typography>

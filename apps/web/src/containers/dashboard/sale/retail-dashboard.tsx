@@ -31,7 +31,7 @@ function RetailDashboard({branchId}: {branchId: string}) {
 						<InvoiceTab />
 					</Box>
 				</Stack>
-				<Box pos="absolute" bottom={0} left={0} className={"block"}>
+				<Box pos="fixed" bottom={0} left={0} className={"block"}>
 					<PrescriptModal>
 						<Button
 							variant="filled"

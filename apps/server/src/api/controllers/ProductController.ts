@@ -12,6 +12,10 @@ import prisma from 'repository/prisma.ts';
 import { ConsumerAttributes } from 'repository/consumer/schema.ts';
 import { Prisma } from '@repo/orm';
 import { CreateProduct, DeleteProductParams } from 'validations/Product.ts';
+import { v4 as uuidv4 } from 'uuid';
+import fs from 'fs';
+import path from 'node:path';
+import * as process from 'node:process';
 
 export class ProductController {
 	public static getProducts = AsyncMiddleware.asyncHandler(
@@ -40,7 +44,9 @@ export class ProductController {
 
 				if (search) {
 					conditions.push(
-						Prisma.sql`to_tsvector('english', consumer_name || ' ' || COALESCE(company_name, '') || ' ' || COALESCE(address, '') || ' ' || COALESCE(notes, '')) @@ to_tsquery('english', ${search})`
+						// Prisma.sql`to_tsvector('vietnamese', product_name || ' ' || COALESCE(description, '') || ' ' || COALESCE(manufacturer, '')) @@ to_tsquery('vietnamese', ${search})`
+						Prisma.sql`(product_name ILIKE ${`%${search}%`} OR COALESCE(description, '') ILIKE ${`%${search}%`} OR COALESCE(manufacturer, '') ILIKE ${`%${search}%`})`
+						// Prisma.sql`(product_name ILIKE ${`%${search}%`})`
 					);
 				}
 
@@ -144,6 +150,60 @@ export class ProductController {
 				return res.status(200).json(response).end();
 			} catch (error: any) {
 				console.error(`Error deleting product: ${error.message}`);
+				throw error;
+			}
+		}
+	);
+
+	public static uploadImage = AsyncMiddleware.asyncHandler(
+		async (req: Request<{ branchId: string }>, res: Response) => {
+			try {
+				const { branchId } = req.params;
+				const { image, jwtPayload } = req;
+				const storeId = await prisma.stores.findFirst({
+					where: { branch_id: branchId },
+					select: { id: true }
+				});
+
+				if (!storeId) {
+					throw new BadRequest('store_not_found', 'Store not found', 'Store not found');
+				}
+				const id = storeId.id;
+
+				if (!image) {
+					throw new BadRequest('invalid_file', 'Invalid file', 'Invalid file');
+				}
+
+				const imageOriginalName = image.originalname;
+				const imageBuffer = image.buffer;
+
+				const imagePath = `storage/image/product/${id}/${imageOriginalName}/${uuidv4()}/${imageOriginalName}`;
+				const imageAbsolutePath = path.join(process.cwd(), imagePath);
+				const mkdir = await fs.promises.mkdir(path.dirname(imageAbsolutePath), { recursive: true });
+
+				const tasks = await Promise.all([
+					fs.promises.writeFile(imagePath, imageBuffer),
+					prisma.assets.create({
+						data: {
+							name: imageOriginalName,
+							type: image.mimetype,
+							store_id: id,
+							url: `${process.env.BASE_URL}`,
+							path: imagePath,
+							from: jwtPayload?.id ? `${jwtPayload.id}_${jwtPayload.type}` : null,
+							createdAt: new Date(),
+							updatedAt: new Date()
+						}
+					})
+				])
+
+				const result = tasks[1];
+
+				const response = new Success({ url: result.url }).toJson;
+
+				return res.status(200).json(response).end();
+			} catch (error: any) {
+				console.error(`Error uploading image: ${error.message}`);
 				throw error;
 			}
 		}

@@ -26,6 +26,7 @@ const v = tv({
 			thin: 'font-thin',
 		},
 		color: {
+			dimmer: 'text-zinc-500',
 			primary: 'text-teal-500',
 			text: 'text-zinc-700',
 			alert: 'text-red-500',

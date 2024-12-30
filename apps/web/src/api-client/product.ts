@@ -50,3 +50,27 @@ export const getProductList = async (
 		return [];
 	}
 }
+
+export const uploadImage = async (file: File, branchId: string): Promise<{url: string} | null> => {
+	if (!file) {
+		return null;
+	}
+	if (!branchId) {
+		return null;
+	}
+	const formData = new FormData();
+	formData.append('image', file);
+
+	try {
+		const response = await axiosWithAuth.post<SuccessResponse<{url: string}>>(`/product/${branchId}/upload/image`, formData, {
+			headers: {
+				'Content-Type': 'multipart/form-data',
+			},
+		});
+		return response.data.data;
+	} catch (error) {
+		console.error('Error uploading image:', error);
+		// throw error;
+		return null;
+	}
+};

@@ -13,6 +13,8 @@ declare global {
 	namespace Express {
 		export interface Request {
 			jwtPayload?: Record<string, any>;
+			file?: Express.Multer.File;
+			image?: Express.Multer.File;
 		}
 	}
 }
