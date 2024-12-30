@@ -9,8 +9,11 @@ import { Product, ProductRender } from '@schema/product-schema.ts';
 import { CenterBox } from '@component/CenterBox';
 import ProductDetail from '@component/product/product-detail.tsx';
 import { ProductModal } from '@component/Modal/product-modal.tsx';
+import { useAuth } from '@hook/auth';
 
 export default function ProductDashboard({branchId, type}: {branchId: string, type?: string}) {
+	const {isAuthenticated} = useAuth();
+
 	const [activePage, setActivePage] = useState(1)
 	const [itemsPerPage, setItemsPerPage] = useState('20')
 	const [selectedItems, setSelectedItems] = useState<string[]>([])
@@ -63,6 +66,10 @@ export default function ProductDashboard({branchId, type}: {branchId: string, ty
 			})
 		}
 	}, [branchId]);
+
+	if (!isAuthenticated) {
+		return <></>;
+	}
 
 	return (
 		<CenterBox

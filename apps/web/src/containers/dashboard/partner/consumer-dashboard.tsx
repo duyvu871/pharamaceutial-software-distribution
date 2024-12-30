@@ -8,6 +8,7 @@ import { getConsumerList } from '@api/consumer.ts';
 import { cn } from '@lib/tailwind-merge.ts';
 import { ConsumerAttributes } from '@schema/consumer-schema.ts';
 import { genderVi } from '@global/locale.ts';
+import { useAuth } from '@hook/auth';
 
 interface Customer {
 	id: string
@@ -21,6 +22,7 @@ interface Customer {
 }
 
 export default function CustomerDashboard({branchId}: {branchId: string}) {
+	const { isAuthenticated } = useAuth();
 	const [activePage, setActivePage] = useState(1);
 	const [itemsPerPage, setItemsPerPage] = useState('20');
 	const [consumers, setConsumers] = useState<ConsumerAttributes[]>([]);
@@ -41,6 +43,10 @@ export default function CustomerDashboard({branchId}: {branchId: string}) {
 			})
 		}
 	}, [branchId]);
+
+	if (!isAuthenticated) {
+		return <></>;
+	}
 
 	return (
 		<div className="w-full p-4">

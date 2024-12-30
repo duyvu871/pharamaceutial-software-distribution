@@ -42,9 +42,8 @@ const AuthProvider = ({ children, refreshToken }: AuthProviderProps) => {
 	const [authProfile, setAuthProfile] = useState<AuthSessionInfo | null>(null);
 	const [refreshTokenState, setRefreshTokenState] = useState<CookieRefreshToken | null>(refreshToken || null);
 	const [isRefreshing, setIsRefreshing] = useState(false);
+	const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-
-	const isAuthenticated = useMemo(() => !!token && !!authProfile, [token, authProfile]);
 
 	const setToken = useCallback((newToken: string | null) => {
 		setTokenState(newToken);
@@ -96,7 +95,7 @@ const AuthProvider = ({ children, refreshToken }: AuthProviderProps) => {
 			const { accessToken } = cookieParse;
 			!token && setToken(accessToken.access_token);
 		}
-	}, [setToken, token]);
+	}, []);
 
 	useEffect(() => {
 		console.log("block 1");
@@ -115,7 +114,7 @@ const AuthProvider = ({ children, refreshToken }: AuthProviderProps) => {
 		const requestInterceptor = axiosWithAuth.interceptors.request.use(
 			async (requestConfig) => {
 
-				if (isRefreshing) return requestConfig; // Prevent multiple refresh requests
+				// if (isRefreshing) return requestConfig; // Prevent multiple refresh requests
 
 				const { cookieParse, hasCookie } = checkCookie();
 
@@ -168,7 +167,6 @@ const AuthProvider = ({ children, refreshToken }: AuthProviderProps) => {
 						return Promise.reject(error);
 					} finally {
 						setIsRefreshing(false);
-
 					}
 
 					return requestConfig;
@@ -206,11 +204,9 @@ const AuthProvider = ({ children, refreshToken }: AuthProviderProps) => {
 			}
 		);
 
-		return () => {
-			axiosWithAuth.interceptors.request.eject(requestInterceptor);
-			axiosWithAuth.interceptors.response.eject(responseInterceptor);
-		};
-	}, [refreshToken, router, setToken, isRefreshing]);
+		setIsAuthenticated(true);
+
+	}, [refreshToken, router, setToken, isRefreshing, token]);
 
 
 	return (

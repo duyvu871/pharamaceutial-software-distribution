@@ -8,8 +8,15 @@ import { CenterBox } from '@component/CenterBox';
 import { Box, Button, Stack } from '@mantine/core';
 import { FileText } from 'lucide-react';
 import ImportTab from '@component/Invoice/import-tab.tsx';
+import { useAuth } from '@hook/auth';
 
 function CreateImportProduct({branchId}: {branchId: string}) {
+	const {isAuthenticated} = useAuth();
+
+	if (!isAuthenticated) {
+		return <></>;
+	}
+
 	return (
 		<CenterBox
 			className={'flex-1 bg-zinc-100 h-full overflow-hidden relative'}

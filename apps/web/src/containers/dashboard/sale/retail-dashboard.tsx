@@ -12,8 +12,15 @@ import ProductAutocomplete from '@component/product-search.tsx';
 import DynamicTabs from '@component/Invoice/dynamic-tab-list.tsx';
 import InvoiceTab from '@component/Invoice/invoice-tab.tsx';
 import { PrescriptModal } from '@component/Modal/prescript-modal.tsx';
+import { useAuth } from '@hook/auth';
 
 function RetailDashboard({branchId}: {branchId: string}) {
+
+	const {isAuthenticated} = useAuth();
+
+	if (!isAuthenticated) {
+		return <></>;
+	}
 
 	return (
 			<CenterBox

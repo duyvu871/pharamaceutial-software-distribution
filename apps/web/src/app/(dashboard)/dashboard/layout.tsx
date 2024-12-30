@@ -1,3 +1,4 @@
+
 import "@app/globals.css";
 import "@ui/styles.css";
 import '@mantine/core/styles.css';

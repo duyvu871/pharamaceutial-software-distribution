@@ -55,8 +55,8 @@ export async function POST(req: NextRequest) {
 			}
 
 			cookies().set('refreshToken', JSON.stringify(refreshCookieSet), {
-				httpOnly: true,
-				secure: true,
+				// httpOnly: true,
+				// secure: true,
 				sameSite: 'lax', // lax stand for "same-site cookie" is the most secure
 				expires: new Date(accessToken.expire_refresh_token),
 				maxAge: accessToken.expire_refresh_token || 60 * 60 * 24 * 30, // 30 days

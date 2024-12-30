@@ -13,6 +13,7 @@ import { PayloadMembershipSchema } from '@schema/membership-schema.ts';
 import Image from 'next/image';
 import { Typography } from '@component/Typography';
 import dayjs from 'dayjs';
+import { useAuth } from '@hook/auth';
 
 interface Customer {
 	id: string
@@ -26,6 +27,7 @@ interface Customer {
 }
 
 export default function MembershipDashboard({branchId}: {branchId: string}) {
+	const { isAuthenticated } = useAuth();
 	const [activePage, setActivePage] = useState(1);
 	const [itemsPerPage, setItemsPerPage] = useState('20');
 	const [memberships, setMemberships] = useState<PayloadMembershipSchema[]>([]);
@@ -46,6 +48,10 @@ export default function MembershipDashboard({branchId}: {branchId: string}) {
 			})
 		}
 	}, [branchId]);
+
+	if (!isAuthenticated) {
+		return <></>;
+	}
 
 	return (
 		<div className="w-full p-4">

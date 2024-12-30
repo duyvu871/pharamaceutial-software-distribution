@@ -1,3 +1,5 @@
+"use client";
+
 import RefreshCookieAuthProvider from '@provider/refresh-cookie-provider';
 import React from 'react';
 import AppLayout from '@layout/app-layout.tsx';

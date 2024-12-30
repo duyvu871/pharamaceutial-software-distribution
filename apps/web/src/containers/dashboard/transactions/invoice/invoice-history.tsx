@@ -9,6 +9,7 @@ import { getInvoiceList, InvoiceResponse } from '@api/invoice.ts';
 import { CenterBox } from '@component/CenterBox'
 import InvoiceDetail from '@component/Invoice/invoice-detail.tsx';
 import { Typography } from '@component/Typography';
+import { useAuth } from '@hook/auth'
 // import InvoiceDetail from '@component/invoice/invoice-detail.tsx'
 
 
@@ -24,6 +25,7 @@ export type InvoiceRender = {
 }
 
 export default function InvoiceHistory({branchId}: {branchId: string}) {
+	const { isAuthenticated, userSessionInfo } = useAuth();
 	const [activePage, setActivePage] = useState(1)
 	const [itemsPerPage, setItemsPerPage] = useState('20')
 	const [selectedItems, setSelectedItems] = useState<string[]>([])
@@ -63,6 +65,7 @@ export default function InvoiceHistory({branchId}: {branchId: string}) {
 	})
 
 	useEffect(() => {
+		console.log("isAuthenticated", isAuthenticated);
 		if (branchId) {
 			getInvoiceList({
 				branchId,
@@ -72,7 +75,12 @@ export default function InvoiceHistory({branchId}: {branchId: string}) {
 				setInvoices(data)
 			})
 		}
-	}, [branchId, activePage, itemsPerPage])
+	}, [branchId])
+
+
+	if (!isAuthenticated) {
+		return <></>;
+	}
 
 	return (
 		<CenterBox
