@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useLayoutEffect, useState } from 'react';
+import React, { createContext, useEffect, useLayoutEffect, useState } from 'react';
 import axios, { InternalAxiosRequestConfig } from 'axios';
 import axiosWithAuth, { baseURL, checkCookie } from '@lib/axios';
 import { removeCookie, setCookie } from '@util/cookie.ts';
@@ -82,6 +82,10 @@ const AuthProvider = ({children, refreshToken}: AuthProviderProps) => {
 		removeLocalStorage('user-session-info');
 		router.replace(paths.auth.login);
 	}
+
+	useEffect(() => {
+		setAuthProfile(getLocalStorage<AuthSessionInfo>('user-session-info') || null);
+	}, []);
 
 	useLayoutEffect(() => {
 		(async () => {
@@ -174,7 +178,6 @@ const AuthProvider = ({children, refreshToken}: AuthProviderProps) => {
 			}
 		);
 
-		setAuthProfile(getLocalStorage<AuthSessionInfo>('user-session-info') || null);
 		setIsAuthenticated(!!token);
 	}, []);
 
