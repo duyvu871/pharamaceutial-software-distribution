@@ -3,60 +3,70 @@
     "store_id": "f1b1e7d0-1a9e-4b1b-8c8e-1d3f9c1c1b1e",
     "group_name": "Thuốc",
     "description": "Nhóm các sản phẩm thuốc",
-    "status": 1
+    "status": 1,
+    "group_slug": "thuoc"
   },
   {
     "store_id": "f1b1e7d0-1a9e-4b1b-8c8e-1d3f9c1c1b1e",
     "group_name": "Thực phẩm chức năng",
     "description": "Nhóm các sản phẩm thực phẩm chức năng",
-    "status": 1
+    "status": 1,
+    "group_slug": "thuc-pham-chuc-nang"
   },
   {
     "store_id": "f1b1e7d0-1a9e-4b1b-8c8e-1d3f9c1c1b1e",
     "group_name": "Mỹ phẩm",
     "description": "Nhóm các sản phẩm mỹ phẩm",
-    "status": 1
+    "status": 1,
+    "group_slug": "my-pham"
   },
   {
     "store_id": "f1b1e7d0-1a9e-4b1b-8c8e-1d3f9c1c1b1e",
     "group_name": "Dụng cụ y tế",
     "description": "Nhóm các sản phẩm dụng cụ y tế",
-    "status": 1
+    "status": 1,
+    "group_slug": "dung-cu-y-te"
   },
   {
     "store_id": "f1b1e7d0-1a9e-4b1b-8c8e-1d3f9c1c1b1e",
     "group_name": "Hàng hóa khác",
     "description": "Nhóm các sản phẩm hàng hóa khác",
-    "status": 1
+    "status": 1,
+    "group_slug": "hang-hoa-khac"
   },
   {
     "store_id": "50b1b432-e12a-4536-9c24-650b6a140923",
     "group_name": "Thuốc",
     "description": "Nhóm các sản phẩm thuốc",
-    "status": 1
+    "status": 1,
+    "group_slug": "thuoc"
   },
   {
     "store_id": "50b1b432-e12a-4536-9c24-650b6a140923",
     "group_name": "Thực phẩm chức năng",
     "description": "Nhóm các sản phẩm thực phẩm chức năng",
-    "status": 1
+    "status": 1,
+    "group_slug": "thuc-pham-chuc-nang"
   },
   {
     "store_id": "50b1b432-e12a-4536-9c24-650b6a140923",
     "group_name": "Mỹ phẩm",
     "description": "Nhóm các sản phẩm mỹ phẩm",
-    "status": 1
+    "status": 1,
+    "group_slug": "my-pham"
   },
   {
     "store_id": "50b1b432-e12a-4536-9c24-650b6a140923",
     "group_name": "Dụng cụ y tế",
     "description": "Nhóm các sản phẩm dụng cụ y tế",
-    "status": 1
+    "status": 1,
+    "group_slug": "dung-cu-y-te"
   },
   {
     "store_id": "50b1b432-e12a-4536-9c24-650b6a140923",
     "group_name": "Hàng hóa khác",
     "description": "Nhóm các sản phẩm hàng hóa khác",
-    "status": 1
+    "status": 1,
+    "group_slug": "hang-hoa-khac"
   }
 ]

@@ -23,6 +23,7 @@ import { ProviderController } from 'controllers/ProviderController.ts';
 import { InvoiceController } from 'controllers/InvoiceController.ts';
 import { InvoiceId, InvoiceValidation } from 'validations/Invoice.ts';
 import uploadMiddleware from 'server/configs/upload.ts';
+import { storeRouter } from 'server/api/routes/store.ts';
 
 const apiRouter = Router();
 const pageRouter = Router();
@@ -146,6 +147,9 @@ apiRouter.route('/invoice/:branchId/delete/:invoiceId').delete(
   validateParams(BranchValidation.branchIdParam),
   validateParams(InvoiceValidation.invoiceId),
   InvoiceController.deleteInvoice);
+
+// Store routes
+apiRouter.use(storeRouter);
 
 export default {
     apiRoutes: apiRouter,

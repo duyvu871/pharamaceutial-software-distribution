@@ -53,11 +53,13 @@ const requestInterceptor = axiosWithAuth.interceptors.request.use(
 		const { cookieParse, hasCookie } = checkCookie();
 		const refreshToken = getRefreshToken();
 		if (!refreshToken) {
-			router.replace(paths.auth.login);
+			// router.replace(paths.auth.login);
+			window.location.href = paths.auth.login;
 			return requestConfig;
 		}
 		if (!hasCookie) {
-			router.replace(paths.auth.login);
+			// router.replace(paths.auth.login);
+			window.location.href = paths.auth.login;
 			return requestConfig; // stop request
 		}
 
@@ -78,7 +80,7 @@ const requestInterceptor = axiosWithAuth.interceptors.request.use(
 		} else if (new Date() < new Date(refreshToken.refreshToken.expire_refresh_token)) {
 
 			try {
-				const response = await axios.post(
+				const response = await axiosWithAuth.post(
 					`/api/v1/auth/refresh`,
 					{
 						refreshToken: refreshToken.refreshToken.refresh_token,
@@ -100,7 +102,7 @@ const requestInterceptor = axiosWithAuth.interceptors.request.use(
 			} catch (error) {
 				removeCookie("accessToken");
 
-				router.replace(paths.auth.login);
+				window.location.href = paths.auth.login;
 				return Promise.reject(error);
 			} finally {
 
@@ -110,7 +112,7 @@ const requestInterceptor = axiosWithAuth.interceptors.request.use(
 		} else {
 			removeCookie("accessToken");
 
-			router.replace(paths.auth.login);
+			await router.push(paths.auth.login);
 			return requestConfig;
 		}
 	},
@@ -129,7 +131,7 @@ const responseInterceptor = axiosWithAuth.interceptors.response.use(
 			case 401:
 				removeCookie("accessToken");
 
-				router.replace(paths.auth.login);
+				window.location.href = paths.auth.login;
 				break;
 			// case 400: //TODO handle case 400 if required
 			//     break;

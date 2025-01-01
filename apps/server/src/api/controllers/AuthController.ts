@@ -8,6 +8,7 @@ import { LoginBody, RefreshTokenBody } from 'validations/Authorization';
 import { TaskOwner } from 'server/common/enums/task';
 import Unauthorized from 'responses/clientErrors/Unauthorized';
 import { MembershipTask } from 'server/repository/membership/task';
+import Success from 'responses/successful/Success.ts';
 
 const AuthTasks = {
 	user: UserTask,
@@ -85,36 +86,42 @@ export class AuthController {
 
 	public static refreshToken = AsyncMiddleware.asyncHandler(
 		async (req: Request<unknown, unknown, RefreshTokenBody>, res: Response) => {
-			const refreshToken = req.body.refreshToken;
-			const userId = req.body.userId;
-			const decodedToken = TokenService.verifyAuthToken(refreshToken, config.refreshSecret);
-			if (!decodedToken) {
-				throw new Unauthorized('invalid_refresh_token', 'Invalid refresh token', 'Invalid refresh token');
-			}
+			try {
+				const refreshToken = req.body.refreshToken;
+				const userId = req.body.userId;
+				const decodedToken = TokenService.verifyAuthToken(refreshToken, config.refreshSecret);
+				if (!decodedToken) {
+					throw new Unauthorized('invalid_refresh_token', 'Invalid refresh token', 'Invalid refresh token');
+				}
 
-			const checkTokenExists = await TokenService.queryToken({
-				id: userId,
-				token: refreshToken,
-			});
+				const checkTokenExists = await TokenService.queryToken({
+					id: userId,
+					token: refreshToken,
+				});
 
-			if (!checkTokenExists) {
-				throw new Unauthorized('invalid_refresh_token', 'Invalid refresh token', 'Invalid refresh token');
-			}
+				if (!checkTokenExists) {
+					throw new Unauthorized('invalid_refresh_token', 'Invalid refresh token', 'Invalid refresh token');
+				}
 
-			const userType = decodedToken.payload?.type;
-			if (!userId || !userType) {
-				throw new Unauthorized('invalid_refresh_token', 'Invalid refresh token', 'Invalid refresh token');
-			}
+				const userType = decodedToken.payload?.type;
+				if (!userId || !userType) {
+					throw new Unauthorized('invalid_refresh_token', 'Invalid refresh token', 'Invalid refresh token');
+				}
 
-			const accessToken = await TokenService.generateAuthToken(userId, userType, config.sessionExpire);
-			const response = {
-				accessToken: {
-					token: accessToken,
-					expire_access_token: config.sessionExpire,
-					token_type: 'Bearer',
-				},
+				const accessToken = await TokenService.generateAuthToken(userId, userType, config.sessionExpire);
+				const response = new Success({
+					accessToken: {
+						token: accessToken,
+						expire_access_token: config.sessionExpire,
+						token_type: 'Bearer',
+					},
+				}).toJson
+
+				return res.status(200).json(response).end();
+			} catch (error) {
+				appLogger.log('error', `Refresh token failed with error: ${error.errorMessage || error.message}`);
+				throw error;
 			}
-			return res.status(200).json(response).end();
 		}
 	)
 

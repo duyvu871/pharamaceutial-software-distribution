@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 // Zod Schema cho Store
 export const StoreZodSchema = z.object({
-	id: z.number(),
+	id: z.string(),
 	store_name: z.string(), // Tên kho
 	branch_id: z.string(), // ID chi nhánh
 	address: z.string(), // Địa chỉ kho

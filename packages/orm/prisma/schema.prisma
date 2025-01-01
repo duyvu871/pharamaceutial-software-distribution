@@ -242,6 +242,7 @@ model stores {
 model store_group {
   id          String    @id @default(uuid()) @db.Uuid
   store_id    String    @db.Uuid
+  group_slug  String    @db.VarChar(255)
   group_name  String    @db.VarChar(255)
   created_at  DateTime  @default(now()) @db.Timestamptz(6)
   updated_at  DateTime  @default(now()) @db.Timestamptz(6)
@@ -309,6 +310,43 @@ model providers {
   store stores @relation(fields: [storeId], references: [id])
 }
 
+model admins {
+  id          String     @id @default(uuid()) @db.Uuid
+  username    String     @db.VarChar(255)
+  last_name   String     @db.VarChar(255)
+  first_name  String     @db.VarChar(255)
+  gender      enum_gender
+  password    String     @db.VarChar(255)
+  email       String?    @db.VarChar(255)
+  phone_number String?   @db.VarChar(255)
+  postal_code String?    @db.VarChar(255)
+  address     String?    @db.VarChar(255)
+  avatar      String?    @db.VarChar(255)
+  notes       String?    @db.VarChar(255)
+  bio         String?    @db.VarChar(255)
+  is_active   Boolean    @default(true)
+  last_login  DateTime?  @db.Timestamptz(6)
+  reset_token String?    @db.VarChar(255)
+  permission  String[]   @default(["Store.All", "Report.All", "Supplier.All", "Medicine.All", "Membership.All", "Promotion.All", "Customer.All", "User.All"]) @db.VarChar(255)
+  roleId      String?     @db.Uuid
+
+  createdAt DateTime?  @db.Timestamptz(6)
+  updatedAt DateTime?  @db.Timestamptz(6)
+  roles     roles?     @relation(fields: [roleId], references: [id])
+  admin_to_user admin_to_user[]
+}
+
+model admin_to_user {
+  id        String @id @default(uuid()) @db.Uuid
+  adminId   String @db.Uuid
+  userId    String @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  admins admins @relation(fields: [adminId], references: [id])
+  users  users  @relation(fields: [userId], references: [id])
+}
+
 model users {
   id           String     @id @default(uuid()) @db.Uuid
   username     String     @db.VarChar(255)
@@ -331,6 +369,17 @@ model users {
   @@index([username])
   @@index([email])
   @@index([phone_number])
+  admin_to_user admin_to_user[]
+}
+
+model roles {
+  id          String @id @default(uuid()) @db.Uuid
+  role_name   String @db.VarChar(255)
+  permission  String @db.VarChar(255) // ex: "Store.All, Report.All, Supplier.All, Medicine.All, Membership.All, Promotion.All, Customer.All, User.All"
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+
+  admins admins[]
 }
 
 model points {
@@ -445,6 +494,13 @@ enum enum_branchs_branch_status {
 enum enum_consumers_gender {
   male
   female
+  other
+}
+
+enum enum_gender {
+  male
+  female
+  other
 }
 
 enum enum_memberships_employee_status {
@@ -457,12 +513,43 @@ enum UserType {
   membership
 }
 
+enum admin_type {
+  super_admin
+  admin
+}
+
 enum enum_users_permission {
   Store_All      @map("Store.All")
   Report_All     @map("Report.All")
   Supplier_All   @map("Supplier.All")
   Medicine_All   @map("Medicine.All")
   Pharmacist_All @map("Pharmacist.All")
+  Promotion_All  @map("Promotion.All")
+  Customer_All   @map("Customer.All")
+  User_Read      @map("User.Read")
+  User_Update    @map("User.Update")
+  User_Create    @map("User.Create")
+}
+
+enum admin_permission {
+  Store_All      @map("Store.All")
+  Report_All     @map("Report.All")
+  Supplier_All   @map("Supplier.All")
+  Medicine_All   @map("Medicine.All")
+  Membership_All @map("Membership.All")
+  Promotion_All  @map("Promotion.All")
+  Customer_All   @map("Customer.All")
+  User_Read      @map("User.Read")
+  User_Update    @map("User.Update")
+  User_Create    @map("User.Create")
+}
+
+enum all_permission {
+  Store_All      @map("Store.All")
+  Report_All     @map("Report.All")
+  Supplier_All   @map("Supplier.All")
+  Medicine_All   @map("Medicine.All")
+  Membership_All @map("Membership.All")
   Promotion_All  @map("Promotion.All")
   Customer_All   @map("Customer.All")
   User_Read      @map("User.Read")

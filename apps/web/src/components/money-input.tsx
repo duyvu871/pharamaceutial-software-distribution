@@ -1,6 +1,11 @@
 import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import { cn } from '@lib/tailwind-merge.ts';
 
+interface MoneyInputComponentPropsExtend
+	extends
+		Omit<React.ComponentProps<'input'>, keyof MoneyInputProps>,
+		MoneyInputProps {}
+
 interface MoneyInputProps {
 	value: number;
 	onChange: (value: number) => void;
@@ -14,8 +19,8 @@ export interface MoneyInputRef {
 	blur: () => void;
 }
 
-export const MoneyInput = forwardRef<MoneyInputRef, MoneyInputProps>(
-	({ value, onChange, currency = 'VND', className }, ref) => {
+export const MoneyInput = forwardRef<MoneyInputRef, MoneyInputComponentPropsExtend>(
+	({ value, onChange, currency = 'VND', className, ...props }, ref) => {
 		const [displayValue, setDisplayValue] = useState('');
 		const [isEditing, setIsEditing] = useState(false);
 		const inputRef = useRef<HTMLInputElement>(null);
@@ -75,6 +80,7 @@ export const MoneyInput = forwardRef<MoneyInputRef, MoneyInputProps>(
 			<input
 				ref={inputRef}
 				type="text"
+				{...props}
 				value={displayValue}
 				onChange={handleChange}
 				onKeyDown={handleEnter}
