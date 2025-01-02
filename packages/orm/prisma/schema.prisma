@@ -341,7 +341,9 @@ model admins {
   createdAt DateTime?  @db.Timestamptz(6)
   updatedAt DateTime?  @db.Timestamptz(6)
   roles     roles?     @relation(fields: [roleId], references: [id])
+
   admin_to_user admin_to_user[]
+  admin_subsciption admin_subsciption[]
 }
 
 model admin_to_user {
@@ -383,6 +385,7 @@ model users {
 model subscriptions {
   id            String    @id @default(uuid()) @db.Uuid
   branch_id     String    @db.Uuid
+  plan_type     String    @db.VarChar(255)
   plan_id       String    @db.Uuid
   start_date    DateTime  @default(now()) @db.Timestamptz(6)
   end_date      DateTime
@@ -400,6 +403,7 @@ model subscriptions {
 model branch_plans {
   id          String   @id @default(uuid()) @db.Uuid
   plan_name   String   @db.VarChar(255)
+  plan_type   String   @db.VarChar(255)
   price       Float
   duration    Int
   description String?  @db.VarChar(255)
@@ -407,6 +411,33 @@ model branch_plans {
   updatedAt   DateTime @updatedAt @db.Timestamptz(6)
 
   subscriptions subscriptions[]
+}
+
+model admin_subsciption {
+  id          String   @id @default(uuid()) @db.Uuid
+  admin_id    String   @db.Uuid
+  plan_id     String   @db.Uuid
+  start_date  DateTime @default(now()) @db.Timestamptz(6)
+  end_date    DateTime
+  status      String   @db.VarChar(50) // e.g., "active", "expired", "pending"
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+
+  admins      admins   @relation(fields: [admin_id], references: [id], onDelete: Cascade)
+  admin_plans admin_plans @relation(fields: [plan_id], references: [id], onDelete: Cascade)
+}
+
+model admin_plans {
+  id          String   @id @default(uuid()) @db.Uuid
+  plan_name   String   @db.VarChar(255)
+  plan_type   String   @db.VarChar(255)
+  price       Float
+  duration    Int
+  description String?  @db.VarChar(255)
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+
+  admin_subsciption admin_subsciption[]
 }
 
 model roles {
