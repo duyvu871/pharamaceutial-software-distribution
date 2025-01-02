@@ -5,6 +5,14 @@ module.exports = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  async rewrites() {
+    return [
+      {
+        source: "/admin",
+        destination: "/admin/login",
+      }
+    ]
+  }
   // async rewrites() {
   //   return [
   //     {

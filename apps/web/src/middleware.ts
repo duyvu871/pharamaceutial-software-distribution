@@ -9,15 +9,24 @@ export const config = {
 	matcher: ['/((?!api|_next/static|_next/image|.*\\.png$).*)'], // Match all routes except /api
 }
 
-const protectedRoutes = ['/dashboard']
-const publicRoutes = ['/login', '/signup', '/']
-const loginUrl = process.env.BASE_HOST + "/login";
+const protectedRoutes = ['/dashboard', '/admin/dashboard'];
+const publicRoutes = ['/login', '/signup', '/admin/login'];
 
 export async function middleware(req: NextRequest) {
+	let loginUrl = process.env.BASE_HOST + "/login";
+	let dashboardUrl = process.env.BASE_HOST + "/dashboard";
+	let isAdminPath = false;
 
 	const url = new URL(req.url);
 	const origin = url.origin;
 	const pathname = url.pathname;
+
+	if (pathname.startsWith('/admin')) {
+		isAdminPath = true;
+		loginUrl = process.env.BASE_HOST + "/admin/login";
+		dashboardUrl = process.env.BASE_HOST + "/admin/dashboard";
+	}
+
 	const requestHeaders = new Headers(req.headers);
 	requestHeaders.set("x-url", req.url);
 	requestHeaders.set("x-origin", origin);
@@ -45,7 +54,7 @@ export async function middleware(req: NextRequest) {
 	// console.log('url', new URL(paths.auth.login, req.nextUrl).href);
 	// console.log('nextUrl', req.nextUrl.href);
 	if (isProtectedRoute && !parsedCookie?.userId) {
-		return NextResponse.redirect(new URL('/login', process.env.BASE_HOST))
+		return NextResponse.redirect(loginUrl);
 	}
 
 	if (
@@ -53,7 +62,7 @@ export async function middleware(req: NextRequest) {
 		parsedCookie?.userId &&
 		!req.nextUrl.pathname.startsWith('/dashboard')
 	) {
-		return NextResponse.redirect(new URL('/dashboard', process.env.BASE_HOST))
+		return NextResponse.redirect(dashboardUrl);
 	}
 
 	console.log('isProtectedRoute', isProtectedRoute);
