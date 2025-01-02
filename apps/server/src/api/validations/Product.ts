@@ -3,8 +3,8 @@ import { validateNumber } from 'utils/number';
 
 export class ProductValidation {
 	public static getProductQuery = z.object({
-		page: validateNumber(true).optional(),
-		limit: validateNumber(true).optional(),
+		page: validateNumber("page", true).optional(),
+		limit: validateNumber("limit", true).optional(),
 		search: z.string().optional(),
 		orderBy: z
 			.string()
@@ -50,8 +50,15 @@ export class ProductValidation {
 		productId: z.string().uuid(),
 		branchId: z.string().uuid(),
 	});
+
+	public static getStoreProductQuery = z.object({
+		type: z.enum(['thuoc', 'thuc-pham-chuc-nang', 'my-pham', 'dung-cu-y-te', 'hang-hoa-khac'], {
+			message: "Loại sản phẩm không hợp lệ"
+		}).optional(),
+	});
 }
 
 export type ProductQuery = z.infer<typeof ProductValidation.getProductQuery>;
 export type CreateProduct = z.infer<typeof ProductValidation.createProduct>;
 export type DeleteProductParams = z.infer<typeof ProductValidation.deleteProductParams>;
+export type GetStoreProductQuery = z.infer<typeof ProductValidation.getStoreProductQuery>;

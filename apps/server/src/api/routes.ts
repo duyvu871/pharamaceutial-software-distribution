@@ -98,7 +98,7 @@ apiRouter.route('/membership/:branchId').post(
 apiRouter.route('/product/:branchId').get(
   ...authChain,
   validateParams(BranchValidation.branchIdParam),
-  validateQuery(PaginationValidation.paginationQuery),
+  validateQuery(PaginationValidation.paginationQuery, ProductValidation.getStoreProductQuery),
   ProductController.getProducts);
 apiRouter.route('/product/:branchId').post(
   ...authChain,

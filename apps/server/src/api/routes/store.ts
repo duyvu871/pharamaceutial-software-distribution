@@ -6,8 +6,8 @@ import { BranchValidation } from 'validations/Branch.ts';
 
 export const storeRouter = Router();
 
-storeRouter.route("/store/:branchId").get(
+storeRouter.route("/store/:branchId/groups").get(
 	...authChain,
 	validateParams(BranchValidation.branchIdParam),
-	StoreController.getStores
+	StoreController.getStoreGroups
 );

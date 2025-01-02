@@ -1,7 +1,9 @@
 import { PrismaClient } from "@repo/orm";
 
 const prismaClientSingleton = (): PrismaClient => {
-	return new PrismaClient();
+	return new PrismaClient({
+		log: ['query', 'info', 'warn', 'error'],
+	});
 };
 
 declare global {

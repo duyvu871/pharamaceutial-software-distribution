@@ -6,7 +6,7 @@ import { StoreTask } from 'repository/store/task.ts';
 import Success from 'responses/successful/Success.ts';
 
 export class StoreController {
-		public static getStores = AsyncMiddleware.asyncHandler(
+		public static getStoreGroups = AsyncMiddleware.asyncHandler(
 			async (req: Request<BranchIdParam, any, any, any>, res) => {
 				try {
 					const branchId = req.params.branchId;

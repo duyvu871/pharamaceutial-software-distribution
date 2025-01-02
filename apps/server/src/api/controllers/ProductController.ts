@@ -11,70 +11,126 @@ import { BranchIdParam } from 'validations/Branch.ts';
 import prisma from 'repository/prisma.ts';
 import { ConsumerAttributes } from 'repository/consumer/schema.ts';
 import { Prisma } from '@repo/orm';
-import { CreateProduct, DeleteProductParams } from 'validations/Product.ts';
+import { CreateProduct, DeleteProductParams, GetStoreProductQuery } from 'validations/Product.ts';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
 import path from 'node:path';
 import * as process from 'node:process';
+import { InvoiceAttribute } from 'repository/transaction/import-invoice/schema.ts';
 
 export class ProductController {
 	public static getProducts = AsyncMiddleware.asyncHandler(
-		async (req: Request<BranchIdParam, any, any, { page: string, limit: string, orderBy: string, search: string }>, res: Response) => {
+		async (req: Request<BranchIdParam, any, any, { page: string, limit: string, orderBy: string, search: string } & GetStoreProductQuery>, res: Response) => {
 			try {
 				const branchId = req.params.branchId;
-				const { page = '1', limit = '10', orderBy = 'created_at:ASC', search } = req.query;
+				const { page = '1', limit = '10', orderBy = 'created_at:ASC', search, type } = req.query;
+				console.log(req.query);
 				const parsedPage = parseInt(page, 10);
 				const parsedLimit = parseInt(limit, 10);
 				const offset = (parsedPage - 1) * parsedLimit;
 				// const orders = orderBy.split(',').map((order) => order.split(':')) as [string, 'ASC' | 'DESC'][];
 				const validColumns = ['created_at', 'updated_at', 'consumer_name',]; // Define allowed columns
+				// const orders = orderBy.split(',').map((order) => {
+				// 	const [column, direction] = order.split(':') as [keyof ProductAttributes, 'ASC' | 'DESC'];
+				// 	if (!validColumns.includes(column) || !['ASC', 'DESC'].includes(direction)) {
+				// 		throw new BadRequest('invalid_order_by', 'Invalid orderBy parameter', 'Invalid orderBy parameter');
+				// 	}
+				// 	return [column, direction];
+				// }) as [keyof ProductAttributes, 'ASC' | 'DESC'][];
+				// let params: (string | number)[] = [];
+
+				// let conditions = [
+				// 	// Prisma.sql`store_id = (SELECT store_id FROM branches WHERE branch_id = ${branchId}::uuid)`
+				// 	Prisma.sql`store_id = (SELECT id FROM stores WHERE branch_id = ${branchId}::uuid)`
+				// ];
+				//
+				// if (search) {
+				// 	conditions.push(
+				// 		// Prisma.sql`to_tsvector('vietnamese', product_name || ' ' || COALESCE(description, '') || ' ' || COALESCE(manufacturer, '')) @@ to_tsquery('vietnamese', ${search})`
+				// 		Prisma.sql`(product_name ILIKE ${`%${search}%`} OR COALESCE(description, '') ILIKE ${`%${search}%`} OR COALESCE(manufacturer, '') ILIKE ${`%${search}%`})`
+				// 		// Prisma.sql`(product_name ILIKE ${`%${search}%`})`
+				// 	);
+				// }
+				//
+				// if (type) {
+				// 	conditions.push(
+				// 		Prisma.sql`type = ${type}`
+				// 	);
+				// }
+				//
+				// const whereClause = Prisma.sql`WHERE ${Prisma.join(conditions, ' AND ')}`;
+				// const orderParse = orders
+				// 	.map((order) => `"${order[0]}" ${order[1].toUpperCase()}`)
+				// 	.join(', ');
+				// const orderBySql = Prisma.sql([orderParse]);
+
+				// const query = Prisma.sql`
+        //     SELECT *
+        //     FROM products
+        //         ${whereClause}
+        //     ORDER BY ${orderBySql}
+        //         LIMIT CAST(${limit} AS bigint)
+        //     OFFSET CAST(${offset} AS bigint)
+				// `;
+				// console.log(query.sql);
+				// const products = await prisma.$queryRaw<ProductAttributes[]>(query);
+
 				const orders = orderBy.split(',').map((order) => {
-					const [column, direction] = order.split(':') as [keyof ProductAttributes, 'ASC' | 'DESC'];
+					const [column, direction] = order.split(':') as [keyof InvoiceAttribute, 'ASC' | 'DESC'];
 					if (!validColumns.includes(column) || !['ASC', 'DESC'].includes(direction)) {
 						throw new BadRequest('invalid_order_by', 'Invalid orderBy parameter', 'Invalid orderBy parameter');
 					}
-					return [column, direction];
-				}) as [keyof ProductAttributes, 'ASC' | 'DESC'][];
-				let params: (string | number)[] = [];
-
-				let conditions = [
-					// Prisma.sql`store_id = (SELECT store_id FROM branches WHERE branch_id = ${branchId}::uuid)`
-					Prisma.sql`store_id = (SELECT id FROM stores WHERE branch_id = ${branchId}::uuid)`
-				];
-
-				if (search) {
-					conditions.push(
-						// Prisma.sql`to_tsvector('vietnamese', product_name || ' ' || COALESCE(description, '') || ' ' || COALESCE(manufacturer, '')) @@ to_tsquery('vietnamese', ${search})`
-						Prisma.sql`(product_name ILIKE ${`%${search}%`} OR COALESCE(description, '') ILIKE ${`%${search}%`} OR COALESCE(manufacturer, '') ILIKE ${`%${search}%`})`
-						// Prisma.sql`(product_name ILIKE ${`%${search}%`})`
-					);
-				}
-
-				const whereClause = Prisma.sql`WHERE ${Prisma.join(conditions, ' AND ')}`;
-				const orderParse = orders
-					.map((order) => `"${order[0]}" ${order[1].toUpperCase()}`)
-					.join(', ');
-				const orderBySql = Prisma.sql([orderParse]);
-
-				const query = Prisma.sql`
-            SELECT *
-            FROM products 
-                ${whereClause}
-            ORDER BY ${orderBySql}
-                LIMIT CAST(${limit} AS bigint)
-            OFFSET CAST(${offset} AS bigint)
-				`;
-				console.log(query.sql);
-				const products = await prisma.$queryRaw<ProductAttributes[]>(query);
-				const productUnitIds = products
-					.map((consumer) => consumer.productUnit)
-					.filter((id) => Boolean(id)) as string[] ;
-				const productUnits = await prisma.product_units.findMany({
-					where: { id: { in: productUnitIds } }
+					return { [column]: direction.toLowerCase() };
 				});
 
+				const whereConditions: Prisma.productsWhereInput[] = [
+					{
+						stores: {
+							branch_id: branchId
+						}
+					}
+				]
+
+				if (search) {
+					whereConditions.push({
+						OR: [
+							{ product_name: { contains: search, mode: 'insensitive'} },
+							{ description: { contains: search, mode: 'insensitive'} },
+							{ manufacturer: { contains: search, mode: 'insensitive'} }
+						]
+					});
+				}
+
+				const products = await prisma.products.findMany({
+					where: {
+						AND: whereConditions,
+						...(type ? {
+							store_group: {
+								group_slug: type
+							}
+						} : {})
+					},
+					orderBy: orders,
+					take: parsedLimit,
+					skip: offset,
+					include: {
+						product_units: true
+					}
+				})
+
+				// const productUnitIds = products
+				// 	.map((consumer) => consumer.productUnit)
+				// 	.filter((id) => Boolean(id)) as string[] ;
+				// const productUnits = await prisma.product_units.findMany({
+				// 	where: { id: { in: productUnitIds } }
+				// });
+				//
 				const joinedProductUnits = products.map((product, index) => {
-					return { ...product, productUnit: productUnits[index] || null };
+					const {product_units, ...productRest} = product;
+					return {
+						...productRest,
+						productUnit: product_units
+					}
 				})
 
 				const response = new Success(joinedProductUnits).toJson;

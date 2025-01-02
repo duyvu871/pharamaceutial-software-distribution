@@ -36,6 +36,7 @@ export const getProductList = async (
 			params: {
 				page: filter.page,
 				perPage: filter.perPage,
+				type: filter.productType,
 				limit: filter.limit,
 				search: filter.search,
 				productStatus: filter.productStatus,

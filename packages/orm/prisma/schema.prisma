@@ -26,6 +26,7 @@ model branches {
 
   @@index([branch_name])
   @@index([owner_id])
+  subscriptions subscriptions[]
 }
 
 model branch_details {
@@ -163,21 +164,28 @@ model product_units {
 
 model products {
   id                 String    @id @default(uuid()) @db.Uuid
+  product_id         String?
   store_id           String    @db.Uuid
   product_type       String    @db.VarChar(255)
   medicine_id        String?   @db.VarChar(255)
   barcode            String?   @db.VarChar(255)
   product_no         String    @db.VarChar(255)
+  register_no        String?   @db.VarChar(255)
   product_name       String    @db.VarChar(255)
+  lot_no             String?   @db.VarChar(255)
   shortcut           String?   @db.VarChar(255)
   original_price     Float
   sell_price         Float
   weight             Float?
+
   quantity_of_stock  Int
   group_id           String?   @db.Uuid
   using_id           Int
   base_unit          String    @db.VarChar(255)
   status             Int       @default(1)
+
+  import_date        DateTime?  @db.Timestamptz(6) @default(now())
+  expire_date        DateTime?  @db.Timestamptz(6) @default(now())
   created_at         DateTime  @default(now()) @db.Timestamptz(6)
   updated_at         DateTime  @default(now()) @db.Timestamptz(6)
   min_quantity       Int
@@ -370,6 +378,35 @@ model users {
   @@index([email])
   @@index([phone_number])
   admin_to_user admin_to_user[]
+}
+
+model subscriptions {
+  id            String    @id @default(uuid()) @db.Uuid
+  branch_id     String    @db.Uuid
+  plan_id       String    @db.Uuid
+  start_date    DateTime  @default(now()) @db.Timestamptz(6)
+  end_date      DateTime
+  status        String    @db.VarChar(50) // e.g., "active", "expired", "pending"
+  createdAt     DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime  @updatedAt
+
+  branches      branches  @relation(fields: [branch_id], references: [branch_id], onDelete: Cascade)
+  branch_plans  branch_plans @relation(fields: [plan_id], references: [id], onDelete: Cascade)
+
+  @@index([branch_id])
+  @@index([plan_id])
+}
+
+model branch_plans {
+  id          String   @id @default(uuid()) @db.Uuid
+  plan_name   String   @db.VarChar(255)
+  price       Float
+  duration    Int
+  description String?  @db.VarChar(255)
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+
+  subscriptions subscriptions[]
 }
 
 model roles {

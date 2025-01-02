@@ -3,8 +3,8 @@ import { validateNumber } from 'utils/number';
 
 export class ConsumerValidation {
 	public static getConsumersQuery = z.object({
-		page: validateNumber(true).optional(),
-		limit: validateNumber(true).optional(),
+		page: validateNumber("page", true).optional(),
+		limit: validateNumber("limit", true).optional(),
 		search: z.string().optional(),
 		orderBy: z
 			.string()
