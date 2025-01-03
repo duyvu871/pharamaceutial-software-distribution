@@ -2,6 +2,7 @@ import { atom } from 'jotai';
 import { InvoiceType, PrescriptionFormData } from '@schema/invoice-schema.ts';
 import { v4 as uuidV4, v1 as uuid} from 'uuid';
 import { generateTimeBasedId } from '@util/uid.ts';
+import { CurrentRewardPointSchema, RewardPointSchema } from '@schema/reward-point-schema.ts';
 
 export type InvoiceState = {
 	id: string;
@@ -338,3 +339,6 @@ export const calculateInvoicePrice = (
 };
 
 export const prescriptionSaleAtom = atom<PrescriptionFormData | null>(null);
+
+export const rewardPointAtom = atom<RewardPointSchema | null>(null);
+export const currentRewardPointAtom = atom<CurrentRewardPointSchema | null>(null);

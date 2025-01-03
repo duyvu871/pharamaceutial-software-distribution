@@ -27,7 +27,7 @@ function CreateImportProduct({branchId}: {branchId: string}) {
 			<Stack className="h-full overflow-hidden" gap={0}>
 				<Box id={'nav'} className={'h-14 flex items-center px-5 w-full bg-teal-500'}>
 					<ProductAutocomplete />
-					<DynamicTabs />
+					{/*<DynamicTabs />*/}
 				</Box>
 				<Box className={'h-full flex flex-1 overflow-hidden'}>
 					<ImportTab />

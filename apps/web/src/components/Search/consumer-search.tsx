@@ -4,13 +4,16 @@ import { getProviders } from '@api/provider.ts';
 import { useDashboard } from '@hook/dashboard/use-dasboard.ts';
 import AutocompleteSearch from '@component/Autocomplete/base.tsx';
 import { getConsumerList } from '@api/consumer.ts';
-import { Button, Card, Divider, Grid, Group, Loader, Paper, ScrollArea, Stack, TextInput, Title } from '@mantine/core';
+import { Button, Card, Divider, Grid, Group, Loader, Paper, ScrollArea, Stack, Table, TextInput, Title } from '@mantine/core';
 import { useDebounce } from '@uidotdev/usehooks';
 import { ConsumerAttributes } from '@schema/consumer-schema.ts';
 import { Typography } from '@component/Typography';
 import { parseJson } from '@util/parse-json.ts';
 import { Label } from '@component/label';
 import { genderVi } from '@global/locale.ts';
+import { TableRender } from '@type/components/table.type.ts';
+import { Product } from '@schema/product-schema.ts';
+import { cn } from '@lib/tailwind-merge.ts';
 
 type ConsumerAutocompletePropTypes = {
 	makeOptional?: boolean;
@@ -18,13 +21,13 @@ type ConsumerAutocompletePropTypes = {
 	key?: string;
 };
 
-function ConsumerSearch({makeOptional, setValue, key}: ConsumerAutocompletePropTypes) {
+function ConsumerSearch({ makeOptional, setValue, key }: ConsumerAutocompletePropTypes) {
 	const [consumerSelected, setConsumerSelected] = useState<{ name: string; id: string }>({ name: '', id: '' });
 	const [consumers, setConsumers] = useState<ConsumerAttributes[]>([]);
 	const [recentConsumers, setRecentConsumers] = useState<ConsumerAttributes[]>([]);
 	const [consumerSearch, setConsumerSearch] = useState<string>('');
 	const consumerSearchDebounced = useDebounce(consumerSearch, 500);
-	const {branchId} = useDashboard();
+	const { branchId } = useDashboard();
 	const [isSearching, setIsSearching] = useState(false);
 
 	const handleChooseConsumer = () => {
@@ -60,7 +63,7 @@ function ConsumerSearch({makeOptional, setValue, key}: ConsumerAutocompletePropT
 				search: consumerSearchDebounced,
 				branchId: branchId,
 				page: 1,
-				limit: 10,
+				limit: 5,
 				orderBy: 'createdAt:ASC',
 			}).then((data) => {
 				setConsumers(data);
@@ -77,6 +80,29 @@ function ConsumerSearch({makeOptional, setValue, key}: ConsumerAutocompletePropT
 	// useEffect(() => {
 	// 	setValue && setValue(consumerSelected);
 	// }, [consumerSelected]);
+
+	const tableRenderData: TableRender<ConsumerAttributes> = [
+		{
+			title: 'Tên khách',
+			render: (data) =>
+				<Typography size="sm" color={'black'} weight={"semibold"}>{data.consumer_name}</Typography>
+		},
+		{
+			title: "Số điện thoại",
+			render: (data) =>
+				<Typography size="sm" color={'dimmer'}>{data.phone_number || ""}</Typography>
+		},
+		{
+			title: "Giới tính",
+			render: (data) =>
+				<Typography size="sm" color={'dimmer'}>{data.gender || ""}</Typography>
+		},
+		{
+			title: "Ghi chú",
+			render: (data) =>
+				<Typography size="sm" color={'dimmer'} className={"max-w-40"}>{data.notes || ""}</Typography>
+		}
+	]
 
 	return (
 		<Stack className={"h-[600px]"}>
@@ -110,7 +136,8 @@ function ConsumerSearch({makeOptional, setValue, key}: ConsumerAutocompletePropT
 												<Typography size="sm" color={'dimmer'}>{consumer.phone_number}</Typography>
 											</Label>
 											<Label className={'items-start'} size={'xs'} label={'Giới tính:'}>
-												<Typography size="sm" color={'dimmer'}>{genderVi[consumer.gender]}</Typography>
+												<Typography size="sm"
+																		color={'dimmer'}>{consumer.gender ? genderVi[consumer.gender] : ""}</Typography>
 											</Label>
 											<Label className={'items-start'} size={'xs'} label={'Ghi chú:'}>
 												<Typography size="sm" color={'dimmer'}>{consumer.notes}</Typography>
@@ -138,73 +165,77 @@ function ConsumerSearch({makeOptional, setValue, key}: ConsumerAutocompletePropT
 				</Grid.Col>
 				<Grid.Col span={8}>
 					{/*<Paper p="md" withBorder>*/}
-					<Stack>
+					<Stack p={5}>
 						<Typography size={'h5'}>Kết quả tìm kiếm</Typography>
 						<ScrollArea.Autosize mih={400} mah={600}>
 							{isSearching ? (
 								<Loader />
 							) : consumers.length > 0 ? (
-								consumers.map((consumer) => (
-									<Card
-										key={consumer.id}
-										withBorder
-										mb="sm"
-										style={{ cursor: 'pointer' }}
-										className={consumerSelected.id === consumer.id ? '!bg-teal-100/50' : ''}
-									>
-										<Group justify={"space-between"}>
-											<div
+								<Table>
+									<Table.Thead>
+										<Table.Tr>
+											{tableRenderData.map((item) => (
+												<Table.Th>{item.title}</Table.Th>
+											))}
+										</Table.Tr>
+									</Table.Thead>
+									<Table.Tbody>
+										{consumers.map((consumer) => (
+											<Table.Tr
+												key={consumer.id}
 												onClick={() => handleConsumerSelect(consumer)}
-											>
-												<Typography weight={"semibold"} size={"h5"}>{consumer.consumer_name}</Typography>
-												<Label className={"items-start"}  size={"xs"} label={"Điện thoại:"}>
-													<Typography size="sm" color={'dimmer'}>{consumer.phone_number}</Typography>
-												</Label>
-												<Label className={"items-start"}  size={"xs"} label={"Giới tính:"}>
-													<Typography size="sm" color={'dimmer'}>{genderVi[consumer.gender]}</Typography>
-												</Label>
-												<Label className={"items-start"} size={"xs"} label={"Ghi chú:"}>
-													<Typography size="sm" color={'dimmer'}>{consumer.notes}</Typography>
-												</Label>
-											</div>
-											<div>
-												{(consumerSelected.id === consumer.id && consumerSelected.id) && (
-													<Group>
-														<Typography color={'primary'}>Đã chọn</Typography>
-														<Typography
-															onClick={() => handleConsumerSelect(null)}
-															color={"alert"}
-														>
-															hủy
-														</Typography>
-													</Group>
+												className={cn(
+													"hover:bg-zinc-100 transition-all cursor-pointer",
+													{
+														"!bg-teal-100/50": (consumerSelected.id === consumer.id && consumerSelected.id)
+													}
 												)}
-											</div>
-										</Group>
-									</Card>
-								))
-							) : (
+											>
+												{tableRenderData.map((item) => (
+													<Table.Td>{item.render(consumer)}</Table.Td>
+												))}
+											</Table.Tr>
+										))}
+									</Table.Tbody>
+								</Table>
+								) : (
 								<Typography color={"dimmer"}>Không có kết quả phù hợp</Typography>
-							)}
-						</ScrollArea.Autosize>
-					</Stack>
-					{/*</Paper>*/}
-				</Grid.Col>
-			</Grid>
-			<Group>
-				{/*<Button onClick={() => setValue({name: '', id: ''})}>Clear</Button>*/}
-				<Button color={"teal"} variant={"outline"} onClick={() => setConsumerSearch('')}>Hủy</Button>
-				<Button
-					disabled={makeOptional ? false : !consumerSelected.id}
-					onClick={handleChooseConsumer}
-					variant="filled"
-					color="teal"
-				>
-					Chọn
-				</Button>
-			</Group>
+						)}
+					</ScrollArea.Autosize>
 		</Stack>
-	);
+{/*</Paper>*/
+}
+</Grid.Col>
+</Grid>
+	<Group>
+		{/*<Button onClick={() => setValue({name: '', id: ''})}>Clear</Button>*/}
+		<Button color={"teal"} variant={"outline"} onClick={() => setConsumerSearch('')}>Hủy</Button>
+		<Button
+			disabled={makeOptional ? false : !consumerSelected.id}
+			onClick={handleChooseConsumer}
+			variant="filled"
+			color="teal"
+		>
+			Chọn
+		</Button>
+	</Group>
+</Stack>
+);
 }
 
 export default ConsumerSearch;
+
+	// <div>
+	// 	{(consumerSelected.id === consumer.id && consumerSelected.id) && (
+	// 		<Group>
+	// 			<Typography color={'primary'}>Đã chọn</Typography>
+	// 			<Typography
+	// 				onClick={() => handleConsumerSelect(null)}
+	// 				color={"alert"}
+	// 			>
+	// 				hủy
+	// 			</Typography>
+	// 		</Group>
+	// 	)}
+	// </div>
+// </Group>

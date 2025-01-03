@@ -20,9 +20,39 @@ export class BranchTask {
 
 	public static async findBranch(branchId: string) {
 		try {
-			return await prisma.branches.findUnique({
-				where: { branch_id: branchId }
+			const query = await prisma.branches.findUnique({
+				where: { branch_id: branchId },
+				include: {
+					stores: {
+						include: {
+							store_group: {
+								take: 1
+							},
+							store_reward_point: {
+								take: 1
+							}
+						},
+						take: 1
+					}
+				}
 			});
+
+			if (!query) return query;
+
+
+			const {stores, ...branch} = query;
+			const {store_group, store_reward_point, ...store} = stores[0];
+
+			const bindResponse = {
+				...branch,
+				store: {
+					...store,
+					store_group: store_group[0],
+					store_reward_point: store_reward_point[0]
+				}
+			};
+
+			return bindResponse;
 		} catch (error) {
 			console.log(error);
 			return null;

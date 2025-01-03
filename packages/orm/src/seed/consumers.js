@@ -1,5 +1,9 @@
 import { PrismaClient } from '@prisma/client';
-import { faker } from '@faker-js/faker';
+import { Faker, vi, faker } from '@faker-js/faker';
+
+const viFaker = new Faker({
+	locale: [vi],
+});
 
 const prisma = new PrismaClient();
 
@@ -17,10 +21,12 @@ async function seedConsumers() {
 			await prisma.consumers.create({
 				data: {
 					branch_id: branchId,
-					consumer_name: faker.person.fullName(),
+					consumer_name: viFaker.person.fullName(),
 					gender: faker.helpers.arrayElement(genderOptions) ,
 					consumer_email: faker.internet.email(),
-					phone_number: faker.phone.number(),
+					phone_number: viFaker.phone.number({
+						format: '0xxxxxxxxx',
+					}),
 					tax_code: faker.string.alphanumeric({length: 10}),
 					company_name: faker.company.name(),
 					date_of_birth: faker.date.birthdate(),

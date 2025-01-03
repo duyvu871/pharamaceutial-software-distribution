@@ -7,7 +7,7 @@ import { invoiceActionAtom, invoiceActiveTabActionAtom } from '@store/state/over
 import { useAtom } from 'jotai';
 import { SearchProductType } from '@schema/autocomplete.ts';
 import { InvoiceType } from '@schema/invoice-schema.ts';
-import { AddCustomerModal } from '@component/Modal/add-new-user.tsx';
+import { AddCustomerModal } from '@component/Modal/add-new-consumer.tsx';
 import { readNumber } from '@util/number.ts';
 import ConsumerAutocomplete from '@component/Autocomplete/consumer-autocomplete.tsx';
 import { useReactToPrint } from 'react-to-print';
@@ -19,6 +19,8 @@ import { Resizable } from '@component/Resizeable/base.tsx';
 import ProviderAutocomplete from '@component/Autocomplete/provider-autocomplete.tsx';
 import { Typography } from '@component/Typography';
 import { DateInput } from '@mantine/dates';
+import { Label } from '@component/label';
+import { ProviderModal } from '@component/Modal/provider-modal.tsx';
 
 function ImportTab() {
 	const {generateUID} = useUID();
@@ -139,11 +141,12 @@ function ImportTab() {
 		const amountDue = invoices[activeTab]?.invoiceData?.amountDue || 0;
 		const debited = invoices[activeTab]?.invoiceData?.debit || 0;
 		const otherCharges = invoices[activeTab]?.invoiceData?.otherCharges || 0;
+		const amountPaid = invoices[activeTab]?.invoiceData?.amountPaid || 0;
 
 		setTotalPrice(total);
 		setDiscountState(discount);
 		setAmountDue(amountDue);
-		setDebited(debited);
+		setDebited(amountPaid === 0 ? 0 : debited);
 		setOtherCharges(otherCharges);
 	}, [invoices, activeTab]);
 
@@ -315,23 +318,27 @@ function ImportTab() {
 						{/*	className="w-full pl-10 pr-10 py-2 border rounded"*/}
 						{/*/>*/}
 						{/*<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />*/}
-						<ProviderAutocomplete setValue={({ name, id }) => {
-							// console.log('set customer', name, id);
-							// setCustomer({name, id});
-							// invoiceDispatch({
-							// 	type: 'update',
-							// 	id: activeTab || '',
-							// 	invoice: {
-							// 		customerName: name,
-							// 	}
-							// })
-						}} />
-						{/*<AddCustomerModal>*/}
-						{/*	<button*/}
-						{/*		className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">*/}
-						{/*		<Plus className="h-5 w-5" />*/}
-						{/*	</button>*/}
-						{/*</AddCustomerModal>*/}
+						<Label label={"Nhà cung cấp"}>
+							<div className={"w-full relative"}>
+								<ProviderAutocomplete setValue={({ name, id }) => {
+									// console.log('set customer', name, id);
+									// setCustomer({name, id});
+									// invoiceDispatch({
+									// 	type: 'update',
+									// 	id: activeTab || '',
+									// 	invoice: {
+									// 		customerName: name,
+									// 	}
+									// })
+								}} />
+								<ProviderModal>
+									<button
+										className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
+										<Plus className="h-5 w-5" />
+									</button>
+								</ProviderModal>
+							</div>
+						</Label>
 					</div>
 
 					{/*<button*/}
@@ -387,7 +394,7 @@ function ImportTab() {
 
 					<div className="space-y-2">
 						<div className="flex justify-between items-center text-green-600">
-							<Typography color={"primary"} weight={"semibold"}>Khách cần trả</Typography>
+							<Typography color={"primary"} weight={"semibold"}>Cần trả nhà cung cấp</Typography>
 							<span className="text-2xl font-bold text-emerald-600 px-2 py-1 rounded">
 								{amountDue.toLocaleString()}đ
 							</span>
@@ -415,7 +422,7 @@ function ImportTab() {
 							</div>
 						</div>
 						<div className="flex justify-between items-center">
-							<Typography >{debited < 0 ? 'Nợ' : 'Tiền thừa trả lại'}</Typography>
+							<Typography >{debited < 0 ? "Công nợ" : 'Hoàn tiền'}</Typography>
 							<span className="text-lg font-medium text-zinc-700 px-2 py-1 rounded">
 								{Math.abs(debited).toLocaleString()}đ
 							</span>
@@ -428,43 +435,36 @@ function ImportTab() {
 						rows={2}
 					></textarea>
 
-					<div className="flex justify-between items-center">
-						<span className="text-sm">Tự động in hóa đơn khi thanh toán</span>
-						<label className="relative inline-flex items-center cursor-pointer">
-							<Switch
-								checked={autoprint}
-								color={"teal"}
-								size={"md"}
-								onChange={(event) => setAutoprint(event.currentTarget.checked)}
-							/>
-							{/*<input*/}
-							{/*	type="checkbox"*/}
-							{/*	className="sr-only peer"*/}
-							{/*	checked={autoprint}*/}
-							{/*	onChange={(e) => setAutoprint(e.target.checked)}*/}
-							{/*/>*/}
-							{/*<div*/}
-							{/*	className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>*/}
-						</label>
-					</div>
+					{/*<div className="flex justify-between items-center">*/}
+					{/*	<span className="text-sm">Tự động in hóa đơn khi thanh toán</span>*/}
+					{/*	<label className="relative inline-flex items-center cursor-pointer">*/}
+					{/*		<Switch*/}
+					{/*			checked={autoprint}*/}
+					{/*			color={"teal"}*/}
+					{/*			size={"md"}*/}
+					{/*			onChange={(event) => setAutoprint(event.currentTarget.checked)}*/}
+					{/*		/>*/}
+					{/*	*/}
+					{/*	</label>*/}
+					{/*</div>*/}
 
-					<div className={''}>
-						<FileInput
-							onChange={(file) => {
-								const reader = new FileReader();
-								reader.onload = (e) => {
-									// qrURLRef.current = e.target?.result as string;
-									setQrURL(e.target?.result as string);
-								};
-								if (file) reader.readAsDataURL(file);
-							}}
-							description={'Chọn file qr'}
-						/>
-					</div>
+					{/*<div className={''}>*/}
+					{/*	<FileInput*/}
+					{/*		onChange={(file) => {*/}
+					{/*			const reader = new FileReader();*/}
+					{/*			reader.onload = (e) => {*/}
+					{/*				// qrURLRef.current = e.target?.result as string;*/}
+					{/*				setQrURL(e.target?.result as string);*/}
+					{/*			};*/}
+					{/*			if (file) reader.readAsDataURL(file);*/}
+					{/*		}}*/}
+					{/*		description={'Chọn file qr'}*/}
+					{/*	/>*/}
+					{/*</div>*/}
 					<button onClick={() => {
 						if (autoprint) {
 							handleInvoiceSubmit();
-							reactToPrintFn();
+							// reactToPrintFn();
 						}
 					}}
 									className="w-full py-3 bg-teal-500 text-white rounded text-lg hover:bg-teal-600">

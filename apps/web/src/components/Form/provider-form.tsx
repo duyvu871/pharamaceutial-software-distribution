@@ -11,6 +11,7 @@ import {
 	Title,
 	Grid,
 	Stack,
+    Group,
 } from '@mantine/core'
 import ProviderAutocomplete from '@component/Autocomplete/provider-autocomplete.tsx';
 import RegionAutocomplete from '@component/Autocomplete/region-autocomplete.tsx';
@@ -88,118 +89,77 @@ export function ProviderForm({ onSubmit, modalProps }: ProviderFormProps) {
 
 	return (
 		<Box maw={800} mx="auto" p="md">
-			<Title order={1} mb="lg">THÊM NHÀ PHÂN PHỐI</Title>
-
 			<form onSubmit={handleSubmit(submit)}>
 				<Stack gap="md">
-					<Controller
-						name="name"
-						control={control}
-						render={({ field }) => (
-							<TextInput
-								label="Tên nhà phân phối"
-								placeholder="Nhập tên nhà phân phối"
-								withAsterisk
-								error={errors.name?.message}
-								{...field}
-							/>
-						)}
-					/>
+					<Group wrap={"nowrap"} w={"100%"} className={"flex-shrink-0"}>
+						<Controller
+							name="name"
+							control={control}
+							render={({ field }) => (
+								<TextInput
+									label="Tên nhà phân phối"
+									placeholder="Nhập tên nhà phân phối"
+									withAsterisk
+									w={"100%"}
+									error={errors.name?.message}
+									{...field}
+								/>
+							)}
+						/>
 
-					<Controller
-						name="phone"
-						control={control}
-						render={({ field }) => (
-							<TextInput
-								label="Số điện thoại"
-								placeholder="Nhập số điện thoại"
-								withAsterisk
-								error={errors.phone?.message}
-								{...field}
-							/>
-						)}
-					/>
+						<Controller
+							name="phone"
+							control={control}
+							render={({ field }) => (
+								<TextInput
+									label="Số điện thoại"
+									placeholder="Nhập số điện thoại"
+									withAsterisk
+									w={"100%"}
+									error={errors.phone?.message}
+									{...field}
+								/>
+							)}
+						/>
+					</Group>
 
-					<Controller
-						name="email"
-						control={control}
-						render={({ field }) => (
-							<TextInput
-								label="Email"
-								placeholder="Nhập email"
-								error={errors.email?.message}
-								{...field}
-							/>
-						)}
-					/>
+					<Group wrap={"nowrap"} w={"100%"} className={"flex-shrink-0"}>
 
-					<Controller
-						name="address"
-						control={control}
-						render={({ field }) => (
-							<TextInput
-								label="Địa chỉ"
-								placeholder="Nhập địa chỉ"
-								error={errors.address?.message}
-								{...field}
-							/>
-						)}
-					/>
+						<Controller
+							name="email"
+							control={control}
+							render={({ field }) => (
+								<TextInput
+									label="Email"
+									placeholder="Nhập email"
+									error={errors.email?.message}
+									w={"100%"}
+									{...field}
+								/>
+							)}
+						/>
+						<Controller
+							name="address"
+							control={control}
+							render={({ field }) => (
+								<TextInput
+									label="Địa chỉ"
+									placeholder="Nhập địa chỉ"
+									error={errors.address?.message}
+									w={"100%"}
+									{...field}
+								/>
+							)}
+						/>
 
-					<Grid>
-						{/*<Grid.Col span={{ base: 12, md: 4 }}>*/}
-						{/*	<Controller*/}
-						{/*		name="province"*/}
-						{/*		control={control}*/}
-						{/*		render={({ field }) => (*/}
-						{/*			<Select*/}
-						{/*				label="Tỉnh, thành phố"*/}
-						{/*				placeholder="Chọn tỉnh/thành phố"*/}
-						{/*				data={provinces}*/}
-						{/*				error={errors.province?.message}*/}
-						{/*				{...field}*/}
-						{/*			/>*/}
-						{/*		)}*/}
-						{/*	/>*/}
-						{/*</Grid.Col>*/}
-
-						{/*<Grid.Col span={{ base: 12, md: 4 }}>*/}
-						{/*	<Controller*/}
-						{/*		name="district"*/}
-						{/*		control={control}*/}
-						{/*		render={({ field }) => (*/}
-						{/*			<Select*/}
-						{/*				label="Quận, huyện"*/}
-						{/*				placeholder="Chọn quận/huyện"*/}
-						{/*				data={districts}*/}
-						{/*				error={errors.district?.message}*/}
-						{/*				{...field}*/}
-						{/*			/>*/}
-						{/*		)}*/}
-						{/*	/>*/}
-						{/*</Grid.Col>*/}
-
-						{/*<Grid.Col span={{ base: 12, md: 4 }}>*/}
-						{/*	<Controller*/}
-						{/*		name="ward"*/}
-						{/*		control={control}*/}
-						{/*		render={({ field }) => (*/}
-						{/*			<Select*/}
-						{/*				label="Phường, thị trấn"*/}
-						{/*				placeholder="Chọn phường/thị trấn"*/}
-						{/*				data={wards}*/}
-						{/*				error={errors.ward?.message}*/}
-						{/*				{...field}*/}
-						{/*			/>*/}
-						{/*		)}*/}
-						{/*	/>*/}
-						{/*</Grid.Col>*/}
+					</Group>
+					<Group wrap={"nowrap"}>
 						<RegionAutocomplete setValue={(data) => {
 							setValue('province', data.tinh)
 							setValue('district', data.huyen)
 							setValue('ward', data.xa)
 						}}/>
-					</Grid>
+					</Group>
 
 					<Controller
 						name="taxId"

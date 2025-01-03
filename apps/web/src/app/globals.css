@@ -3,6 +3,7 @@
 @tailwind utilities;
 
 :root, *, *::before, *::after {
+    --teal-color: rgb(20 184 166);
     --main-color: rgb(13 148 136);
     --checkbox-color: var(--main-color);
     --hover-card-color: rgb(13 148 136 / 10%);

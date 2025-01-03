@@ -13,11 +13,7 @@ import { useAuth } from '@hook/auth';
 import { Typography } from '@component/Typography';
 import { getStoreGroup } from '@api/group.ts';
 import { GroupStoreSchema } from '@schema/group-schema.ts';
-
-export type TableRender<item> = {
-	title: string;
-	render: (data: item) => React.ReactNode;
-}[]
+import { TableRender } from '@type/components/table.type';
 
 export default function ProductDashboard({branchId, type}: {branchId: string, type?: string}) {
 	const {isAuthenticated} = useAuth();
@@ -137,7 +133,6 @@ export default function ProductDashboard({branchId, type}: {branchId: string, ty
 					onChange={() => toggleSelectItem(data.id)}
 				/>,
 		},
-
 	]
 
 	return (

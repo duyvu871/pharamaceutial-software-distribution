@@ -26,6 +26,10 @@ export class ConsumerValidation {
 		branchId: z.string().uuid()
 	});
 
+	public static consumerIdParam = z.object({
+		consumerId: z.string()
+	});
+
 	public static createConsumer = z.object({
 		consumer_name: z.string({
 			required_error: 'Tên khách hàng không được để trống',
@@ -72,3 +76,4 @@ export type GetConsumerParam = z.infer<typeof ConsumerValidation.getConsumerPara
 export type CreateConsumer = z.infer<typeof ConsumerValidation.createConsumer>;
 export type UpdateConsumer = z.infer<typeof ConsumerValidation.updateConsumer>;
 export type DeleteConsumer = z.infer<typeof ConsumerValidation.deleteConsumer>;
+export type ConsumerIdParam = z.infer<typeof ConsumerValidation.consumerIdParam>;

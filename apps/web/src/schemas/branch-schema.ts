@@ -12,16 +12,61 @@ export interface Branch {
 	updatedAt: string
 }
 
+export const storeRewardPointSchema = z.object({
+	id: z.string(),
+	store_id: z.string(),
+	convert_to: z.string(),
+	convert_rate: z.number(),
+	created_at: z.string().nullable(),
+	updated_at: z.string().nullable(),
+	status: z.number(),
+	description: z.string().nullable(),
+	deleted_at: z.string().nullable(),
+	deleted_by: z.string().nullable(),
+});
+
+export const storeGroupSchema = z.object({
+	id: z.string(),
+	store_id: z.string(),
+	group_slug: z.string(),
+	group_name: z.string(),
+	created_at: z.string().nullable(),
+	updated_at: z.string().nullable(),
+	status: z.number(),
+	description: z.string().nullable(),
+	deleted_at: z.string().nullable(),
+	deleted_by: z.string().nullable(),
+});
+
+export const storeSchema = z.object({
+	id: z.string(),
+	branch_id: z.string(),
+	store_name: z.string(),
+	address: z.string(),
+	phone: z.string(),
+	email: z.string(),
+	created_at: z.string(),
+	updated_at: z.string(),
+	status: z.number(),
+	description: z.string().nullable(),
+	deleted_at: z.string().nullable(),
+	deleted_by: z.string().nullable(),
+	store_group: storeGroupSchema,
+	store_reward_point: storeRewardPointSchema,
+});
+
 export const branchSchema = z.object({
 	branch_id: z.string(),
 	branch_name: z.string(),
 	address: z.string(),
 	phone_number: z.string(),
-	branch_status: z.enum(['active', 'inactive']),
+	branch_status: z.string(),
 	owner_id: z.string(),
 	createdAt: z.string(),
 	updatedAt: z.string(),
+	store: storeSchema,
 });
+
 
 export type BranchType = z.infer<typeof branchSchema>;
 

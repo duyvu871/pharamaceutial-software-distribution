@@ -8,10 +8,10 @@ export const ConsumerZodSchema = z.object({
 	gender: z.enum(['male', 'female', 'other'], {
 		required_error: 'Giới tính là bắt buộc',
 		invalid_type_error: 'Giới tính phải là male hoặc female'
-	}),
+	}).optional(),
 	consumer_email: z.string({
 		invalid_type_error: 'Email phải là chuỗi'
-	}).email({ message: 'Email không hợp lệ' }),
+	}).email({ message: 'Email không hợp lệ' }).optional(),
 	phone_number: z.string({
 		required_error: 'Số điện thoại không được để trống',
 		invalid_type_error: 'Số điện thoại phải là chuỗi'
@@ -19,15 +19,15 @@ export const ConsumerZodSchema = z.object({
 		.min(10, { message: 'Số điện thoại quá ngắn' })
 		.max(11, { message: 'Số điện thoại quá dài' })
 		.regex(/((09|03|07|08|05)+([0-9]{8})\b)/g, { message: 'Số điện thoại không hợp lệ' }),
-	tax_code: z.string(),
-	company_name: z.string(),
-	date_of_birth: z.string(),
-	facebook: z.string(),
-	address: z.string(),
-	notes: z.string(),
-	province_city: z.string(),
-	district: z.string(),
-	ward: z.string(),
+	tax_code: z.string().optional(),
+	company_name: z.string().optional(),
+	date_of_birth: z.string().optional(),
+	facebook: z.string().optional(),
+	address: z.string().optional(),
+	notes: z.string().optional(),
+	province_city: z.string().optional(),
+	district: z.string().optional(),
+	ward: z.string().optional(),
 
 });
 

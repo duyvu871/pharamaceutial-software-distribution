@@ -11,6 +11,7 @@ import { useForm, SubmitHandler, Controller } from 'react-hook-form';
 import { ConsumerCreationAttributes, ConsumerZodSchema } from '@schema/consumer-schema.ts';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { type } from 'os';
+import useToast from '@hook/client/use-toast-notification.ts';
 
 export function AddCustomerModal(
 	{ children, branchId, data }:
@@ -20,9 +21,12 @@ export function AddCustomerModal(
 	const [visible, { toggle, open: openOverlay, close: closeOverlay }] = useDisclosure(false)
 	const [loading, setLoading] = useState(false);
 
+	const {showErrorToast, showSuccessToast} = useToast();
+
 	const {
 		handleSubmit,
 		control,
+		reset,
 		formState: { errors },
 		setValue,
 	} = useForm<ConsumerCreationAttributes>({
@@ -34,18 +38,24 @@ export function AddCustomerModal(
 		}
 	});
 
+	const clearForm = () => {
+		reset();
+	}
+
 	const onSubmit: SubmitHandler<ConsumerCreationAttributes> = (data) => {
 		setLoading(true);
 		openOverlay();
 		console.log(data);
 		setTimeout(() => {
 			setLoading(false);
-			closeOverlay()
-			setTimeout(() => {
-				close();
+			showSuccessToast('Thêm khách hàng thành công');
 
-			}, 2000)
-		}, 1000);
+			setTimeout(() => {
+				clearForm();
+				closeOverlay();
+				close();
+			}, 1000)
+		}, 2000);
 	};
 
 

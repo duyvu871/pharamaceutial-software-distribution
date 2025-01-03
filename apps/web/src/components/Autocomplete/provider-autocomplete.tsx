@@ -61,7 +61,8 @@ function ProviderAutocomplete({makeOptional, setValue}: ProviderAutocompleteProp
 
 	return (
 		<AutocompleteSearch<ProverState>
-			label="Nhà cung cấp"
+			// label="Nhà cung cấp"
+
 			placeholder="Nhập tên nhà cung cấp"
 			onSearch={async term => {
 				const searchTerm = `'${term.trim().split(' ').join(' \'')}`;
@@ -89,7 +90,7 @@ function ProviderAutocomplete({makeOptional, setValue}: ProviderAutocompleteProp
 				classNames: {
 					label: 'text-sm font-medium text-gray-700',
 					input: 'mt-1',
-				}
+				},
 			}}
 		/>
 	);

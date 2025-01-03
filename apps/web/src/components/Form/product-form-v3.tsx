@@ -38,6 +38,7 @@ import {
 	importProductAtom,
 } from '@store/state/overview/import-product.ts';
 import { useImportProductState } from '@hook/dashboard/import/use-import-product-state.ts';
+import { Label } from '@component/label'
 dayjs.extend(customParseFormat);
 
 
@@ -307,102 +308,48 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 					<Grid>
 						{/* Row 2: Manufacturer and Additional Fields (if applicable) */}
 						<Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
-							<Group wrap={"nowrap"}>
-								<Box w={"100%"}>
-									<Controller
-										name="manufacturer"
-										control={control}
-										render={({ field }) => (
-											<TextInput
-												label="Công Ty Sản Xuất"
-												placeholder="Nhập tên công ty sản xuất"
-												required
-												color={"teal"}
-												error={errors.manufacturer?.message}
-												{...field}
-											/>
-										)}
-									/>
-								</Box>
-								{/*<Box>*/}
-								{/*	<ActionIcon variant="filled" color="teal" size="lg">*/}
-								{/*		<IconPlus size={16} />*/}
-								{/*	</ActionIcon>*/}
-								{/*</Box>*/}
-								<Box w={"100%"}>
-									<Controller
-										name="expiryDate"
-										control={control}
-										render={({ field }) => (
-											<DateInput
-												label="Hạn Sử Dụng"
-												required
-												error={errors.expiryDate?.message}
-												{...field}
-												locale="vi"
-												valueFormat={"DD/MM/YYYY"}
-											/>
-										)}
-									/>
+							<Stack>
+								<Group wrap={"nowrap"}>
+									<Box w={"100%"}>
+										<Controller
+											name="manufacturer"
+											control={control}
+											render={({ field }) => (
+												<TextInput
+													label="Công Ty Sản Xuất"
+													placeholder="Nhập tên công ty sản xuất"
+													required
+													color={"teal"}
+													error={errors.manufacturer?.message}
+													{...field}
+												/>
+											)}
+										/>
+									</Box>
+									{/*<Box>*/}
+									{/*	<ActionIcon variant="filled" color="teal" size="lg">*/}
+									{/*		<IconPlus size={16} />*/}
+									{/*	</ActionIcon>*/}
+									{/*</Box>*/}
+									<Box w={"100%"}>
+										<Controller
+											name="expiryDate"
+											control={control}
+											render={({ field }) => (
+												<DateInput
+													label="Hạn Sử Dụng"
+													required
+													error={errors.expiryDate?.message}
+													{...field}
+													locale="vi"
+													valueFormat={"DD/MM/YYYY"}
+												/>
+											)}
+										/>
 
-								</Box>
-							</Group>
-						</Grid.Col>
-
-						<Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
-							<Group wrap={"nowrap"}>
-								<Box w={"100%"}>
-									<Controller
-										name="lotNumber"
-										control={control}
-										render={({ field }) => (
-											<TextInput
-												label="Số Lô"
-												required
-												error={errors.lotNumber?.message}
-												{...field}
-											/>
-										)}
-									/>
-								</Box>
-								<Box w={"100%"}>
-									<Controller
-										name="quantity"
-										control={control}
-										render={({ field }) => (
-											<NumberInput
-												label="Số Lượng Nhập"
-												allowNegative={false}
-												required
-												error={errors.quantity?.message}
-												{...field}
-											/>
-										)}
-									/>
-								</Box>
-							</Group>
-						</Grid.Col>
-						{/*<Grid.Col span={{ base: 12, sm: 6, md: 4 }}>*/}
-						{/*	*/}
-						{/*</Grid.Col>*/}
-						<Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
-							<Controller
-								name="importDate"
-								control={control}
-								render={({ field }) => (
-									<DateInput
-										label="Ngày nhập hàng"
-										required
-										error={errors.importDate?.message}
-										{...field}
-									/>
-								)}
-							/>
-						</Grid.Col>
-
-						{showAdditionalFields && (
-							<Grid.Col span={{ base: 12, sm: 6, md: 8 }}>
-								<Flex gap={"md"}>
+									</Box>
+								</Group>
+								<Group wrap={"nowrap"}>
 									<Box w={"100%"}>
 										<Controller
 											name="usage"
@@ -429,27 +376,50 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 											)}
 										/>
 									</Box>
+								</Group>
+							</Stack>
+						</Grid.Col>
+
+						<Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
+							<Stack>
+								<Group wrap={"nowrap"}>
 									<Box w={"100%"}>
 										<Controller
-											name="packaging"
+											name="lotNumber"
 											control={control}
 											render={({ field }) => (
-												<Textarea
-													label="Quy Cách Đóng Gói"
-													error={errors.packaging?.message}
+												<TextInput
+													label="Số Lô"
+													required
+													error={errors.lotNumber?.message}
 													{...field}
 												/>
 											)}
 										/>
 									</Box>
-								</Flex>
-								<Flex gap={'md'}>
+									<Box w={"100%"}>
+										<Controller
+											name="quantity"
+											control={control}
+											render={({ field }) => (
+												<NumberInput
+													label="Số Lượng Nhập"
+													allowNegative={false}
+													required
+													error={errors.quantity?.message}
+													{...field}
+												/>
+											)}
+										/>
+									</Box>
+								</Group>
+								<Group wrap={"nowrap"}>
 									<Box w={"100%"}>
 										<Controller
 											name="activeIngredient"
 											control={control}
 											render={({ field }) => (
-												<TextInput
+												<Textarea
 													label="Hoạt Chất"
 													error={errors.activeIngredient?.message}
 													{...field}
@@ -462,7 +432,7 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 											name="content"
 											control={control}
 											render={({ field }) => (
-												<TextInput
+												<Textarea
 													label="Hàm Lượng"
 													error={errors.content?.message}
 													{...field}
@@ -470,43 +440,169 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 											)}
 										/>
 									</Box>
-
-								</Flex>
-							</Grid.Col>
-						)}
+								</Group>
+							</Stack>
+						</Grid.Col>
 
 						<Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
-							<Group wrap={"nowrap"}>
-								{/*<Box w={"100%"}>*/}
-								{/*	<Controller*/}
-								{/*		name="useBefore"*/}
-								{/*		control={control}*/}
-								{/*		render={({ field }) => (*/}
-								{/*			<NumberInput*/}
-								{/*				allowNegative={false}*/}
-								{/*				label="Sử Dụng Trước"*/}
-								{/*				error={errors.useBefore?.message}*/}
-								{/*				{...field}*/}
-								{/*				{...rightSectionLabel('Ngày')}*/}
-								{/*			/>*/}
-								{/*		)}*/}
-								{/*	/>*/}
-								{/*</Box>*/}
-								{/*<Box w={"100%"}>*/}
-								{/*	<Controller*/}
-								{/*		name="vat"*/}
-								{/*		control={control}*/}
-								{/*		render={({ field }) => (*/}
-								{/*			<TextInput*/}
-								{/*				label="VAT"*/}
-								{/*				error={errors.vat?.message}*/}
-								{/*				{...field}*/}
-								{/*			/>*/}
-								{/*		)}*/}
-								{/*	/>*/}
-								{/*</Box>*/}
-							</Group>
+							<Stack h={"100%"}>
+								<Box>
+									<Typography size={"sm"} weight={"semibold"}>Đơn Vị<Text span c="red"> *</Text></Typography>
+									<Controller
+										name="unit"
+										control={control}
+										render={({ field }) => (
+											<Radio.Group
+												error={errors.unit?.message}
+												{...field}
+											>
+												<Group>
+													<Radio value="vien" label="Viên" />
+													<Radio value="vi" label="Vỉ" />
+													<Radio value="goi" label="Gói" />
+													<Radio value="chai" label="Chai" />
+													<Radio value="lo" label="Lọ" />
+													<Radio value="hop" label="Hộp" />
+												</Group>
+											</Radio.Group>
+										)}
+									/>
+								</Box>
+								<Box>
+									{/*<Typography>Đơn vị nhỏ nhất</Typography>*/}
+									<Label position={"top"} label={"Đơn vị nhỏ nhất (tùy chọn)"} size={"xs"} classNames={{label: "mb-2"}}>
+										<Grid grow>
+											<Grid.Col span={{ base: 12, sm: 6, md: 6 }}>
+												<Group wrap={"nowrap"}>
+													<Box w={"100%"}>
+														<Controller
+															name="largerUnit"
+															control={control}
+															render={({ field }) => (
+																<Select
+																	data={[
+																		{ value: 'lo', label: 'Lọ' },
+																		{ value: 'vien', label: 'Viên' },
+																		{ value: 'vi', label: 'Vỉ' },
+																		{ value: 'goi', label: 'Gói' },
+																		{ value: 'chai', label: 'Chai' },
+																		{ value: 'hop', label: 'Hộp' },
+																		{ value: 'thung', label: 'Thùng' },
+																		{ value: 'cai', label: 'Cái' },
+																	]}
+																	defaultValue={"vien"}
+																	error={errors.largerUnit?.message}
+																	{...field}
+																	{...rightSectionLabel('Đơn vị')}
+																/>
+															)}
+														/>
+													</Box>
+													<Box>
+														<Typography size={"h5"} weight={"semibold"}>=</Typography>
+													</Box>
+													<Box w={"100%"}>
+														<Controller
+															name="largerUnitValue"
+															control={control}
+															render={({ field }) => (
+																<NumberInput
+																	error={errors.largerUnitValue?.message}
+																	{...field}
+																	{...rightSectionLabel('Viên')}
+																/>
+															)}
+														/>
+													</Box>
+												</Group>
+											</Grid.Col>
+											{/*<Grid.Col span={{ base: 12, sm: 6, md: 6 }}>*/}
+
+											{/*</Grid.Col>*/}
+										</Grid>
+									</Label>
+								</Box>
+							</Stack>
 						</Grid.Col>
+
+						{/*<Grid.Col span={{ base: 12, sm: 6, md: 4 }}>*/}
+
+						{/*</Grid.Col>*/}
+
+						{/*{showAdditionalFields && (*/}
+						{/*	<Grid.Col span={{ base: 12, sm: 6, md: 8 }}>*/}
+						{/*		<Flex gap={"md"}>*/}
+						{/*			<Box w={"100%"}>*/}
+						{/*				<Controller*/}
+						{/*					name="usage"*/}
+						{/*					control={control}*/}
+						{/*					render={({ field }) => (*/}
+						{/*						<Textarea*/}
+						{/*							label="Liều Dùng"*/}
+						{/*							error={errors.usage?.message}*/}
+						{/*							{...field}*/}
+						{/*						/>*/}
+						{/*					)}*/}
+						{/*				/>*/}
+						{/*			</Box>*/}
+						{/*			<Box w={"100%"}>*/}
+						{/*				<Controller*/}
+						{/*					name="ingredients"*/}
+						{/*					control={control}*/}
+						{/*					render={({ field }) => (*/}
+						{/*						<Textarea*/}
+						{/*							label="Thành Phần"*/}
+						{/*							error={errors.ingredients?.message}*/}
+						{/*							{...field}*/}
+						{/*						/>*/}
+						{/*					)}*/}
+						{/*				/>*/}
+						{/*			</Box>*/}
+						{/*			<Box w={"100%"}>*/}
+						{/*				<Controller*/}
+						{/*					name="packaging"*/}
+						{/*					control={control}*/}
+						{/*					render={({ field }) => (*/}
+						{/*						<Textarea*/}
+						{/*							label="Quy Cách Đóng Gói"*/}
+						{/*							error={errors.packaging?.message}*/}
+						{/*							{...field}*/}
+						{/*						/>*/}
+						{/*					)}*/}
+						{/*				/>*/}
+						{/*			</Box>*/}
+						{/*		</Flex>*/}
+						{/*		<Flex gap={'md'}>*/}
+						{/*			<Box w={"100%"}>*/}
+						{/*				<Controller*/}
+						{/*					name="activeIngredient"*/}
+						{/*					control={control}*/}
+						{/*					render={({ field }) => (*/}
+						{/*						<TextInput*/}
+						{/*							label="Hoạt Chất"*/}
+						{/*							error={errors.activeIngredient?.message}*/}
+						{/*							{...field}*/}
+						{/*						/>*/}
+						{/*					)}*/}
+						{/*				/>*/}
+						{/*			</Box>*/}
+						{/*			<Box w={"100%"}>*/}
+						{/*				<Controller*/}
+						{/*					name="content"*/}
+						{/*					control={control}*/}
+						{/*					render={({ field }) => (*/}
+						{/*						<TextInput*/}
+						{/*							label="Hàm Lượng"*/}
+						{/*							error={errors.content?.message}*/}
+						{/*							{...field}*/}
+						{/*						/>*/}
+						{/*					)}*/}
+						{/*				/>*/}
+						{/*			</Box>*/}
+
+						{/*		</Flex>*/}
+						{/*	</Grid.Col>*/}
+						{/*)}*/}
 
 						{/*{showAdditionalFields && (*/}
 						{/*	<Grid.Col span={{ base: 12, sm: 6, md: 4 }}>*/}
@@ -515,96 +611,46 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 						{/*)}*/}
 					</Grid>
 
-					<Grid>
+					<Grid grow>
 						{/* Row 3: Lot Number, Quantity, Import Date, Use Before, VAT, Unit */}
-						<Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
-							<Box>
-								<Text fw={500} mb="xs">Đơn Vị<Text span c="red">*</Text></Text>
-								<Controller
-									name="unit"
-									control={control}
-									render={({ field }) => (
-										<Radio.Group
-											error={errors.unit?.message}
-											{...field}
-										>
-											<Group>
-												<Radio value="vien" label="Viên" />
-												<Radio value="vi" label="Vỉ" />
-												<Radio value="goi" label="Gói" />
-												<Radio value="chai" label="Chai" />
-												<Radio value="lo" label="Lọ" />
-												<Radio value="hop" label="Hộp" />
-											</Group>
-										</Radio.Group>
-									)}
-								/>
-							</Box>
-							<Box>
-								<Text fw={500} mb="xs">Đơn vị nhỏ nhất</Text>
-								<Grid grow>
-									<Grid.Col span={{ base: 12, sm: 6, md: 6 }}>
-										<Group wrap={"nowrap"}>
-											<Box w={"100%"}>
-												<Controller
-													name="largerUnit"
-													control={control}
-													render={({ field }) => (
-														<Select
-															data={[
-																{ value: 'lo', label: 'Lọ' },
-																{ value: 'vien', label: 'Viên' },
-																{ value: 'vi', label: 'Vỉ' },
-																{ value: 'goi', label: 'Gói' },
-																{ value: 'chai', label: 'Chai' },
-																{ value: 'hop', label: 'Hộp' },
-																{ value: 'thung', label: 'Thùng' },
-																{ value: 'cai', label: 'Cái' },
-															]}
-															defaultValue={"vien"}
-															error={errors.largerUnit?.message}
-															{...field}
-															{...rightSectionLabel('Đơn vị')}
-														/>
-													)}
-												/>
-											</Box>
-											<Box>
-												<Typography size={"h5"} weight={"semibold"}>=</Typography>
-											</Box>
-											<Box w={"100%"}>
-												<Controller
-													name="largerUnitValue"
-													control={control}
-													render={({ field }) => (
-														<NumberInput
-															error={errors.largerUnitValue?.message}
-															{...field}
-															{...rightSectionLabel('Viên')}
-														/>
-													)}
-												/>
-											</Box>
-										</Group>
-									</Grid.Col>
-									{/*<Grid.Col span={{ base: 12, sm: 6, md: 6 }}>*/}
+						{showAdditionalFields && (
+							<Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
+								<Box w={"100%"}>
+									<Controller
+										name="packaging"
+										control={control}
+										render={({ field }) => (
+											<Textarea
+												label="Quy Cách Đóng Gói"
+												rows={4}
+												error={errors.packaging?.message}
+												{...field}
+											/>
+										)}
+									/>
+								</Box>
+							</Grid.Col>
+						)}
 
-									{/*</Grid.Col>*/}
-								</Grid>
-							</Box>
-						</Grid.Col>
 						<Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
-							<SimpleGrid cols={{ base: 1, sm: 3 }} mt={'lg'}>
-								{previews}
-								<UploadDropzone
-									h={100}
-									w={100}
-									accept={['image/png', 'image/jpeg', 'image/gif']}
-									maxFiles={1}
-									onDrop={addImage}
-									className="cursor-pointer rounded-md border-2 !border-dashed hover:bg-zinc-200 transition-colors flex justify-center items-center"
-								/>
-							</SimpleGrid>
+							<Box w={"100%"}>
+								{/*<Grid.Col span={{ base: 12, sm: 6, md: 4 }}>*/}
+
+									<Label label={"Ảnh sản phẩm"} position={"top"} size={"xs"} classNames={{label: ""}}>
+										<SimpleGrid maw={(100 + 20)*4} cols={{ base: 1, sm: 4 }} >
+											{previews}
+											<UploadDropzone
+												h={100}
+												w={100}
+												accept={['image/png', 'image/jpeg', 'image/gif']}
+												maxFiles={1}
+												onDrop={addImage}
+												className="cursor-pointer rounded-md border-2 !border-dashed hover:bg-zinc-200 transition-colors flex justify-center items-center"
+											/>
+										</SimpleGrid>
+									</Label>
+								{/*</Grid.Col>*/}
+							</Box>
 						</Grid.Col>
 					</Grid>
 
@@ -612,11 +658,11 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 						<Button onClick={() => {
 							clearForm()
 							modalProps?.onClose && modalProps.onClose()
-						}} variant="outline" type="button" color={'teal'}>
+						}} variant="outline" type="button" color={'var(--teal-color)'}>
 							Hủy bỏ
 						</Button>
 						<Group>
-							<Button type="submit" color="teal">
+							<Button type="submit" color="var(--teal-color)">
 								Thêm
 							</Button>
 						</Group>

@@ -3,7 +3,7 @@
 import { useLayoutEffect, useState } from 'react'
 import { Table, Pagination, Select } from '@mantine/core'
 import { Plus, Upload, FileSpreadsheet, RotateCw, Menu, EllipsisVertical } from 'lucide-react'
-import { AddCustomerModal } from '@component/Modal/add-new-user.tsx';
+import { AddCustomerModal } from '@component/Modal/add-new-consumer.tsx';
 import { getConsumerList } from '@api/consumer.ts';
 import { cn } from '@lib/tailwind-merge.ts';
 import { ConsumerAttributes } from '@schema/consumer-schema.ts';

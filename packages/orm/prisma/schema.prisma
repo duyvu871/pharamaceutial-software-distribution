@@ -75,6 +75,7 @@ model consumers {
   @@index([consumer_email])
   @@index([phone_number])
   invoices invoices[]
+  points points[]
 }
 
 model groups {
@@ -245,6 +246,24 @@ model stores {
 
   @@index([branch_id])
   @@index([store_name])
+  store_reward_point store_reward_point[]
+  points points[]
+}
+
+model store_reward_point {
+  id          String    @id @default(uuid()) @db.Uuid
+  store_id    String    @db.Uuid
+  convert_to  String    @db.VarChar(255) @default("VND")
+  convert_rate Float    @default(1000)
+  created_at  DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime  @default(now()) @db.Timestamptz(6)
+  status      Int       @default(1)
+  description String?   @db.VarChar(255)
+  deleted_at  DateTime? @db.Timestamptz(6)
+  deleted_by  String?   @db.Uuid
+  stores      stores    @relation(fields: [store_id], references: [id])
+
+  @@index([store_id])
 }
 
 model store_group {
@@ -374,7 +393,7 @@ model users {
   createdAt    DateTime?  @db.Timestamptz(6)
   updatedAt    DateTime?  @db.Timestamptz(6)
   branches     branches[]
-  points       points[]
+  // points       points[]
 
   @@index([username])
   @@index([email])
@@ -452,13 +471,18 @@ model roles {
 
 model points {
   id          String   @id @default(uuid()) @db.Uuid // Primary key
-  userId      String   @unique @db.Uuid // Liên kết đến bảng users
+  consumerId  String   @unique @db.Uuid // Liên kết đến bảng users
+  storeId     String?   @db.Uuid // Liên kết đến bảng stores
   totalPoints Int      @default(0) // Tổng số điểm hiện tại
   createdAt   DateTime @default(now()) // Thời gian tạo
   updatedAt   DateTime @updatedAt // Thời gian cập nhật tự động
 
-  user              users                @relation(fields: [userId], references: [id], onDelete: Cascade) // Quan hệ 1-1 với bảng users
+  store             stores?              @relation(fields: [storeId], references: [id], onDelete: Cascade) // Liên kết đến bảng stores
+  consumer          consumers           @relation(fields: [consumerId], references: [id], onDelete: Cascade) // Quan hệ 1-1 với bảng users
   pointTransactions point_transactions[] // Danh sách giao dịch điểm
+
+  @@index([consumerId])
+  @@map("points")
 }
 
 model point_transactions {

@@ -4,6 +4,7 @@ import AsyncMiddleware from 'utils/asyncHandler';
 import Success from 'responses/successful/Success';
 import BadRequest from 'responses/clientErrors/BadRequest';
 import {
+	ConsumerIdParam,
 	ConsumerValidation,
 	CreateConsumer,
 	DeleteConsumer,
@@ -149,4 +150,27 @@ export class ConsumerController {
 			}
 		}
 	);
+
+	public static getConsumerRewardPoint = AsyncMiddleware.asyncHandler(
+		async (req: Request<ConsumerIdParam & BranchIdParam>, res: Response) => {
+			try {
+				const { consumerId, branchId } = req.params;
+				const rewardPoint = await prisma.points.findFirst({
+					where: {
+						consumerId: consumerId
+					}
+				});
+				const response = new Success(rewardPoint).toJson;
+				return res.status(200).json(response).end();
+			} catch (error: any) {
+				if (error instanceof Prisma.PrismaClientKnownRequestError) {
+					console.error(`Error getting consumer reward point: ${error.message} ${error.code}`);
+					throw new BadRequest('get_failed', 'Get failed', "Error getting consumer reward point");
+				} else {
+					console.error(`Error getting consumer reward point: ${error.message}`);
+					throw error;
+				}
+			}
+		}
+	)
 }

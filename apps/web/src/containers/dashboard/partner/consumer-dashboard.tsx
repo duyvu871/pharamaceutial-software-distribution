@@ -3,7 +3,7 @@
 import { useLayoutEffect, useState } from 'react'
 import { Table, Pagination, Select } from '@mantine/core'
 import { Plus, Upload, FileSpreadsheet, RotateCw, Menu, EllipsisVertical } from 'lucide-react'
-import { AddCustomerModal } from '@component/Modal/add-new-user.tsx';
+import { AddCustomerModal } from '@component/Modal/add-new-consumer.tsx';
 import { getConsumerList } from '@api/consumer.ts';
 import { cn } from '@lib/tailwind-merge.ts';
 import { ConsumerAttributes } from '@schema/consumer-schema.ts';
@@ -117,7 +117,7 @@ export default function CustomerDashboard({branchId}: {branchId: string}) {
 										{Number(consumer.revenue).toLocaleString('vi-VN')} ₫</Table.Td>
 									<Table.Td className={cn(`font-semibold ${Number(consumer.debit) > 0 ? 'text-red-400' : 'text-zinc-700'}`)}>
 										{Number(consumer.debit).toLocaleString('vi-VN')} ₫</Table.Td>
-									<Table.Td>{genderVi[consumer.gender]}</Table.Td>
+									<Table.Td>{consumer.gender ? genderVi[consumer.gender] : ""}</Table.Td>
 									<Table.Td>{consumer.address}</Table.Td>
 									<Table.Td>
 										<AddCustomerModal data={consumer}>

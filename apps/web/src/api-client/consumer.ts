@@ -1,6 +1,7 @@
 import { ConsumerAttributes } from '@schema/consumer-schema.ts';
 import axiosWithAuth from '@lib/axios.ts';
 import { SuccessResponse } from '@type/api/response.ts';
+import { RewardPointResponse } from '@schema/reward-point-schema.ts';
 
 export const getConsumer = async (id: string): Promise<ConsumerAttributes> => {
 		try {
@@ -32,5 +33,16 @@ export const getConsumerList = async (
 		// throw error;
 		console.error(`Error fetching consumers: ${error.message}`);
 		return [];
+	}
+}
+
+export const getConsumerRewardPoint = async (branchId: string, id: string): Promise<RewardPointResponse | null> => {
+	try {
+		const response = await axiosWithAuth.get<SuccessResponse<RewardPointResponse>>(`/consumer/${branchId}/reward-point/${id}`);
+		return response.data.data;
+	} catch (error: any) {
+		// throw error;
+		console.error(`Error fetching consumer reward point: ${error.message}`);
+		return null
 	}
 }

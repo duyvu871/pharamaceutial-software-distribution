@@ -1,13 +1,13 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { MoneyInput } from '@component/money-input.tsx';
-import { Divider, FileInput, NumberInput, ScrollArea, Table, Textarea, Image, Switch, Checkbox, Select, Combobox, useCombobox, Button } from '@mantine/core';
+import { Divider, FileInput, NumberInput, ScrollArea, Table, Textarea, Image, Switch, Checkbox, Select, Combobox, useCombobox, Button, Group } from '@mantine/core';
 import { ChevronDown, FileText, Phone, Plus, Search, X } from 'lucide-react';
 import { useUID } from '@hook/common/useUID.ts';
 import { invoiceActionAtom, invoiceActiveTabActionAtom, prescriptionSaleAtom } from '@store/state/overview/invoice.ts';
 import { useAtom, useAtomValue } from 'jotai';
 import { SearchProductType } from '@schema/autocomplete.ts';
 import { InvoiceType } from '@schema/invoice-schema.ts';
-import { AddCustomerModal } from '@component/Modal/add-new-user.tsx';
+import { AddCustomerModal } from '@component/Modal/add-new-consumer.tsx';
 import { readNumber } from '@util/number.ts';
 import ConsumerAutocomplete from '@component/Autocomplete/consumer-autocomplete.tsx';
 import { useReactToPrint } from 'react-to-print';
@@ -20,6 +20,9 @@ import { submitInvoice } from '@api/invoice.ts';
 import useToast from '@hook/client/use-toast-notification.ts';
 import { Typography } from '@component/Typography';
 import { DateInput, DateTimePicker } from '@mantine/dates';
+import { useRewardPoint } from '@hook/dashboard/sale/use-reward-point';
+import { getConsumerRewardPoint } from '@api/consumer.ts';
+import { CurrentRewardPointSchema } from '@schema/reward-point-schema.ts';
 
 type InvoiceItemProps = {
 	product: InvoiceType['items'][number];
@@ -150,17 +153,25 @@ function InvoiceTab() {
 	const {generateUID} = useUID();
 	const {branchId} = useDashboard()
 	const {userSessionInfo} = useAuth();
+	const {
+		calculateRewardPoint,
+		currentRewardPoint,
+		setCurrentRewardPoint,
+		setRewardPoint
+	} = useRewardPoint();
 
 	const {showErrorToast} = useToast();
 
-	const [autoprint, setAutoprint] = useState(false)
-	const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+
 	// const [consumerPayment, setConsumerPayment] = useState<number>(0);
 	const [branchDetail] = useAtom(currentBranchAtom);
 	const prescriptionSale = useAtomValue(prescriptionSaleAtom)
 
 	const [invoices, invoiceDispatch] = useAtom(invoiceActionAtom);
 	const [activeTab, activeTabDispatch] = useAtom(invoiceActiveTabActionAtom);
+
+	const [autoprint, setAutoprint] = useState(false)
+	const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
 	const [vat, setVat] = useState<number>(0);
 
@@ -170,10 +181,11 @@ function InvoiceTab() {
 	const [otherCharges, setOtherCharges] = useState<InvoiceType['otherCharges']>([]);
 	const [debited, setDebited] = useState<number>(0);
 	const [customer, setCustomer] = useState<{name:string, id:string}>({name: '', id: ''});
-	const qrURLRef = React.useRef<string | null>(null);
 	const [qrURL, setQrURL] = useState<string | null>(null);
 	const [notes, setNotes] = useState<string>('');
+
 	const notesDebounce = useDebounce(notes, 500);
+
 	const componentRef = React.useRef(null);
 	const reactToPrintFn = useReactToPrint({ contentRef: componentRef });
 
@@ -332,6 +344,34 @@ function InvoiceTab() {
 	useEffect(() => {
 		setSelectedDate(new Date());
 	}, []);
+
+	useEffect(() => {
+		console.log('customer', invoices[activeTab]?.invoiceData?.customerId);
+		if (invoices[activeTab]?.invoiceData?.customerId && branchId && branchDetail) {
+			void getConsumerRewardPoint(branchId ,invoices[activeTab]?.invoiceData?.customerId).then(rewardPoint => {
+				if (rewardPoint) {
+					const currentReward: CurrentRewardPointSchema = {
+						point_to_convert: 0,
+						point_remain: rewardPoint.totalPoints,
+						username: userSessionInfo?.username || '',
+						userId: userSessionInfo?.id || '',
+					}
+					setCurrentRewardPoint(currentReward);
+				}
+			});
+		}
+	}, [invoices[activeTab]?.invoiceData?.customerId, branchId, branchDetail]);
+
+	useEffect(() => {
+		if (branchDetail) {
+			setRewardPoint({
+				point: 1,
+				description: '1 điểm',
+				convert_rate: branchDetail.store.store_reward_point?.convert_rate || 1000,
+				convert_to: branchDetail.store.store_reward_point?.convert_to || 'vnd',
+			})
+		}
+	}, [branchDetail])
 
 	return (
 		<>
@@ -521,6 +561,7 @@ function InvoiceTab() {
 								id: activeTab || '',
 								invoice: {
 									customerName: name,
+									customerId: id
 								}
 							})
 						}} />
@@ -538,14 +579,24 @@ function InvoiceTab() {
 					{/*	<ChevronDown className="h-5 w-5" />*/}
 					{/*</button>*/}
 
-					<label className="flex items-center space-x-2">
-						<Checkbox
-							defaultChecked
-							color={"teal"}
-							// label="I agree to sell my privacy"
-						/>
-						<Typography className={"select-none"} weight={'semibold'}>Tích điểm</Typography>
-					</label>
+					<Group wrap={"nowrap"} justify={"space-between"}>
+						<label className="flex items-center space-x-2">
+							<Checkbox
+								defaultChecked
+								color={"teal"}
+								// label="I agree to sell my privacy"
+							/>
+							<Typography className={"select-none"} weight={'semibold'}>Tích điểm</Typography>
+						</label>
+						{currentRewardPoint ? (
+							<div className="flex justify-between items-center gap-2">
+								<Typography weight={'semibold'}>Số điểm</Typography>
+								<span className="text-lg bg-zinc-100 text-blue-800 px-2 py-1 rounded">
+								{currentRewardPoint.point_remain}
+							</span>
+							</div>
+						) : null}
+					</Group>
 
 					<div className="space-y-2">
 						<div className="flex justify-between items-center">
@@ -555,12 +606,17 @@ function InvoiceTab() {
 							</span>
 						</div>
 						<div className="flex justify-between items-center">
-							<Typography weight={'semibold'}>Giảm giá (F6)</Typography>
+							<Typography weight={'semibold'}>Đổi điểm</Typography>
 							<div className="flex items-center gap-2">
-								<MoneyInput
-									value={discount}
+								<NumberInput
+									// value={currentRewardPoint?.point_to_convert || 0}
 									onChange={(value) => {
-										setDiscount(value);
+										// setDiscount(value);
+										if (currentRewardPoint) {
+											const parsedValue = Number(value);
+											const rewardPoint = calculateRewardPoint(parsedValue);
+											setDiscount(rewardPoint);
+										}
 									}}
 									className={'w-[120px]'}
 								/>

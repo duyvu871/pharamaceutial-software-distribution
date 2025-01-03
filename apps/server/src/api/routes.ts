@@ -81,6 +81,10 @@ apiRouter.route('/consumer/:branchId/delete/:consumerId').delete(
   validateParams(ConsumerValidation.getConsumerParam),
   validateParams(ConsumerValidation.deleteConsumer),
   ConsumerController.deleteConsumer);
+apiRouter.route('/consumer/:branchId/reward-point/:consumerId').get(
+  ...authChain,
+  validateParams(ConsumerValidation.consumerIdParam),
+  ConsumerController.getConsumerRewardPoint);
 
 // Membership routes
 apiRouter.route('/membership/:branchId').get(
