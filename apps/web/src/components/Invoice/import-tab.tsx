@@ -21,18 +21,31 @@ import { Typography } from '@component/Typography';
 import { DateInput } from '@mantine/dates';
 import { Label } from '@component/label';
 import { ProviderModal } from '@component/Modal/provider-modal.tsx';
+import { useImportProductState } from '@hook/dashboard/import/use-import-product-state.ts';
+import { importProductActionAtom } from '@store/state/overview/import-product.ts';
 
 function ImportTab() {
 	const {generateUID} = useUID();
 	const {} = useDashboard()
 	const {userSessionInfo} = useAuth();
+
+	const {
+		addProductItem,
+		importProducts,
+		activeTab,
+		removeProductItem,
+		updateProductState,
+		updateProductInvoice
+	} = useImportProductState();
+
 	const [autoprint, setAutoprint] = useState(false)
 	const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
 	// const [consumerPayment, setConsumerPayment] = useState<number>(0);
 	const [branchDetail] = useAtom(currentBranchAtom);
+	const [, importProductActions] = useAtom(importProductActionAtom);
 
-	const [invoices, invoiceDispatch] = useAtom(invoiceActionAtom);
-	const [activeTab, activeTabDispatch] = useAtom(invoiceActiveTabActionAtom);
+	// const [invoices, invoiceDispatch] = useAtom(invoiceActionAtom);
+	// const [activeTab, activeTabDispatch] = useAtom(invoiceActiveTabActionAtom);
 
 	const [vat, setVat] = useState<number>(0);
 	const [totalPrice, setTotalPrice] = useState<number>(0);
@@ -48,107 +61,34 @@ function ImportTab() {
 	const reactToPrintFn = useReactToPrint({ contentRef: componentRef });
 
 	const cartItems = activeTab
-		? invoices[activeTab]?.invoiceData?.items
-			? invoices[activeTab]?.invoiceData?.items
-			: []
+		? importProducts[activeTab]?.productData || []
 		: [];
 
-	const updateItemState = (id: string, item: Partial<InvoiceType['items'][number]>) => {
-		if (!activeTab) {
-			return;
-		}
-
-		invoiceDispatch({
-			type: 'update-item',
-			id: activeTab,
-			itemId: id,
-			item: { ...item },
-		});
-	}
-
-	const updatePrice = (id: string, price: number) => {
-		if (!activeTab) {
-			return;
-		}
-		console.log('update price', id, price);
-		invoiceDispatch({
-			type: 'update-item',
-			id: activeTab,
-			itemId: id,
-			item: { price },
-		});
-	}
-
-	const removeItem = (id: string) => {
-		console.log('remove item', id);
-		if (!activeTab) {
-			return;
-		}
-		invoiceDispatch({
-			type: 'remove-item',
-			id: activeTab,
-			itemId: id,
-		});
-
-	}
-
-	const setDebit = (value: number) => {
-		if (!activeTab) {
-			return;
-		}
-		invoiceDispatch({
-			type: 'update',
-			id: activeTab,
-			invoice: {
-				debit: value
-			}
-		})
-	}
-
-	const setDiscount = (value: number) => {
-		if (!activeTab) {
-			return;
-		}
-		invoiceDispatch({
-			type: 'update',
-			id: activeTab,
-			invoice: {
-				discount: value
-			}
-		});
-	}
-
-	// const setCustomer = (customer: {name:string, id:string}) => {
-	// 	if (!activeTab) {
-	// 		return;
-	// 	}
-	// 	invoiceDispatch({
-	// 		type: 'update',
-	// 		id: activeTab,
-	// 		invoice: {
-	// 			customerName: customer.name,
-	// 		}
-	// 	});
-	// }
 
 	const handleInvoiceSubmit = () => {
-
+		console.log('submit invoice', importProducts[activeTab]);
+		console.log('submit import products', importProducts);
 	}
 
 	useEffect(() => {
-		const total = invoices[activeTab]?.invoiceData?.totalPrice || 0;
-		const discount = invoices[activeTab]?.invoiceData?.discount || 0;
-		const amountDue = invoices[activeTab]?.invoiceData?.amountDue || 0;
-		const debited = invoices[activeTab]?.invoiceData?.debit || 0;
-		const otherCharges = invoices[activeTab]?.invoiceData?.otherCharges || 0;
-		const amountPaid = invoices[activeTab]?.invoiceData?.amountPaid || 0;
+		let total = importProducts[activeTab]?.total || 0;
+		// const discount = importProducts[activeTab]?.invoiceData?.discount || 0;
+		const amountDue = importProducts[activeTab]?.amountDue || 0;
+		const debited = importProducts[activeTab]?.debit || 0;
+		const otherCharges = [{
+			name: 'Phí vận chuyển',
+			value: 0,
+		}];
+		const amountPaid = importProducts[activeTab]?.amountPaid || 0;
+
+		// console.log('import products', importProducts);
 
 		setTotalPrice(total);
-		setDiscountState(discount);
+		// setDiscountState(discount);
 		setAmountDue(amountDue);
 		setDebited(amountPaid === 0 ? 0 : debited);
 		setOtherCharges(otherCharges);
-	}, [invoices, activeTab]);
+	}, [importProducts, activeTab]);
 
 	// update price by vat change
 	useEffect(() => {
@@ -160,16 +100,18 @@ function ImportTab() {
 
 	return (
 		<>
-			<Stack w={"100%"}>
+			<Stack w={"100%"} gap={0}>
 				{/*<Resizable className={"flex-grow"} w={"100%"} h={"600px"} direction={"vertical"}>*/}
-					<ScrollArea className={'flex-grow w-full h-[600px]'}>
+				{/*	<ScrollArea h={600} className={'flex-grow w-full h-800px]'}>*/}
 						<ProductFormV3 />
-					</ScrollArea>
+					{/*</ScrollArea>*/}
 				{/*</Resizable>*/}
-				<ScrollArea pos={'relative'} id={'table'} className="flex flex-grow h-full overflow-hidden">
+				<Divider size="md" />
+
+				<ScrollArea h={300} pos={'relative'} id={'table'} className=" flex flex-grow h-full overflow-hidden p-4 bg-white">
 					{/*<div className={'absolute z-[99] top-0 bg-white w-full h-[200px]'}></div>*/}
 					{/* Main content area */}
-					<div className="w-full h-full">
+					<div className="w-full h-full relative">
 						<div className="hidden">
 							<div ref={componentRef}
 									 className="flex flex-col justify-start items-center gap-5 p-8 w-full max-w-[21cm] mx-auto bg-white">
@@ -178,17 +120,17 @@ function ImportTab() {
 									<h1 className="text-3xl font-bold">{branchDetail?.branch_name}</h1>
 									<p className="text-xl">{branchDetail?.address}</p>
 									<h2 className="text-xl font-bold mt-4">HÓA ĐƠN BÁN HÀNG</h2>
-									<p className="text-xl">Số HĐ: {invoices[activeTab].id}</p>
+									<p className="text-xl">Số HĐ: {importProducts[activeTab].id}</p>
 									<p className="text-xl">Ngày: {new Date().toLocaleString()}</p>
 								</div>
 
 								{/* Customer Info */}
-								<div className="mb-6 text-xl">
-									<p>
-										<span className="font-semibold">Khách hàng: </span>
-										{invoices[activeTab].invoiceData.customerName || customer.name}
-									</p>
-								</div>
+								{/*<div className="mb-6 text-xl">*/}
+								{/*	<p>*/}
+								{/*		<span className="font-semibold">Khách hàng: </span>*/}
+								{/*		{importProducts[activeTab].invoiceData.customerName || customer.name}*/}
+								{/*	</p>*/}
+								{/*</div>*/}
 
 								<table
 									className="p-5 w-full table border-collapse border border-gray-300 [&_th,&_td]:whitespace-nowrap [&_th,&_td]:text-left">
@@ -207,17 +149,17 @@ function ImportTab() {
 									{cartItems.map((product, index) => (
 										<tr key={`tr-${generateUID()}`} className="border-b">
 											<td className="p-2">{index + 1}</td>
-											<td className="p-2">{product.productName}</td>
+											<td className="p-2">{product.name}</td>
 											<td className="p-2">{product.unit}</td>
 											<td className="p-2">
 												{product.quantity}
 											</td>
 											<td className="p-2">
-												{product.price.toLocaleString()}đ
+												{product.purchasePrice.toLocaleString()}đ
 											</td>
-											<td className="p-2">{product.total.toLocaleString()}đ</td>
+											<td className="p-2">{(product.purchasePrice * product.quantity).toLocaleString()}đ</td>
 											<td className="p-2">
-												{product.note}
+												{product.notes}
 											</td>
 										</tr>
 									))}
@@ -236,49 +178,77 @@ function ImportTab() {
 							</div>
 						</div>
 						{/*<div className={'w-full h-[200px]'}></div>*/}
-						<div className="w-full overflow-y-auto overflow-x-auto h-full p-4 bg-white rounded-md shadow">
-							<Table withTableBorder stickyHeader striped highlightOnHover verticalSpacing="md">
+						<div className="w-full h-full bg-white shadow">
+							<Table striped highlightOnHover verticalSpacing="xs">
 								<Table.Thead>
 									<Table.Tr>
-										<Table.Th>STT</Table.Th>
-										<Table.Th>Tên sản phẩm</Table.Th>
-										<Table.Th>Đơn vị</Table.Th>
-										<Table.Th>Số lượng</Table.Th>
-										<Table.Th>Đơn giá</Table.Th>
-										<Table.Th>Thành tiền</Table.Th>
-										<Table.Th>Ghi Chú/Liều dùng</Table.Th>
+										<Table.Th className="bg-white sticky top-0 z-[100] whitespace-nowrap">STT</Table.Th>
+										<Table.Th className="bg-white sticky top-0 z-[100] whitespace-nowrap">Tên sản phẩm</Table.Th>
+										<Table.Th className="bg-white sticky top-0 z-[100] whitespace-nowrap">Đơn vị</Table.Th>
+										<Table.Th className="bg-white sticky top-0 z-[100] whitespace-nowrap">Số lượng</Table.Th>
+										<Table.Th className="bg-white sticky top-0 z-[100] whitespace-nowrap">Đơn giá</Table.Th>
+										<Table.Th className="bg-white sticky top-0 z-[100] whitespace-nowrap">Thành tiền</Table.Th>
+										<Table.Th className="bg-white sticky top-0 z-[100] whitespace-nowrap">Ghi Chú/Liều dùng</Table.Th>
+										<Table.Th className="bg-white sticky top-0 z-[100] whitespace-nowrap"></Table.Th>
 									</Table.Tr>
 								</Table.Thead>
 								<Table.Tbody>
 									{cartItems.map((product, index) => (
 										<Table.Tr key={`tr-${generateUID()}`} className="border-b">
-											<Table.Td className="p-2">{index + 1}</Table.Td>
-											<Table.Td className="p-2">{product.productName}</Table.Td>
-											<Table.Td className="p-2">{product.unit}</Table.Td>
+											<Table.Td className="p-1">{index + 1}</Table.Td>
+											<Table.Td className="p-1">{product.name}</Table.Td>
+											<Table.Td className="p-1">{product.unit}</Table.Td>
 											<Table.Td className="p-2">
-												<NumberInput className={'!w-16'} value={product.quantity} onChange={(quantity) => {
-													updateItemState(product.id || '', {
-														quantity: Number(quantity) || 1,
-													});
-												}} />
+												<NumberInput
+													className={'!w-16'}
+													defaultValue={product.quantity}
+													allowNegative={false}
+													allowDecimal={false}
+													onChange={(quantity) => {
+														console.log('quantity', quantity);
+														// updateProductState(index, {
+														// 	quantity: Number(quantity) || 1,
+														// });
+
+														importProductActions({
+															type: 'update-product',
+															invoiceId: activeTab,
+															index: index,
+															state: {
+																quantity: Number(quantity) || 1
+															}
+														});
+													}} />
 											</Table.Td>
-											<Table.Td className="p-2">
+											<Table.Td className="p-1">
 												<MoneyInput
-													value={product.price}
+													value={product.purchasePrice}
 													onChange={(value) => {
 														console.log('value', value);
-														updateItemState(product.id || '', { price: value });
+														// updateProductState(index, { purchasePrice: value });
+														importProductActions({
+															type: 'update-product',
+															invoiceId: activeTab,
+															index: index,
+															state: {
+																purchasePrice: value || 0
+															}
+														});
 													}}
+
 													className={'w-[120px]'}
 												/>
 												{/*{product.price.toLocaleString()}đ*/}
 											</Table.Td>
-											<Table.Td className="p-2">{product.total.toLocaleString()}đ</Table.Td>
-											<Table.Td className="p-2">
+											<Table.Td className="p-1">{(product.purchasePrice * product.quantity).toLocaleString()}đ</Table.Td>
+											<Table.Td className="p-1">
 												<Textarea />
 											</Table.Td>
-											<Table.Td className="p-2">
-												<button onClick={() => removeItem(product.id || '')}
+											<Table.Td className="p-1">
+												<button onClick={() => {
+													removeProductItem(activeTab, index);
+													// removeItem(product.id || '')
+												}}
 																className="rounded-md text-red-500 hover:text-red-700 p-2 hover:bg-red-500/20 transition-colors">
 													<X className="h-4 w-4" />
 												</button>
@@ -321,15 +291,15 @@ function ImportTab() {
 						<Label label={"Nhà cung cấp"}>
 							<div className={"w-full relative"}>
 								<ProviderAutocomplete setValue={({ name, id }) => {
-									// console.log('set customer', name, id);
-									// setCustomer({name, id});
-									// invoiceDispatch({
-									// 	type: 'update',
-									// 	id: activeTab || '',
-									// 	invoice: {
-									// 		customerName: name,
-									// 	}
-									// })
+									console.log('provider', name, id);
+									// updateProductInvoice(activeTab, { provider: id })
+									importProductActions({
+										type: 'update',
+										invoiceId: activeTab,
+										state: {
+											provider: id
+										}
+									});
 								}} />
 								<ProviderModal>
 									<button
@@ -404,16 +374,11 @@ function ImportTab() {
 							<div className="flex items-center gap-2">
 								{activeTab ? (
 									<MoneyInput
-										value={invoices[activeTab]?.invoiceData?.amountPaid || 0}
+										value={importProducts[activeTab]?.amountPaid || 0}
 										onChange={(value) => {
 											console.log('consumer payment', value);
-											invoiceDispatch({
-												type: 'update',
-												id: activeTab || '',
-												invoice: {
-													amountPaid: value,
-												},
-											});
+
+											updateProductInvoice(activeTab, { amountPaid: value })
 											// setConsumerPayment(value);
 										}}
 										className={'w-[120px]'}
@@ -462,9 +427,9 @@ function ImportTab() {
 					{/*	/>*/}
 					{/*</div>*/}
 					<button onClick={() => {
+						handleInvoiceSubmit();
 						if (autoprint) {
-							handleInvoiceSubmit();
-							// reactToPrintFn();
+							reactToPrintFn();
 						}
 					}}
 									className="w-full py-3 bg-teal-500 text-white rounded text-lg hover:bg-teal-600">

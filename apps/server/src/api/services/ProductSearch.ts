@@ -4,6 +4,7 @@ import * as process from 'node:process';
 import * as path from 'node:path';
 import { SearchProductType } from 'types/search-product';
 import fs from 'fs';
+import { toLowerCaseNonAccentVietnamese } from 'utils/non-acent-vietnam.ts';
 // import pLimit from 'p-limit';
 
 export type DocumentProductSearch = Document<SearchProductType, (keyof SearchProductType)[]> & {
@@ -68,6 +69,7 @@ export default class ProductSearch {
 			const csvData = await new Promise<'ok'>((resolve, reject) => {
 				const batchSizes = 100;
 				let batch: SearchProductType[] = [];
+				let unitStore = {};
 				// console.log('fastCSV:', fastCSV);
 				fastCSV.parseStream(stream, { headers: true })
 					.on('data', async (row) => {
@@ -79,7 +81,7 @@ export default class ProductSearch {
 							packaging: row['Quy cách đóng gói'],
 							manufacturer: row['Hãng sản xuất'],
 							country_of_origin: row['Nước sản xuất'],
-							unit: row['Đơn vị tính'],
+							unit: toLowerCaseNonAccentVietnamese(row['Đơn vị tính']),
 							declaration_facility: row['Cơ sở kê khai'],
 							dosage_form: row['Dạng bào chế'],
 							registration_country: row['Nước đăn ký'],
@@ -89,6 +91,16 @@ export default class ProductSearch {
 							prescription_required: Boolean(row['Thuốc kê đơn']),  // You might want to convert this to a boolean later
 							drug_identifier: row['Mã định danh thuốc'],
 						};
+
+						// trim all fields
+						Object.keys(modelize).forEach((key) => {
+							if (typeof modelize[key] === 'string') {
+								modelize[key] = modelize[key].trim();
+							}
+						});
+
+						unitStore[modelize.unit] = (unitStore[modelize.unit] || 0) + 1;
+
 						batch.push(modelize);
 						// searchIndexInstance.add(modelize);
 						if (batch.length >= batchSizes) {
@@ -108,6 +120,8 @@ export default class ProductSearch {
 							}); // Add the last batch
 						}
 						console.log('Processing complete');
+						console.table(unitStore);
+
 						stream.close();
 						resolve('ok')
 					})

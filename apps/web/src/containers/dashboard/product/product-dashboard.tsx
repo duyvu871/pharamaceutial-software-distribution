@@ -143,69 +143,6 @@ export default function ProductDashboard({branchId, type}: {branchId: string, ty
 			}}
 		>
 			<Group align={'start'} className="h-full overflow-hidden !flex-nowrap" gap={0}>
-			{/*/!* Sidebar *!/*/}
-				{/*<div className="w-64 h-full bg-white border-r border-gray-200 p-4">*/}
-				{/*	<div className="space-y-6">*/}
-				{/*		<div>*/}
-				{/*			<h3 className="text-sm font-medium text-gray-700 mb-2">Phân loại</h3>*/}
-				{/*			<div className="space-y-2">*/}
-				{/*				<label className="flex items-center space-x-2">*/}
-				{/*					<input type="checkbox" className="rounded border-gray-300 pt-1" defaultChecked />*/}
-				{/*					<span>Thuốc</span>*/}
-				{/*				</label>*/}
-				{/*				<label className="flex items-start space-x-2">*/}
-				{/*					<input type="checkbox" className="rounded border-gray-300 pt-1" />*/}
-				{/*					<span>Thực phẩm chức năng</span>*/}
-				{/*				</label>*/}
-				{/*				<label className="flex items-start space-x-2">*/}
-				{/*					<input type="checkbox" className="rounded border-gray-300 pt-1" />*/}
-				{/*					<span>Mỹ phẩm</span>*/}
-				{/*				</label>*/}
-				{/*				<label className="flex items-start space-x-2">*/}
-				{/*					<input type="checkbox" className="rounded border-gray-300 pt-1" />*/}
-				{/*					<span>Dụng cụ y tế</span>*/}
-				{/*				</label>*/}
-				{/*				<label className="flex items-start space-x-2">*/}
-				{/*					<input type="checkbox" className="rounded border-gray-300 pt-1" />*/}
-				{/*					<span>Hàng hóa khác</span>*/}
-				{/*				</label>*/}
-				{/*			</div>*/}
-				{/*		</div>*/}
-
-				{/*		/!*<div>*!/*/}
-				{/*		/!*	<h3 className="text-sm font-medium text-gray-700 mb-2">Trạng thái</h3>*!/*/}
-				{/*		/!*	<div className="space-y-2">*!/*/}
-				{/*		/!*		<label className="flex items-center space-x-2">*!/*/}
-				{/*		/!*			<input type="checkbox" className="rounded border-gray-300" defaultChecked />*!/*/}
-				{/*		/!*			<span>Kinh doanh</span>*!/*/}
-				{/*		/!*		</label>*!/*/}
-				{/*		/!*		<label className="flex items-center space-x-2">*!/*/}
-				{/*		/!*			<input type="checkbox" className="rounded border-gray-300" defaultChecked />*!/*/}
-				{/*		/!*			<span>Ngưng kinh doanh</span>*!/*/}
-				{/*		/!*		</label>*!/*/}
-				{/*		/!*	</div>*!/*/}
-				{/*		/!*</div>*!/*/}
-
-				{/*		/!*<div>*!/*/}
-				{/*		/!*	<h3 className="text-sm font-medium text-gray-700 mb-2">Nhóm hàng</h3>*!/*/}
-				{/*		/!*	<div className="space-y-2">*!/*/}
-				{/*		/!*		<label className="flex items-center space-x-2">*!/*/}
-				{/*		/!*			<input type="radio" name="group" className="border-gray-300" />*!/*/}
-				{/*		/!*			<span>Thuốc Bổ</span>*!/*/}
-				{/*		/!*		</label>*!/*/}
-				{/*		/!*		<label className="flex items-center space-x-2">*!/*/}
-				{/*		/!*			<input type="radio" name="group" className="border-gray-300" />*!/*/}
-				{/*		/!*			<span>Thuốc Cơ - Xương khớp</span>*!/*/}
-				{/*		/!*		</label>*!/*/}
-				{/*		/!*		<label className="flex items-center space-x-2">*!/*/}
-				{/*		/!*			<input type="radio" name="group" className="border-gray-300" />*!/*/}
-				{/*		/!*			<span>Thuốc Hô Hấp</span>*!/*/}
-				{/*		/!*		</label>*!/*/}
-				{/*		/!*		/!* Add more groups as needed *!/*!/*/}
-				{/*		/!*	</div>*!/*/}
-				{/*		/!*</div>*!/*/}
-				{/*	</div>*/}
-				{/*</div>*/}
 
 				{/* Main Content */}
 				<div className="flex-1 p-4 h-full flex flex-col">
@@ -261,12 +198,12 @@ export default function ProductDashboard({branchId, type}: {branchId: string, ty
 
 					{/* Table */}
 					<div className="bg-white rounded-md  shadow overflow-y-auto">
-						<ScrollArea scrollbars={'xy'} pos={'relative'} id={'table'} className="flex flex-grow">
+						{/*<ScrollArea scrollbars={'xy'} pos={'relative'} id={'table'} className="flex flex-grow">*/}
 							{/*<div className={'p-2 min-w-full table'}>*/}
 								<Table striped highlightOnHover>
 									<Table.Thead role={'rowgroup'}>
 										<Table.Tr>
-											<Table.Th className="w-12">
+											<Table.Th className="bg-white sticky top-0 w-12">
 												<input
 													type="checkbox"
 													className="rounded border-gray-300"
@@ -274,13 +211,14 @@ export default function ProductDashboard({branchId, type}: {branchId: string, ty
 													onChange={toggleSelectAll}
 												/>
 											</Table.Th>
-											<Table.Th className="whitespace-nowrap">#</Table.Th>
+											<Table.Th className="bg-white sticky top-0 whitespace-nowrap">#</Table.Th>
 											{tableRenderData.map((data, index) => (
-												<Table.Th key={`th-${data.title}`} className="whitespace-nowrap">{data.title}</Table.Th>
+												<Table.Th key={`th-${data.title}`} className="bg-white sticky top-0 whitespace-nowrap">{data.title}</Table.Th>
 											))}
 										</Table.Tr>
 									</Table.Thead>
-									<Table.Tbody role={'rowgroup'}>
+
+									<Table.Tbody role={'rowgroup'} className={"overflow-y-auto h-full"}>
 										{products.map((product, index) => {
 											const transformedProduct = transformProduct(product);
 											return (
@@ -387,7 +325,7 @@ export default function ProductDashboard({branchId, type}: {branchId: string, ty
 									</Table.Tbody>
 								</Table>
 							{/*</div>*/}
-						</ScrollArea>
+						{/*</ScrollArea>*/}
 					</div>
 
 					{/* Pagination */}

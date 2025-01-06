@@ -7,17 +7,18 @@ import {
 	ImportProductState,
 } from '@store/state/overview/import-product.ts';
 import { ProductFormData } from '@schema/product-schema.ts'; // Đường dẫn đến file chứa các atoms
+import { useEffect } from 'react';
 
 
 interface ImportProductHook {
 	importProducts: Record<string, ImportProductState>;
 	activeTab: string;
-	addProduct: (name: string) => string | undefined;
+	addProductInvoice: (name: string) => string | undefined;
 	removeProduct: (id: string) => void;
-	updateProduct: (id: string, product: Partial<ProductFormData>, productIndex?: number) => void;
+	updateProductInvoice: (id: string, state: Partial<ImportProductState>) => void;
 	addProductItem: (id: string, product: ProductFormData) => void;
 	removeProductItem: (id: string, productIndex: number) => void;
-	updateProductState: (id: string, state: Partial<ImportProductState>) => void;
+	updateProductState: (id: number, state: Partial<ProductFormData>) => void;
 	setTab: (id: string) => void;
 	nextTab: () => void;
 	prevTab: () => void;
@@ -31,7 +32,7 @@ export function useImportProductState(): ImportProductHook {
 	const [, importProductActions] = useAtom(importProductActionAtom);
 	const [, importProductActiveTabActions] = useAtom(importProductActiveTabActionAtom);
 
-	const addProduct = (name: string) => {
+	const addProductInvoice = (name: string) => {
 		return importProductActions({ type: 'add', name });
 	};
 
@@ -39,17 +40,17 @@ export function useImportProductState(): ImportProductHook {
 		importProductActions({ type: 'remove', id });
 	};
 
-	const updateProduct = (id: string, product: Partial<ProductFormData>, productIndex?: number) => {
-		importProductActions({ type: 'update', id, product, productIndex });
+	const updateProductInvoice = (id: string, state: Partial<ImportProductState>, productIndex?: number) => {
+		importProductActions({ type: 'update', invoiceId: id, state });
 	};
 	const addProductItem = (id: string, product: ProductFormData) => {
-		importProductActions({ type: 'add-product', id, product });
+		importProductActions({ type: 'add-product', invoiceId: id, product });
 	};
 	const removeProductItem = (id: string, productIndex: number) => {
-		importProductActions({ type: 'remove-product', id, productIndex });
+		importProductActions({ type: 'remove-product', invoiceId: id, productIndex });
 	};
-	const updateProductState = (id: string, state: Partial<ImportProductState>) => {
-		importProductActions({ type: 'update-product-state', id, state });
+	const updateProductState = (id: number, state: Partial<ProductFormData>) => {
+		importProductActions({ type: 'update-product', invoiceId: activeTab, index: id, state });
 	};
 	const setTab = (id: string) => {
 		importProductActiveTabActions({ type: 'set', id });
@@ -67,13 +68,16 @@ export function useImportProductState(): ImportProductHook {
 		importProductActiveTabActions({ type: 'clear' });
 	};
 
+	// useEffect(() => {
+	// 	console.log(importProducts);
+	// }, [importProducts]);
 
 	return {
 		importProducts,
 		activeTab,
-		addProduct,
+		addProductInvoice,
 		removeProduct,
-		updateProduct,
+		updateProductInvoice,
 		addProductItem,
 		removeProductItem,
 		updateProductState,

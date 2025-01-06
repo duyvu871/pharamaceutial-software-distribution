@@ -5,7 +5,7 @@ import { cn } from '@lib/tailwind-merge.ts';
 import { RouterLink } from '@route/components';
 
 const v = tv({
-	base: 'text-md',
+	base: 'text-md inline-block',
 	variants: {
 		size: {
 			h1: `text-[42px]`,

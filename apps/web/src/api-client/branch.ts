@@ -1,6 +1,6 @@
 import axiosWithAuth from '@lib/axios.ts';
 import { API_ENDPOINT, API_URL, PREFIX, PREFIX_VERSION } from 'config';
-import { BranchType, CreateBranchType, CreatedBranchResponse } from '@schema/branch-schema.ts';
+import { BranchDetails, BranchType, CreateBranchType, CreatedBranchResponse } from '@schema/branch-schema.ts';
 import { ErrorResponse, SuccessResponse } from '@type/api/response.ts';
 import { AxiosError } from 'axios';
 import { getCookie, setCookie } from '@util/cookie.ts';
@@ -8,12 +8,12 @@ import { parseJson } from '@util/parse-json.ts';
 
 export const getBranches = async (branchId: string): Promise<BranchType> => {
 	try {
-		const cookieBranchId = `branch_id_${branchId}`;
-		const cookiedBranchStored = getCookie(cookieBranchId);
-		if (cookiedBranchStored) {
-			return parseJson<BranchType>(cookiedBranchStored) as BranchType;
-		}
-		const response = await axiosWithAuth.get(`/branch/detail`, {
+		// const cookieBranchId = `branch_id_${branchId}`;
+		// const cookiedBranchStored = getCookie(cookieBranchId);
+		// if (cookiedBranchStored) {
+		// 	return parseJson<BranchType>(cookiedBranchStored) as BranchType;
+		// }
+		const response = await axiosWithAuth.get<SuccessResponse<BranchType>>(`/branch/detail`, {
 			params: {
 				branch_id: branchId,
 			},
@@ -43,5 +43,17 @@ export const createBranch = async (data: CreateBranchType):
 			return error.response?.data;
 		// }
 		// return error
+	}
+}
+
+
+export const updateBranchDetail = async (branchId: string, data: BranchDetails) => {
+	try {
+		const response = await axiosWithAuth.put<SuccessResponse<BranchType>>(`/branch/${branchId}/update-detail`, {
+			...data,
+		});
+		return response.data.data;
+	} catch (error: any) {
+		return error.response?.data;
 	}
 }

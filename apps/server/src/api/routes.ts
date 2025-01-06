@@ -54,6 +54,21 @@ apiRouter.route('/branch/detail').get(
   validateQuery(BranchValidation.getBranchesQuery),
   BranchController.getBranch
 )
+apiRouter.route('/branch/:branchId/qrcode').post(
+  ...authChain,
+  permissionMiddleware([BranchPermission.ALL, BranchPermission.UPDATE]),
+  uploadMiddleware(
+    { mimetype: /image/ },
+    {
+      fileSize: 1024 * 1024 * 10, // 10MB file size limit
+    }).single('image'),
+  BranchController.uploadQRCode
+)
+apiRouter.route('/branch/:branchId/qrcode').get(
+  ...authChain,
+  permissionMiddleware([BranchPermission.ALL, BranchPermission.UPDATE]),
+  BranchController.getQRCode
+)
 
 // Autocomplete route
 apiRouter.route('/autocomplete/product').get(
@@ -117,7 +132,11 @@ apiRouter.route('/product/:branchId/delete/:productId').delete(
 // Product upload image
 apiRouter.route('/product/:branchId/upload/image').post(
   ...authChain,
-  uploadMiddleware({ mimetype: /image/}).single('image'),
+  uploadMiddleware(
+    { mimetype: /image/ },
+    {
+        fileSize: 1024 * 1024 * 10, // 10MB file size limit
+    }).single('image'),
   validateParams(BranchValidation.branchIdParam),
   ProductController.uploadImage);
 

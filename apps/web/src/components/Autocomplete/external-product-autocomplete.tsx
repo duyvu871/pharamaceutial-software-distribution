@@ -1,5 +1,5 @@
-import { useState, useEffect, ChangeEventHandler, ChangeEvent, memo } from 'react';
-import { Autocomplete, Box, Divider, List, Loader, Popover, Stack, TextInput } from '@mantine/core';
+import { useState, useEffect, ChangeEventHandler, ChangeEvent, memo, forwardRef } from 'react';
+import { Autocomplete, Box, Divider, List, Loader, Popover, Stack, TextInput, TextInputProps } from '@mantine/core';
 import { useDebounce } from "@uidotdev/usehooks";
 import { autocomplete, autoCompleteSearchStoreProduct } from '@api/autocomplete.ts';
 // import { SearchProductType } from '@schema/autocomplete.ts';
@@ -17,6 +17,13 @@ import { ImageWithFallback } from '@component/Image/image-with-fallback.tsx';
 import dayjs from 'dayjs';
 import { SearchProductType } from '@schema/autocomplete.ts';
 
+export type ProductAutocompleteProps = TextInputProps & {
+	onSelectProduct?: (product: SearchProductType) => void;
+	onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
+	onBlur?: (e: ChangeEvent<HTMLInputElement>) => void;
+	onFocus?: (e: ChangeEvent<HTMLInputElement>) => void;
+}
+
 const ListItems =({item, onClick}: {item: SearchProductType, onClick: () => void}) => {
 	return (
 		<List.Item
@@ -25,28 +32,28 @@ const ListItems =({item, onClick}: {item: SearchProductType, onClick: () => void
 			className={'rounded-md cursor-pointer hover:bg-teal-600/20 transition-colors'}
 		>
 			<Box className={'p-2 relative flex justify-start items-start gap-5'}>
-				<div className={"w-[50px] h-[50px] flex-shrink-0"}>
-					<ImageWithFallback
-						unoptimized
-						alt={item.drug_name}
-						src={'/images/placeholder.png'}
-						width={100} height={100}
-						className={'w-[50px] object-cover'}
-					/>
-				</div>
+				{/*<div className={"w-[50px] h-[50px] flex-shrink-0"}>*/}
+				{/*	<ImageWithFallback*/}
+				{/*		unoptimized*/}
+				{/*		alt={item.drug_name}*/}
+				{/*		src={'/images/placeholder.png'}*/}
+				{/*		width={100} height={100}*/}
+				{/*		className={'w-[50px] object-cover'}*/}
+				{/*	/>*/}
+				{/*</div>*/}
 				<Stack gap={2}>
-					<Typography size={"content"} weight={'semibold'}>{item.drug_name}</Typography>
+					<Typography size={"h5"} weight={'semibold'} color={"primary"}>{item.drug_name}</Typography>
 					<Label classNames={{label: ""}} label={"Mã:"}>
-						<Typography size={'content'} weight={"medium"}>{item.drug_code}</Typography>
+						<Typography size={'content'} weight={"normal"}>{item.drug_code}</Typography>
 					</Label>
 					<Label classNames={{label: ""}} label={"Loại:"}>
-						<Typography size={'content'} weight={"medium"}>{item.drug_type}</Typography>
+						<Typography size={'content'} weight={"normal"}>{item.drug_type}</Typography>
 					</Label>
 					<Label classNames={{label: ""}} label={"Cty sản xuất:"}>
-						<Typography size={'content'} weight={"medium"}>{item.manufacturer}</Typography>
+						<Typography size={'content'} weight={"normal"}>{item.manufacturer}</Typography>
 					</Label>
 					<Label label={"Số đăng ký:"}>
-						<Typography size={'content'} weight={"medium"}>{item.registration_number}</Typography>
+						<Typography size={'content'} weight={"normal"}>{item.registration_number}</Typography>
 					</Label>
 				</Stack>
 			</Box>
@@ -54,20 +61,20 @@ const ListItems =({item, onClick}: {item: SearchProductType, onClick: () => void
 	)
 }
 
-const ExternalProductAutocomplete = () => {
+const ExternalProductAutocomplete = forwardRef<HTMLInputElement, ProductAutocompleteProps>(({onSelectProduct, onChange, onBlur, onFocus, ...InputProps}, ref) => {
 	const {branchId} = useDashboard();
 
 	const [searchTerm, setSearchTerm] = useState<string>("");
 	const [selected, setSelected] = useState<string>("");
-	const [results, setResults] =useState<SearchProductType[]>([]);
+	const [results, setResults] = useState<SearchProductType[]>([]);
 	const [recentResults, setRecentResults] = useState<SearchProductType[]>([]);
 
 	const [isSearching, setIsSearching] = useState<boolean>(false);
 	const [shouldSearch, setShouldSearch] = useState<boolean>(true);
 	const [popoverOpened, setPopoverOpened] = useState<boolean>(false);
 
-	const [, invoiceDispatch] = useAtom(invoiceActionAtom);
-	const [activeTab] = useAtom(invoiceActiveTabActionAtom);
+	// const [, invoiceDispatch] = useAtom(invoiceActionAtom);
+	// const [activeTab] = useAtom(invoiceActiveTabActionAtom);
 	const [selectedProduct, setSelectedProduct] = useState<SearchProductType | null>(null);
 	// const [dropdownOpened, { toggle, open, close }] = useDisclosure();
 	const debouncedSearchTerm = useDebounce(searchTerm, 500);
@@ -76,15 +83,30 @@ const ExternalProductAutocomplete = () => {
 	const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
 		setSearchTerm(e.target.value);
 		setShouldSearch(true);
+		onChange && onChange(e);
 	};
 
-	const selectItem = (item: SearchProductType) => {
-		// setSelected(item);
-		if (!activeTab) {
-			// console.error("No active tab selected");
-			return;
-		}
+	const handleBlur = (e: ChangeEvent<HTMLInputElement>) => {
+		// console.log('blur');
+		// setPopoverOpened(false)
+		setTimeout(() => setPopoverOpened(false), 200)
+		onBlur && onBlur(e);
+	}
 
+	const handleFocus = (e: ChangeEvent<HTMLInputElement>) => {
+		// console.log('focus');
+		setPopoverOpened(true)
+		onFocus && onFocus(e);
+	}
+
+	const selectItem = (item: SearchProductType) => {
+		// // setSelected(item);
+		// if (!activeTab) {
+		// 	// console.error("No active tab selected");
+		// 	return;
+		// }
+		// console.log("Selected item:", item);
+		onSelectProduct && onSelectProduct(item);
 		// close();
 		setShouldSearch(false);
 	}
@@ -144,18 +166,21 @@ const ExternalProductAutocomplete = () => {
 						value={searchTerm}
 						onChange={handleChange}
 						placeholder="Tìm sản phẩm"
-						onFocus={() => setPopoverOpened(true)} // Open on focus
-						onBlur={() => setTimeout(() => setPopoverOpened(false), 200)} // Close on blur with delay
+						onFocus={handleFocus} // Open on focus
+						onBlur={handleBlur} // Close on blur with delay
 						rightSection={isSearching && <Loader size="xs" />}
+						{...InputProps}
+						ref={ref}
 					/>
 				</Popover.Target>
-				<Popover.Dropdown className={'!w-full max-w-md overflow-y-auto sm:max-h-[600px]'}>
+				<Popover.Dropdown className={'!z-[200] !w-full max-w-md overflow-y-auto sm:max-h-[600px]'}>
 					<List className={'w-full max-w-md'}>
 						{results.slice(0, 5).map(item => (
 							<ListItems
 								key={item.drug_code + "-1"}
 								item={item}
 								onClick={() => {
+									// console.log("Selected item:", item);
 									selectItem(item);
 									setPopoverOpened(false);
 									setResults([]);
@@ -181,6 +206,8 @@ const ExternalProductAutocomplete = () => {
 										item={item}
 										onClick={() => {
 											selectItem(item);
+											// console.log("Selected item:", item);
+
 											setPopoverOpened(false);
 											setResults([]);
 											const updatedRecentResults = [
@@ -200,6 +227,7 @@ const ExternalProductAutocomplete = () => {
 
 		</div>
 	);
-};
+});
+ExternalProductAutocomplete.displayName = 'ExternalProductAutocomplete';
 
 export default ExternalProductAutocomplete;

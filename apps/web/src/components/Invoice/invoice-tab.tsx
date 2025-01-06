@@ -364,12 +364,15 @@ function InvoiceTab() {
 
 	useEffect(() => {
 		if (branchDetail) {
-			setRewardPoint({
-				point: 1,
-				description: '1 điểm',
-				convert_rate: branchDetail.store.store_reward_point?.convert_rate || 1000,
-				convert_to: branchDetail.store.store_reward_point?.convert_to || 'vnd',
-			})
+			if (branchDetail.store.store_reward_point) {
+				setRewardPoint({
+					point: 1,
+					description: '1 điểm',
+					convert_rate: branchDetail.store.store_reward_point?.convert_rate || 1000,
+					convert_to: branchDetail.store.store_reward_point?.convert_to || 'vnd',
+					point_value: branchDetail.store.store_reward_point?.point_value || 1000,
+				})
+			}
 		}
 	}, [branchDetail])
 
@@ -610,6 +613,7 @@ function InvoiceTab() {
 							<div className="flex items-center gap-2">
 								<NumberInput
 									// value={currentRewardPoint?.point_to_convert || 0}
+									allowNegative={false}
 									onChange={(value) => {
 										// setDiscount(value);
 										if (currentRewardPoint) {
@@ -701,19 +705,19 @@ function InvoiceTab() {
 						</label>
 					</div>
 
-					<div className={''}>
-						<FileInput
-							onChange={(file) => {
-								const reader = new FileReader();
-								reader.onload = (e) => {
-									// qrURLRef.current = e.target?.result as string;
-									setQrURL(e.target?.result as string);
-								}
-								if (file) reader.readAsDataURL(file);
-							}}
-							description={'Chọn file qr'}
-						/>
-					</div>
+					{/*<div className={''}>*/}
+					{/*	<FileInput*/}
+					{/*		onChange={(file) => {*/}
+					{/*			const reader = new FileReader();*/}
+					{/*			reader.onload = (e) => {*/}
+					{/*				// qrURLRef.current = e.target?.result as string;*/}
+					{/*				setQrURL(e.target?.result as string);*/}
+					{/*			}*/}
+					{/*			if (file) reader.readAsDataURL(file);*/}
+					{/*		}}*/}
+					{/*		description={'Chọn file qr'}*/}
+					{/*	/>*/}
+					{/*</div>*/}
 					<button onClick={() => handleSubmit()}
 									className="w-full py-3 bg-teal-500 text-white rounded text-lg hover:bg-teal-600">
 						Thanh toán (F7)

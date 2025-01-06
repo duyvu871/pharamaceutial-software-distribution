@@ -1,9 +1,19 @@
 "use client";
 
 import React from 'react';
-import { Card, Text, Group, Badge, Accordion, Grid, Container, Title, Paper, ThemeIcon, List } from '@mantine/core';
+import { Card, Text, Group, Badge, Accordion, Grid, Container, Title, Paper, ThemeIcon, List, AppShell, Burger, Skeleton, Box, Stack, Tabs, ScrollArea } from '@mantine/core';
 import { IconMapPin, IconUser, IconCertificate, IconCalendar } from '@tabler/icons-react';
 import { Typography } from '@component/Typography';
+import { TbLicense } from "react-icons/tb";
+import { Hospital } from 'lucide-react';
+import LicenseTab from '@container/dashboard/store/info/license-tab.tsx';
+import PharmacyForm from '@component/Form/pharmacy-form.tsx';
+import RewardPointForm from '@component/Form/reward-point-form.tsx';
+import { useSearchParams, useRouter } from '@route/hooks';
+import { useDashboard } from '@hook/dashboard/use-dasboard.ts';
+import PaymentForm from '@component/Form/payment-form.tsx';
+import QRSupportForm from '@component/Form/qr-payment-form.tsx';
+import { cn } from '@lib/tailwind-merge.ts';
 
 interface PharmacyDetails {
 	id: string;
@@ -23,6 +33,9 @@ interface PharmacyDetails {
 }
 
 const PharmacyInfo: React.FC<{ branchId?: string }> = ({ branchId }) => {
+	const searchParams = useSearchParams();
+	const router = useRouter();
+	const tab = searchParams?.get("tab");
 	const pharmacyDetails = {
 		id: "123",
 		branch_id: "456",
@@ -51,89 +64,75 @@ const PharmacyInfo: React.FC<{ branchId?: string }> = ({ branchId }) => {
 	}
 
 	return (
-		<Container size="xl" py="xl">
-			<Typography size={"h3"} weight={"bold"} className={"mb-5"}>Thông Tin Chi Tiết Nhà Thuốc</Typography>
-			<Paper shadow="md" p="md">
-				<Grid>
-					<Grid.Col span={12}>
-						<Card shadow="sm" padding="lg" radius="md" withBorder>
-							<Group mb="xs">
-								<Text fw={500} size="lg">{pharmacy.ten_nha_thuoc}</Text>
-								<Badge color="blue" variant="light">
-									{pharmacy.loai_hinh}
-								</Badge>
-							</Group>
-							<Text size="sm" color="dimmed">Số đăng ký: {pharmacy.so_dang_ky}</Text>
-						</Card>
-					</Grid.Col>
+			<Group h={"100%"} wrap={"nowrap"}>
+				<Tabs
+					color={"teal"}
+					w={"100%"}
+					h={"100%"}
+					defaultValue="license"
+					orientation="vertical"
+					value={tab || "license"}
+					onChange={(value) => {
+						router.push(`/dashboard/store/${branchId}/info?tab=${value}`);
+					}}
+					styles={{
+						tab: {
+							// "--tab-border-width": "4px",
+							borderRightWidth: "5px",
+						}
+					}}
+					className={"[&[data-active]]:!bg-teal-500"}
+				>
+					<Tabs.List pt={20}>
+						<Tabs.Tab className={cn("h-14 w-[230px] group", tab === "license" && "!bg-teal-500/20")} value="license">
+							<Typography weight={"semibold"} className={"flex items-center gap-2 group-hover:text-teal-500  transition-all"}>
+								Cài đặt giấy phép
+							</Typography>
+						</Tabs.Tab>
+						<Tabs.Tab className={cn("h-14 w-[230px] group", tab === "pharmacy" && "!bg-teal-500/20")} value="pharmacy">
+							<Typography weight={"semibold"} className={"flex items-center gap-2 group-hover:text-teal-500  transition-all"}>
+								Thông tin nhà thuốc
+							</Typography>
+						</Tabs.Tab>
+						<Tabs.Tab className={cn("h-14 w-[230px] group", tab === "reward" && "!bg-teal-500/20")} value="reward">
+							<Typography weight={"semibold"} className={"flex items-center gap-2 group-hover:text-teal-500  transition-all"}>
+								Thông tin tích điểm
+							</Typography>
+						</Tabs.Tab>
+						<Tabs.Tab className={cn("h-14 w-[230px] group", tab === "payment" && "!bg-teal-500/20")} value="payment">
+							<Typography weight={"semibold"} className={"flex items-center gap-2 group-hover:text-teal-500  transition-all"}>
+								Thông tin thanh toán
+							</Typography>
+						</Tabs.Tab>
+					</Tabs.List>
 
-					<Grid.Col span={6}>
-						<Accordion multiple>
-							<Accordion.Item value="location">
-								<Accordion.Control icon={<IconMapPin size={20} />}>
-									Địa chỉ
-								</Accordion.Control>
-								<Accordion.Panel>
-									<Text>{pharmacy.dia_chi}</Text>
-									<Text>
-										{pharmacy.huyen}, {pharmacy.tinh}
-									</Text>
-								</Accordion.Panel>
-							</Accordion.Item>
+					{/*<Tabs.Panel p={20} value="gallery">Gallery tab content</Tabs.Panel>*/}
+					{/*<Tabs.Panel p={20} value="messages">Messages tab content</Tabs.Panel>*/}
+					{/*<Tabs.Panel p={20} value="settings">Settings tab content</Tabs.Panel>*/}
+					<Tabs.Panel p={40} value="license" className={"overflow-y-auto "}>
+						{/*<Container size={"xl"}>*/}
+						{/*	<ScrollArea>*/}
+								<LicenseTab />
+							{/*</ScrollArea>*/}
+						{/*</Container>*/}
+					</Tabs.Panel>
+					<Tabs.Panel p={40} value="pharmacy" className={"overflow-y-auto "}>
+						{/*<ScrollArea>*/}
+						<Group align={'start'} className="h-full overflow-hidden !flex-nowrap !gap-10">
+							<PharmacyForm />
+							<QRSupportForm />
+						</Group>
+							{/*</ScrollArea>*/}
 
-							<Accordion.Item value="representatives">
-								<Accordion.Control icon={<IconUser size={20} />}>
-									Người đại diện
-								</Accordion.Control>
-								<Accordion.Panel>
-									<List
-										spacing="xs"
-										size="sm"
-										center
-										icon={
-											<ThemeIcon color="teal" size={24} radius="xl">
-												<IconUser size={16} />
-											</ThemeIcon>
-										}
-									>
-										<List.Item>{pharmacy.nguoi_dai_dien}</List.Item>
-										<List.Item>{pharmacy.nguoi_chiu_trach_nhiem}</List.Item>
-										<List.Item>{pharmacy.nguoi_chiu_trach_nhiem_chuyen_mon}</List.Item>
-									</List>
-								</Accordion.Panel>
-							</Accordion.Item>
-						</Accordion>
-					</Grid.Col>
-
-					<Grid.Col span={6}>
-						<Card shadow="sm" padding="lg" radius="md" withBorder>
-							<Group>
-								<ThemeIcon variant="light" size={40}>
-									<IconCertificate size={20} />
-								</ThemeIcon>
-								<div>
-									<Text fw={500}>Số chứng chỉ hành nghề</Text>
-									<Text size="sm">{pharmacy.so_chung_chi_hanh_nghe}</Text>
-								</div>
-							</Group>
-						</Card>
-
-						<Card shadow="sm" padding="lg" radius="md" withBorder mt="md">
-							<Group>
-								<ThemeIcon variant="light" size={40}>
-									<IconCalendar size={20} />
-								</ThemeIcon>
-								<div>
-									<Text fw={500}>Thông tin thời gian</Text>
-									<Text size="xs">Tạo lúc: {new Date(pharmacy.createdAt).toLocaleString()}</Text>
-									<Text size="xs">Cập nhật lúc: {new Date(pharmacy.updatedAt).toLocaleString()}</Text>
-								</div>
-							</Group>
-						</Card>
-					</Grid.Col>
-				</Grid>
-			</Paper>
-		</Container>
+					</Tabs.Panel>
+					<Tabs.Panel p={40} value="reward">
+						<RewardPointForm />
+					</Tabs.Panel>
+					<Tabs.Panel p={40} value="payment">
+						<PaymentForm />
+					</Tabs.Panel>
+				</Tabs>
+			</Group>
 	);
 };
 

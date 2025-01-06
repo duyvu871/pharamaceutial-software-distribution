@@ -13,6 +13,7 @@ import DynamicTabs from '@component/Invoice/dynamic-tab-list.tsx';
 import InvoiceTab from '@component/Invoice/invoice-tab.tsx';
 import { PrescriptModal } from '@component/Modal/prescript-modal.tsx';
 import { useAuth } from '@hook/auth';
+import InvoiceProductSearch from '@component/Invoice/invoice-product-search.tsx';
 
 function RetailDashboard({branchId}: {branchId: string}) {
 
@@ -30,8 +31,8 @@ function RetailDashboard({branchId}: {branchId: string}) {
 				}}
 			>
 				<Stack className="h-full overflow-hidden" gap={0}>
-					<Box id={'nav'} className={'h-14 flex items-center px-5 w-full bg-teal-500'}>
-						<ProductAutocomplete />
+					<Box id={'nav'} className={'h-14 flex gap-5 items-center px-5 w-full bg-teal-500'}>
+						<InvoiceProductSearch />
 						<DynamicTabs />
 					</Box>
 					<Box className={'h-full flex flex-1 overflow-hidden'}>

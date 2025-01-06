@@ -41,6 +41,10 @@ export const ProductZodSchema = z.object({
 	description: z.string().nullable(), // Mô tả sản phẩm (có thể null)
 	note: z.string().nullable(), // Ghi chú (có thể null)
 	manufacturer: z.string().nullable(), // Nhà sản xuất (có thể null)
+	drug_content: z.string().nullable(), // Thành phần (có thể null)
+	drug_usage: z.string().nullable(), // Cách dùng (có thể null)
+	drug_ingredients: z.string().nullable(), // Thành phần (có thể null)
+	drug_packaging: z.string().nullable(), // Bao bì (có thể null)
 	made_in: z.string().nullable(), // Nơi sản xuất (có thể null)
 	deleted_at: z.number().nullable(), // Thời gian bị xóa (có thể null)
 	deleted_by: z.number().nullable(), // Người xóa (có thể null)
@@ -90,12 +94,13 @@ export const productFormSchema = z.object({
 	expiryDate: z.date({ required_error: 'Hạn sử dụng là bắt buộc' }),
 	quantity: z.number().int().nonnegative({ message: 'Số lượng nhập phải là số nguyên dương' }),
 	importDate: z.date({ required_error: 'Ngày nhập hàng là bắt buộc' }),
-	useBefore: z.string(),
-	vat: z.string(),
-	unit: z.enum(['vien', 'vi', 'goi', 'chai', 'lo', 'hop']),
-	largerUnit: z.string(),
-	largerUnitValue: z.string(),
+	// useBefore: z.string().optional(),
+	// vat: z.string(),
+	unit: z.enum(['vien', 'vi', 'goi', 'chai', 'lo', 'hop']).or(z.string()),
+	largerUnit: z.string().optional(),
+	largerUnitValue: z.string().optional(),
 	notes: z.string().optional(),
+	images: z.array(z.string()).optional(),
 })
 
 export type ProductFormData = z.infer<typeof productFormSchema>

@@ -1,5 +1,5 @@
-import { useState, useEffect, ChangeEventHandler, ChangeEvent, memo } from 'react';
-import { Autocomplete, Box, Divider, List, Loader, Popover, Stack, TextInput } from '@mantine/core';
+import { useState, useEffect, ChangeEventHandler, ChangeEvent, memo, forwardRef } from 'react';
+import { Autocomplete, Box, Divider, InputProps, List, Loader, Popover, Stack, TextInput } from '@mantine/core';
 import { useDebounce } from "@uidotdev/usehooks";
 import { autocomplete, autoCompleteSearchStoreProduct } from '@api/autocomplete.ts';
 // import { SearchProductType } from '@schema/autocomplete.ts';
@@ -15,6 +15,14 @@ import { Product } from '@schema/product-schema.ts';
 import { Label } from '@component/label';
 import { ImageWithFallback } from '@component/Image/image-with-fallback.tsx';
 import dayjs from 'dayjs';
+import { TextInputProps } from '@mantine/core';
+
+export type ProductAutocompleteProps = TextInputProps & {
+	onSelectProduct?: (product: Product) => void;
+	onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
+	onBlur?: (e: ChangeEvent<HTMLInputElement>) => void;
+	onFocus?: (e: ChangeEvent<HTMLInputElement>) => void;
+}
 
 const ListItems =({item, onClick}: {item: Product, onClick: () => void}) => {
 	return (
@@ -51,7 +59,7 @@ const ListItems =({item, onClick}: {item: Product, onClick: () => void}) => {
 	)
 }
 
-const ProductAutocomplete = () => {
+const ProductAutocomplete = forwardRef<HTMLInputElement, ProductAutocompleteProps>(({onSelectProduct, onChange, onBlur, onFocus, ...inputProps}, ref) => {
 	const {branchId} = useDashboard();
 
 	const [searchTerm, setSearchTerm] = useState<string>("");
@@ -63,9 +71,6 @@ const ProductAutocomplete = () => {
 	const [shouldSearch, setShouldSearch] = useState<boolean>(true);
 	const [popoverOpened, setPopoverOpened] = useState<boolean>(false);
 
-	const [, invoiceDispatch] = useAtom(invoiceActionAtom);
-	const [activeTab] = useAtom(invoiceActiveTabActionAtom);
-
 	// const [dropdownOpened, { toggle, open, close }] = useDisclosure();
 	const debouncedSearchTerm = useDebounce(searchTerm, 500);
 	// const {generateUID} = useUID();
@@ -73,31 +78,20 @@ const ProductAutocomplete = () => {
 	const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
 		setSearchTerm(e.target.value);
 		setShouldSearch(true);
+		onChange && onChange(e);
 	};
 
-	const selectItem = (item: Product) => {
-		// setSelected(item);
-		if (!activeTab) {
-			// console.error("No active tab selected");
-			return;
-		}
-		const initialPrice = item.sell_price || item.original_price
-		const addedItemInvoice = {
-			productName: item.product_name,
-			quantity: 1,
-			price: initialPrice,
-			total: initialPrice,
-			note: "",
-			unit: item?.productUnit?.name || item.base_unit,
-			id: item.id,
-		}
-		invoiceDispatch({
-			type: 'add-item',
-			id: activeTab,
-			item: addedItemInvoice
-		});
-		// close();
-		setShouldSearch(false);
+	const handleBlur = (e: ChangeEvent<HTMLInputElement>) => {
+		// console.log('blur');
+		// setPopoverOpened(false)
+		setTimeout(() => setPopoverOpened(false), 200)
+		onBlur && onBlur(e);
+	}
+
+	const handleFocus = (e: ChangeEvent<HTMLInputElement>) => {
+		// console.log('focus');
+		setPopoverOpened(true)
+		onFocus && onFocus(e);
 	}
 
 	useEffect(() => {
@@ -145,32 +139,37 @@ const ProductAutocomplete = () => {
 	}, []);
 
 	return (
-		<div className="w-96 relative"> {/* relative for Popover positioning */}
+		// <div className="w-96 relative"> {/* relative for Popover positioning */}
 			<Popover
 				opened={popoverOpened}
 				onClose={() => setPopoverOpened(false)}
 				position="bottom"
 				withArrow
 				shadow="md"
+				closeOnClickOutside={true}
+				// clickOutsideEvents={['mouseup', 'touchend']}
 			>
 				<Popover.Target>
 					<TextInput
-						value={searchTerm}
+						// value={searchTerm}
 						onChange={handleChange}
 						placeholder="Tìm sản phẩm"
-						onFocus={() => setPopoverOpened(true)} // Open on focus
-						onBlur={() => setTimeout(() => setPopoverOpened(false), 200)} // Close on blur with delay
+						onFocus={handleFocus} // Open on focus
+						onBlur={handleBlur} // Close on blur with delay
 						rightSection={isSearching && <Loader size="xs" />}
+						{...inputProps}
+						ref={ref}
 					/>
 				</Popover.Target>
-				<Popover.Dropdown className={'!w-full max-w-md overflow-y-auto sm:max-h-[600px]'}>
+				<Popover.Dropdown className={'!z-[150] !w-full max-w-md overflow-y-auto sm:max-h-[600px]'}>
 					<List className={'w-full max-w-md'}>
 						{results.slice(0, 5).map(item => (
 							<ListItems
 								key={item.id}
 								item={item}
 								onClick={() => {
-									selectItem(item);
+									onSelectProduct && onSelectProduct(item);
+									setShouldSearch(false);
 									setPopoverOpened(false);
 									setResults([]);
 									const updatedRecentResults = [
@@ -194,7 +193,8 @@ const ProductAutocomplete = () => {
 										key={`${item.product_no}-2`}
 										item={item}
 										onClick={() => {
-											selectItem(item);
+											onSelectProduct && onSelectProduct(item);
+											setShouldSearch(false);
 											setPopoverOpened(false);
 											setResults([]);
 											const updatedRecentResults = [
@@ -212,8 +212,9 @@ const ProductAutocomplete = () => {
 				</Popover.Dropdown>
 			</Popover>
 
-		</div>
+		// </div>
 	);
-};
+});
+ProductAutocomplete.displayName = "ProductAutocomplete";
 
 export default ProductAutocomplete;

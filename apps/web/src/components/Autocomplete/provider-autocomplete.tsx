@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useSearch } from '@hook/common/use-search.ts';
 import { SearchRegionResponseType } from '@schema/autocomplete.ts';
@@ -39,6 +39,8 @@ function ProviderAutocomplete({makeOptional, setValue}: ProviderAutocompleteProp
 		return providers.find((item) => item.id === id);
 	}
 
+	const prevProviderRef = useRef<ProverState | null>(null);
+
 	useEffect(() => {
 		getProviders({
 			branchId: branchId,
@@ -56,7 +58,11 @@ function ProviderAutocomplete({makeOptional, setValue}: ProviderAutocompleteProp
 	}, [branchId]);
 
 	useEffect(() => {
-		setValue && setValue(provider);
+		// setValue && setValue(provider);
+		if (prevProviderRef.current?.id !== provider.id) {
+			setValue && setValue(provider);
+			prevProviderRef.current = provider;
+		}
 	}, [provider, setValue]);
 
 	return (
@@ -66,7 +72,7 @@ function ProviderAutocomplete({makeOptional, setValue}: ProviderAutocompleteProp
 			placeholder="Nhập tên nhà cung cấp"
 			onSearch={async term => {
 				const searchTerm = `'${term.trim().split(' ').join(' \'')}`;
-				console.log(searchTerm);
+				// console.log(searchTerm);
 				return providerQuery(searchTerm);
 			}}
 			data={providerStore}

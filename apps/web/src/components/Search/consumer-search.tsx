@@ -48,6 +48,13 @@ function ConsumerSearch({ makeOptional, setValue, key }: ConsumerAutocompletePro
 		setConsumerSelected({ name: consumer.consumer_name, id: consumer.id })
 		setRecentConsumer(consumer);
 	}
+	const toggleConsumerSelect = (consumer: ConsumerAttributes) => {
+		if (consumerSelected.id === consumer.id) {
+			setConsumerSelected({ name: '', id: '' });
+		} else {
+			setConsumerSelected({ name: consumer.consumer_name, id: consumer.id });
+		}
+	}
 
 	useEffect(() => {
 		const recentConsumers = localStorage.getItem('recentConsumers');
@@ -95,12 +102,12 @@ function ConsumerSearch({ makeOptional, setValue, key }: ConsumerAutocompletePro
 		{
 			title: "Giới tính",
 			render: (data) =>
-				<Typography size="sm" color={'dimmer'}>{data.gender || ""}</Typography>
+				<Typography size="sm" color={'dimmer'}>{data.gender ? genderVi[data.gender] : ""}</Typography>
 		},
 		{
 			title: "Ghi chú",
 			render: (data) =>
-				<Typography size="sm" color={'dimmer'} className={"max-w-40"}>{data.notes || ""}</Typography>
+				<Typography size="sm" color={'dimmer'} className={"max-w-60"}>{data.notes || ""}</Typography>
 		}
 	]
 
@@ -171,7 +178,7 @@ function ConsumerSearch({ makeOptional, setValue, key }: ConsumerAutocompletePro
 							{isSearching ? (
 								<Loader />
 							) : consumers.length > 0 ? (
-								<Table>
+								<Table striped highlightOnHover>
 									<Table.Thead>
 										<Table.Tr>
 											{tableRenderData.map((item) => (
@@ -183,9 +190,9 @@ function ConsumerSearch({ makeOptional, setValue, key }: ConsumerAutocompletePro
 										{consumers.map((consumer) => (
 											<Table.Tr
 												key={consumer.id}
-												onClick={() => handleConsumerSelect(consumer)}
+												onClick={() => toggleConsumerSelect(consumer)}
 												className={cn(
-													"hover:bg-zinc-100 transition-all cursor-pointer",
+													"cursor-pointer",
 													{
 														"!bg-teal-100/50": (consumerSelected.id === consumer.id && consumerSelected.id)
 													}
@@ -194,6 +201,11 @@ function ConsumerSearch({ makeOptional, setValue, key }: ConsumerAutocompletePro
 												{tableRenderData.map((item) => (
 													<Table.Td>{item.render(consumer)}</Table.Td>
 												))}
+												<Table.Td className={cn("w-24")}>
+													{consumerSelected.id === consumer.id && consumerSelected.id && (
+														<Typography color={'primary'}>Đã chọn</Typography>
+													)}
+												</Table.Td>
 											</Table.Tr>
 										))}
 									</Table.Tbody>

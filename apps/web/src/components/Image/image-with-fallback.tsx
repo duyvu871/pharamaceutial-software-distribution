@@ -1,10 +1,14 @@
-import { forwardRef, useEffect, useState, SyntheticEvent } from "react"
+import { forwardRef, useEffect, useState, SyntheticEvent, HTMLProps } from "react"
 import ImageNext, {ImageProps as NextImageProps} from "next/image"
-import { Image as ImageMantine } from "@mantine/core"
+import { Image as ImageMantine, ImageProps } from "@mantine/core"
 
 const fallbackImage = '/images/placeholder.png'
 
 export type ImageWithFallbackProps = NextImageProps & {
+	fallback?: string
+}
+
+export type ImageMantineWithFallbackProps = ImageProps  & {
 	fallback?: string
 }
 
@@ -39,20 +43,12 @@ const ImageWithFallback = forwardRef<HTMLImageElement, ImageWithFallbackProps>((
 })
 ImageWithFallback.displayName = 'ImageWithFallback'
 
-const ImageMantineWithFallback = forwardRef<HTMLImageElement, ImageWithFallbackProps>(({ fallback = fallbackImage, alt, src, ...props }, ref) => {
-	const [error, setError] = useState<SyntheticEvent | null>(null)
-
-	useEffect(() => {
-		setError(null)
-	}, [src])
+const ImageMantineWithFallback = forwardRef<HTMLImageElement, ImageMantineWithFallbackProps>(({ fallback = fallbackImage, src, ...props }, ref) => {
 
 	return (
 		<ImageMantine
-			alt={alt}
-			onError={(e) => {
-				setError(e)
-			}}
-			src={error ? fallbackImage : src}
+			fallbackSrc={fallback}
+			src={src}
 			ref={ref}
 			{...props}
 		/>

@@ -30,6 +30,15 @@ export class BranchTask {
 							},
 							store_reward_point: {
 								take: 1
+							},
+							store_assets: {
+								include: {
+									asset: true
+								},
+								take: 1,
+								orderBy: {
+									createdAt: 'desc'
+								}
 							}
 						},
 						take: 1
@@ -41,14 +50,15 @@ export class BranchTask {
 
 
 			const {stores, ...branch} = query;
-			const {store_group, store_reward_point, ...store} = stores[0];
+			const {store_group, store_reward_point, store_assets, ...store} = stores[0];
 
 			const bindResponse = {
 				...branch,
 				store: {
 					...store,
 					store_group: store_group[0],
-					store_reward_point: store_reward_point[0]
+					store_reward_point: store_reward_point[0],
+					store_asset: store_assets[0]
 				}
 			};
 

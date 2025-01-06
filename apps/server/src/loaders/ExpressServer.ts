@@ -2,6 +2,7 @@ import express from 'express';
 import * as bodyParser from "body-parser";
 import config from "../common/config";
 import cors from 'cors';
+import cookieParser from "cookie-parser";
 import errorHandler from "../responses/ErrorHandler";
 import route from '../api/routes';
 import routeNotFound from '../api/middlewares/RouteNotFound';
@@ -29,8 +30,10 @@ class ExpressServer {
         this._app = express();
 
         // only accept content type application/json
-        this._app.use(bodyParser.urlencoded({ extended: false }));
-        this._app.use(bodyParser.json({ type: "*/*" }));
+        this._app.use(bodyParser.urlencoded({ extended: true }));
+        this._app.use(bodyParser.json({ limit: '10mb' }));
+        this._app.use(bodyParser.text());
+        this._app.use(cookieParser());
         this._app.use(cors());
         this._app.use('/api/v1', route.apiRoutes);
         this._app.use('/', route.pageRoutes);

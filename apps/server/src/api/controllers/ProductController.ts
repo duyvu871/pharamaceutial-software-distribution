@@ -17,6 +17,7 @@ import fs from 'fs';
 import path from 'node:path';
 import * as process from 'node:process';
 import { InvoiceAttribute } from 'repository/transaction/import-invoice/schema.ts';
+import config from 'config/app-config';
 
 export class ProductController {
 	public static getProducts = AsyncMiddleware.asyncHandler(
@@ -76,7 +77,7 @@ export class ProductController {
 				// const products = await prisma.$queryRaw<ProductAttributes[]>(query);
 
 				const orders = orderBy.split(',').map((order) => {
-					const [column, direction] = order.split(':') as [keyof InvoiceAttribute, 'ASC' | 'DESC'];
+					const [column, direction] = order.split(':') as [keyof ProductAttributes, 'ASC' | 'DESC'];
 					if (!validColumns.includes(column) || !['ASC', 'DESC'].includes(direction)) {
 						throw new BadRequest('invalid_order_by', 'Invalid orderBy parameter', 'Invalid orderBy parameter');
 					}
@@ -211,31 +212,44 @@ export class ProductController {
 		}
 	);
 
+	public
+
 	public static uploadImage = AsyncMiddleware.asyncHandler(
-		async (req: Request<{ branchId: string }>, res: Response) => {
+		async (req: Request<BranchIdParam>, res: Response) => {
 			try {
 				const { branchId } = req.params;
-				const { image, jwtPayload } = req;
-				const storeId = await prisma.stores.findFirst({
+				const { file: image, jwtPayload } = req;
+
+				if (!image) {
+					throw new BadRequest('invalid_file', 'Không có ảnh được upload', 'Invalid file');
+				}
+
+				const store = await prisma.stores.findFirst({
 					where: { branch_id: branchId },
 					select: { id: true }
 				});
 
-				if (!storeId) {
+				if (!store) {
 					throw new BadRequest('store_not_found', 'Store not found', 'Store not found');
 				}
-				const id = storeId.id;
-
-				if (!image) {
-					throw new BadRequest('invalid_file', 'Invalid file', 'Invalid file');
-				}
+				const storeId = store.id;
 
 				const imageOriginalName = image.originalname;
 				const imageBuffer = image.buffer;
+				const imageExtension = imageOriginalName.split('.').pop();
 
-				const imagePath = `storage/image/product/${id}/${imageOriginalName}/${uuidv4()}/${imageOriginalName}`;
+				if (!imageExtension) throw new BadRequest('invalid_file', 'Invalid file', 'Invalid file');
+
+				const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+
+				if (!allowedExtensions.includes(imageExtension)) throw new BadRequest('invalid_file', 'Invalid file', 'Invalid file');
+
+
+				const imagePath = `storage/image/product/${storeId}/${uuidv4()}.${imageExtension}`;
 				const imageAbsolutePath = path.join(process.cwd(), imagePath);
 				const mkdir = await fs.promises.mkdir(path.dirname(imageAbsolutePath), { recursive: true });
+
+				// prisma.product_assets.create({})
 
 				const tasks = await Promise.all([
 					fs.promises.writeFile(imagePath, imageBuffer),
@@ -243,19 +257,36 @@ export class ProductController {
 						data: {
 							name: imageOriginalName,
 							type: image.mimetype,
-							store_id: id,
-							url: `${process.env.BASE_URL}`,
+							store_id: storeId,
+							url: `${config.baseUrl}/storage/image/product/${storeId}/${path.basename(imagePath)}`,
+							meta_data: {
+								mime: image.mimetype,
+								size: image.size,
+								originalName: imageOriginalName,
+								encoding: image.encoding,
+								destination: `storage/image/product/${storeId}`,
+							},
 							path: imagePath,
 							from: jwtPayload?.id ? `${jwtPayload.id}_${jwtPayload.type}` : null,
 							createdAt: new Date(),
 							updatedAt: new Date()
-						}
+						},
 					})
 				])
 
 				const result = tasks[1];
 
-				const response = new Success({ url: result.url }).toJson;
+				const productAsset = await prisma.product_assets.create({
+					data: {
+						store_id: storeId,
+						asset_id: result.id
+					}
+				})
+
+				const response = new Success({
+					...productAsset,
+					asset: result
+				}).toJson;
 
 				return res.status(200).json(response).end();
 			} catch (error: any) {

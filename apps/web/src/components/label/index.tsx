@@ -91,7 +91,7 @@ export function Label({
 			}
 			case 'bottom': {
 				return {
-					wrapper: 'flex flex-col',
+					wrapper: 'flex flex-col items-start',
 					label: '',
 				}
 			}

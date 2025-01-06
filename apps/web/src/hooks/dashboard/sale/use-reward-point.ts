@@ -9,11 +9,11 @@ export const useRewardPoint = () => {
 	const calculateRewardPoint = (point: number) => {
 		if (!rewardPoint ||	!currentRewardPoint) return 0;
 		if (point > currentRewardPoint.point_remain) return 0;
-		const pointToPaid = point * rewardPoint.convert_rate;
-		setCurrentRewardPoint({
-			...currentRewardPoint,
-			point_remain: currentRewardPoint.point_remain - point,
-		});
+		const pointToPaid = point * rewardPoint.point_value;
+		// setCurrentRewardPoint({
+		// 	...currentRewardPoint,
+		// 	point_remain: currentRewardPoint.point_remain - point,
+		// });
 		return pointToPaid;
 	}
 

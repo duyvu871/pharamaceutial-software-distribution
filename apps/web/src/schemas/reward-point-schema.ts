@@ -3,6 +3,7 @@ export type RewardPointSchema = {
 	description: string;
 	convert_to: string; // enum vnd, usd, eur
 	convert_rate: number; // 1 point = convert_rate convert_to
+	point_value: number;
 }
 
 export type CurrentRewardPointSchema = {

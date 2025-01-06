@@ -39,8 +39,9 @@ import {
 } from '@store/state/overview/import-product.ts';
 import { useImportProductState } from '@hook/dashboard/import/use-import-product-state.ts';
 import { Label } from '@component/label'
+import ProductAutocomplete from '@component/product-search.tsx';
+import { useImportProductForm } from '@hook/dashboard/import/use-import-product-form.ts';
 dayjs.extend(customParseFormat);
-
 
 export type ProductFormProps = {
 	onSubmit?: (data: ProductFormData) => void;
@@ -51,17 +52,22 @@ export type ProductFormProps = {
 }
 
 export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps) {
-	const { control, handleSubmit, formState: { errors }, watch, getValues, setValue } = useForm<ProductFormData>({
-		resolver: zodResolver(productFormSchema),
-		defaultValues: {
-			type: 'thuoc',
-			code: 'HH-0000014',
-			useBefore: '30',
-			vat: '10',
-			unit: 'vien',
-			largerUnit: '10',
-		},
-	})
+	// const { control, handleSubmit, formState: { errors }, watch, getValues, setValue } = useForm<ProductFormData>({
+	// 	resolver: zodResolver(productFormSchema),
+	// 	defaultValues: {
+	// 		type: 'thuoc',
+	// 		code: 'HH-0000014',
+	// 		useBefore: '30',
+	// 		vat: '10',
+	// 		unit: 'vien',
+	// 		largerUnit: '10',
+	// 	},
+	// })
+
+	const {useForm, resetForm} = useImportProductForm();
+	const {addProductItem, activeTab: importActiveTab, removeProductItem} = useImportProductState();
+
+	const { control, handleSubmit, formState: { errors }, watch, getValues, setValue } = useForm;
 	const [files, setFiles] = useState<FileWithPath[]>([])
 	const [invoices, invoiceDispatch] = useAtom(invoiceActionAtom);
 	const [activeTab] = useAtom(invoiceActiveTabActionAtom);
@@ -71,11 +77,11 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 	// const [, importProductActions] = useAtom(importProductActionAtom);
 	// const [, importProductActiveTabActions] = useAtom(importProductActiveTabActionAtom);
 
-	const {} = useImportProductState();
 
 	const submit = (data: ProductFormData) => {
 		onSubmit && onSubmit(data)
 		console.log(data)
+		addProductItem(importActiveTab, data)
 		invoiceDispatch({
 			type: 'add-item',
 			id: activeTab,
@@ -96,7 +102,10 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 		// });
 	}
 
-
+	const clearForm = () => {
+		setFiles([])
+		resetForm()
+	}
 
 	const productType = watch('type')
 
@@ -122,35 +131,10 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 		setFiles((currentFiles) => currentFiles.filter((_, i) => i !== index))
 	}
 
-	const clearForm = () => {
-		setFiles([])
-		setValue('name', '')
-		setValue('type', 'thuoc')
-		setValue('code', 'HH-0000014')
-		setValue('registrationNumber', '')
-		setValue('purchasePrice', 0)
-		setValue('sellingPrice', 0)
-		setValue('manufacturer', '')
-		setValue('usage', '')
-		setValue('ingredients', '')
-		setValue('packaging', '')
-		setValue('activeIngredient', '')
-		setValue('content', '')
-		setValue('lotNumber', '')
-		setValue('expiryDate', new Date())
-		setValue('quantity', 0)
-		setValue('importDate', new Date())
-		setValue('useBefore', '30')
-		setValue('vat', '0')
-		setValue('unit', 'vien')
-		setValue('largerUnit', '10')
-		setValue('largerUnitValue', '')
-	}
-
 	const previews = files.map((file, index) => {
 		const imageUrl = URL.createObjectURL(file)
 		return (
-			<div className={"w-[100px] h-[100px] aspect-square relative group rounded-md overflow-hidden border border-gray-300"}>
+			<div className={"w-[100px] h-[100px] aspect-square relative group overflow-hidden border border-gray-300"}>
 				<div className={"rounded-md w-[100px] h-[100px] bg-opacity-0 group-hover:bg-zinc-300/30 aspect-square absolute transition-colors"}>
 					<div className={"flex justify-center items-center w-full h-full"}>
                         <span className={"block"} onClick={() => removeImage(index)}>
@@ -184,12 +168,38 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 										name="name"
 										control={control}
 										render={({ field }) => (
-											<TextInput
-												label="Tên"
-												placeholder="Tìm kiếm hàng hóa"
-												required
-												error={errors.name?.message}
-												{...field}
+											// <TextInput
+											// 	label="Tên"
+											// 	placeholder="Tìm kiếm hàng hóa"
+											// 	required
+											// 	error={errors.name?.message}
+											// 	{...field}
+											// />
+											<ProductAutocomplete
+													label="Tên"
+													placeholder="Tìm kiếm hàng hóa"
+													required
+													error={errors.name?.message}
+													{...field}
+													onSelectProduct={(product) => {
+														setValue('name', product.product_name)
+														setValue('code', product.product_id || 'HH-0000014')
+														setValue('registrationNumber', product.register_no || '')
+														setValue('manufacturer', product.manufacturer || '')
+														setValue('expiryDate', dayjs(product.expire_date, 'YYYY-MM-DD').toDate())
+														setValue('purchasePrice', product.original_price)
+														setValue('sellingPrice', product.sell_price)
+														setValue('quantity', product.quantity_of_stock)
+														// setValue('activeIngredient', product.drug_ingredients || '')
+														setValue('content', product.drug_content || '')
+														setValue('usage', product.drug_usage || '')
+														setValue('ingredients', product.drug_ingredients || '')
+														setValue('packaging', product.drug_packaging || '')
+														setValue('lotNumber', product.product_no)
+														// setValue('unit', product.productUnit.name || 'vien')
+														// setValue('largerUnit', product.productUnit.no)
+														// setValue('largerUnitValue', product.larger_unit_value)
+													}}
 											/>
 										)}
 									/>
@@ -229,7 +239,7 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 										render={({ field }) => (
 											<TextInput
 												label="Số Đăng Kí"
-												required
+												// required
 												error={errors.registrationNumber?.message}
 												{...field}
 											/>
@@ -350,32 +360,36 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 									</Box>
 								</Group>
 								<Group wrap={"nowrap"}>
-									<Box w={"100%"}>
-										<Controller
-											name="usage"
-											control={control}
-											render={({ field }) => (
-												<Textarea
-													label="Liều Dùng"
-													error={errors.usage?.message}
-													{...field}
+									{showAdditionalFields && (
+										<>
+											<Box w={"100%"}>
+												<Controller
+													name="usage"
+													control={control}
+													render={({ field }) => (
+														<Textarea
+															label="Liều Dùng"
+															error={errors.usage?.message}
+															{...field}
+														/>
+													)}
 												/>
-											)}
-										/>
-									</Box>
-									<Box w={"100%"}>
-										<Controller
-											name="ingredients"
-											control={control}
-											render={({ field }) => (
-												<Textarea
-													label="Thành Phần"
-													error={errors.ingredients?.message}
-													{...field}
+											</Box>
+											<Box w={"100%"}>
+												<Controller
+													name="ingredients"
+													control={control}
+													render={({ field }) => (
+														<Textarea
+															label="Thành Phần"
+															error={errors.ingredients?.message}
+															{...field}
+														/>
+													)}
 												/>
-											)}
-										/>
-									</Box>
+											</Box>
+										</>
+									)}
 								</Group>
 							</Stack>
 						</Grid.Col>
@@ -414,117 +428,57 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 									</Box>
 								</Group>
 								<Group wrap={"nowrap"}>
-									<Box w={"100%"}>
-										<Controller
-											name="activeIngredient"
-											control={control}
-											render={({ field }) => (
-												<Textarea
-													label="Hoạt Chất"
-													error={errors.activeIngredient?.message}
-													{...field}
+									{showAdditionalFields && (
+										<>
+											<Box w={"100%"}>
+												<Controller
+													name="activeIngredient"
+													control={control}
+													render={({ field }) => (
+														<Textarea
+															label="Hoạt Chất"
+															error={errors.activeIngredient?.message}
+															{...field}
+														/>
+													)}
 												/>
-											)}
-										/>
-									</Box>
-									<Box w={"100%"}>
-										<Controller
-											name="content"
-											control={control}
-											render={({ field }) => (
-												<Textarea
-													label="Hàm Lượng"
-													error={errors.content?.message}
-													{...field}
+											</Box>
+											<Box w={"100%"}>
+												<Controller
+													name="content"
+													control={control}
+													render={({ field }) => (
+														<Textarea
+															label="Hàm Lượng"
+															error={errors.content?.message}
+															{...field}
+														/>
+													)}
 												/>
-											)}
-										/>
-									</Box>
+											</Box>
+										</>
+									)}
 								</Group>
 							</Stack>
 						</Grid.Col>
-
-						<Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
-							<Stack h={"100%"}>
-								<Box>
-									<Typography size={"sm"} weight={"semibold"}>Đơn Vị<Text span c="red"> *</Text></Typography>
+						{showAdditionalFields && (
+							<Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
+								<Box w={"100%"}>
 									<Controller
-										name="unit"
+										name="packaging"
 										control={control}
 										render={({ field }) => (
-											<Radio.Group
-												error={errors.unit?.message}
+											<Textarea
+												label="Quy Cách Đóng Gói"
+												rows={1}
+												error={errors.packaging?.message}
 												{...field}
-											>
-												<Group>
-													<Radio value="vien" label="Viên" />
-													<Radio value="vi" label="Vỉ" />
-													<Radio value="goi" label="Gói" />
-													<Radio value="chai" label="Chai" />
-													<Radio value="lo" label="Lọ" />
-													<Radio value="hop" label="Hộp" />
-												</Group>
-											</Radio.Group>
+											/>
 										)}
 									/>
 								</Box>
-								<Box>
-									{/*<Typography>Đơn vị nhỏ nhất</Typography>*/}
-									<Label position={"top"} label={"Đơn vị nhỏ nhất (tùy chọn)"} size={"xs"} classNames={{label: "mb-2"}}>
-										<Grid grow>
-											<Grid.Col span={{ base: 12, sm: 6, md: 6 }}>
-												<Group wrap={"nowrap"}>
-													<Box w={"100%"}>
-														<Controller
-															name="largerUnit"
-															control={control}
-															render={({ field }) => (
-																<Select
-																	data={[
-																		{ value: 'lo', label: 'Lọ' },
-																		{ value: 'vien', label: 'Viên' },
-																		{ value: 'vi', label: 'Vỉ' },
-																		{ value: 'goi', label: 'Gói' },
-																		{ value: 'chai', label: 'Chai' },
-																		{ value: 'hop', label: 'Hộp' },
-																		{ value: 'thung', label: 'Thùng' },
-																		{ value: 'cai', label: 'Cái' },
-																	]}
-																	defaultValue={"vien"}
-																	error={errors.largerUnit?.message}
-																	{...field}
-																	{...rightSectionLabel('Đơn vị')}
-																/>
-															)}
-														/>
-													</Box>
-													<Box>
-														<Typography size={"h5"} weight={"semibold"}>=</Typography>
-													</Box>
-													<Box w={"100%"}>
-														<Controller
-															name="largerUnitValue"
-															control={control}
-															render={({ field }) => (
-																<NumberInput
-																	error={errors.largerUnitValue?.message}
-																	{...field}
-																	{...rightSectionLabel('Viên')}
-																/>
-															)}
-														/>
-													</Box>
-												</Group>
-											</Grid.Col>
-											{/*<Grid.Col span={{ base: 12, sm: 6, md: 6 }}>*/}
-
-											{/*</Grid.Col>*/}
-										</Grid>
-									</Label>
-								</Box>
-							</Stack>
-						</Grid.Col>
-
+							</Grid.Col>
+						)}
 						{/*<Grid.Col span={{ base: 12, sm: 6, md: 4 }}>*/}
 
 						{/*</Grid.Col>*/}
@@ -613,25 +567,87 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 
 					<Grid grow>
 						{/* Row 3: Lot Number, Quantity, Import Date, Use Before, VAT, Unit */}
-						{showAdditionalFields && (
-							<Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
-								<Box w={"100%"}>
+						<Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
+							<Stack >
+								<Box>
+									<Typography size={"sm"} weight={"semibold"}>Đơn vị nhỏ nhất<Text span c="red"> *</Text></Typography>
 									<Controller
-										name="packaging"
+										name="unit"
 										control={control}
 										render={({ field }) => (
-											<Textarea
-												label="Quy Cách Đóng Gói"
-												rows={4}
-												error={errors.packaging?.message}
+											<Radio.Group
+												error={errors.unit?.message}
+												required
 												{...field}
-											/>
+											>
+												<Group>
+													<Radio value="vien" label="Viên" />
+													<Radio value="vi" label="Vỉ" />
+													<Radio value="goi" label="Gói" />
+													<Radio value="chai" label="Chai" />
+													<Radio value="lo" label="Lọ" />
+													<Radio value="hop" label="Hộp" />
+												</Group>
+											</Radio.Group>
 										)}
 									/>
 								</Box>
-							</Grid.Col>
-						)}
+								<Box>
+									{/*<Typography>Đơn vị nhỏ nhất</Typography>*/}
+									<Label position={"top"} label={"Đơn vị to hơn (nếu có)"} size={"xs"} classNames={{label: "mb-2"}}>
+										<Grid grow>
+											<Grid.Col span={{ base: 12, sm: 6, md: 6 }}>
+												<Group wrap={"nowrap"}>
+													<Box w={"100%"}>
+														<Controller
+															name="largerUnit"
+															control={control}
+															render={({ field }) => (
+																<Select
+																	data={[
+																		{ value: 'lo', label: 'Lọ' },
+																		{ value: 'vien', label: 'Viên' },
+																		{ value: 'vi', label: 'Vỉ' },
+																		{ value: 'goi', label: 'Gói' },
+																		{ value: 'chai', label: 'Chai' },
+																		{ value: 'hop', label: 'Hộp' },
+																		{ value: 'thung', label: 'Thùng' },
+																		{ value: 'cai', label: 'Cái' },
+																	]}
+																	defaultValue={"vien"}
+																	error={errors.largerUnit?.message}
+																	{...field}
+																	{...rightSectionLabel('Đơn vị')}
+																/>
+															)}
+														/>
+													</Box>
+													<Box>
+														<Typography size={"h5"} weight={"semibold"}>=</Typography>
+													</Box>
+													<Box w={"100%"}>
+														<Controller
+															name="largerUnitValue"
+															control={control}
+															render={({ field }) => (
+																<NumberInput
+																	error={errors.largerUnitValue?.message}
+																	{...field}
+																	{...rightSectionLabel('Viên')}
+																/>
+															)}
+														/>
+													</Box>
+												</Group>
+											</Grid.Col>
+											{/*<Grid.Col span={{ base: 12, sm: 6, md: 6 }}>*/}
 
+											{/*</Grid.Col>*/}
+										</Grid>
+									</Label>
+								</Box>
+							</Stack>
+						</Grid.Col>
 						<Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
 							<Box w={"100%"}>
 								{/*<Grid.Col span={{ base: 12, sm: 6, md: 4 }}>*/}
@@ -659,7 +675,7 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 							clearForm()
 							modalProps?.onClose && modalProps.onClose()
 						}} variant="outline" type="button" color={'var(--teal-color)'}>
-							Hủy bỏ
+							Hủy bỏ / làm mới
 						</Button>
 						<Group>
 							<Button type="submit" color="var(--teal-color)">
@@ -672,3 +688,4 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 		</Paper>
 	)
 }
+

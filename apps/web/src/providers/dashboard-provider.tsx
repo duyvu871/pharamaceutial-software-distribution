@@ -2,7 +2,7 @@
 
 import React, {createContext, useLayoutEffect, useState} from 'react';
 import { useProfile } from '@hook/dashboard/use-profile.ts';
-import { currentBranchAtom } from '@store/state/overview/branch.ts';
+import { currentBranchAtom, qrCodeAtom } from '@store/state/overview/branch.ts';
 import { revenueReportAtom, statAtom, topSaleReportAtom } from '@store/state/overview/report.ts';
 import { activityAtom } from '@store/state/overview/notifocation.ts';
 import { getBranches } from '@api/branch.ts';
@@ -34,6 +34,7 @@ export const DashboardProvider = ({children, branchId, availableStates}: Dashboa
 	const {profile} = useProfile();
 	const [branch_id, setBranchId] = useState<string>(branchId);
 	const [, setBranchDetail] = useAtom(currentBranchAtom);
+	const [, setQRCode] = useAtom(qrCodeAtom);
 	const [, setRevenueReport] = useAtom(revenueReportAtom);
 	const [, setActivities] = useAtom(activityAtom);
 	const [, setTopSale] = useAtom(topSaleReportAtom);
@@ -55,6 +56,7 @@ export const DashboardProvider = ({children, branchId, availableStates}: Dashboa
 				console.log('details', branchDetails);
 				// openOverlay();
 				setBranchDetail(branchDetails as BranchType);
+				setQRCode(branchDetails?.store?.store_asset);
 			});
 			// get activities
 			availableStates?.activities && getActivities({ page: 1, limit: 10, order: 'createdAt:desc' }).then((activities) => {

@@ -31,16 +31,39 @@ export const ConsumerZodSchema = z.object({
 
 });
 
-export const ConsumerSchema = ConsumerZodSchema.extend({
-	id: z.string(),
-	revenue: z.number().default(0),
-	debit: z.number().default(0),
+// export const ConsumerSchema = ConsumerZodSchema.extend({
+// 	id: z.string(),
+// 	revenue: z.number().default(0),
+// 	debit: z.number().default(0),
+//
+// 	branch_id: z.string(),
+//
+// 	createdAt: z.date(),
+// 	updatedAt: z.date().nullable(),
+// });
 
-	branch_id: z.string(),
+export interface ConsumerAttributes {
+	id: string
+	branch_id: string
+	revenue: string
+	debit: string
+	consumer_name: string
+	gender: "male"|"female"|"other"
+	consumer_email: string
+	phone_number: string
+	tax_code: string
+	company_name: string
+	date_of_birth: string
+	facebook: string
+	address: string
+	notes: string
+	province_city: string
+	district: string
+	ward: string
+	createdAt: string
+	updatedAt: string
+	point: number
+}
 
-	createdAt: z.date(),
-	updatedAt: z.date().nullable(),
-});
-
-export type ConsumerAttributes = z.infer<typeof ConsumerSchema>;
+// export type ConsumerAttributes = z.infer<typeof ConsumerSchema>;
 export type ConsumerCreationAttributes = z.infer<typeof ConsumerZodSchema>;
