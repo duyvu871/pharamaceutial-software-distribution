@@ -138,6 +138,7 @@ model groups {
 
 model memberships {
   id              String                           @id @default(uuid()) @db.Uuid
+  branch_id       String                           @db.Uuid
   username        String                           @db.VarChar(255)
   first_name      String                           @db.VarChar(255)
   last_name       String                           @db.VarChar(255)
@@ -148,7 +149,6 @@ model memberships {
   avatar          String?                          @db.VarChar(255)
   notes           String?                          @db.VarChar(255)
   employee_status enum_memberships_employee_status
-  branch_id       String                           @db.Uuid
   reset_token     String?                          @db.VarChar(255)
   permission      String[]                         @db.VarChar(255)
   createdAt       DateTime?                        @db.Timestamptz(6)
@@ -204,50 +204,51 @@ model product_units {
 }
 
 model products {
-  id                  String                @id @default(uuid()) @db.Uuid
-  product_id          String?
-  store_id            String                @db.Uuid
-  product_type        String                @db.VarChar(255)
-  medicine_id         String?               @db.VarChar(255)
-  barcode             String?               @db.VarChar(255)
-  product_no          String                @db.VarChar(255)
-  register_no         String?               @db.VarChar(255)
-  product_name        String                @db.VarChar(255)
-  lot_no              String?               @db.VarChar(255)
-  shortcut            String?               @db.VarChar(255)
-  original_price      Float
-  sell_price          Float
-  weight              Float?
-  quantity_of_stock   Int
-  group_id            String?               @db.Uuid
-  using_id            Int
-  base_unit           String                @db.VarChar(255)
-  status              Int                   @default(1)
-  import_date         DateTime?             @default(now()) @db.Timestamptz(6)
-  expire_date         DateTime?             @default(now()) @db.Timestamptz(6)
-  created_at          DateTime              @default(now()) @db.Timestamptz(6)
-  updated_at          DateTime              @default(now()) @db.Timestamptz(6)
-  min_quantity        Int
-  max_quantity        Int
-  description         String?               @db.VarChar(255)
-  note                String?               @db.VarChar(255)
-  manufacturer        String?               @db.VarChar(255)
-  made_in             String?               @db.VarChar(255)
-  deleted_at          DateTime?             @db.Timestamptz(6)
-  deleted_by          String?               @db.Uuid
-  avg_original_price  Float
-  default_image       String?               @db.VarChar(255)
-  productUnit         String                @db.Uuid
-  quantity            Json                  @db.Json
-  store_group_id      String?               @db.Uuid
-  product_unit_labels product_unit_labels[] @ignore
-  groups              groups?               @relation(fields: [group_id], references: [id])
-  product_units       product_units         @relation(fields: [productUnit], references: [id])
-  stores              stores                @relation(fields: [store_id], references: [id])
-  store_group         store_group?          @relation(fields: [store_group_id], references: [id])
-  product_assets      product_assets[]
-  product_groups      product_groups[]
-  invoice_items       invoice_items[]
+  id                     String                   @id @default(uuid()) @db.Uuid
+  product_id             String?
+  store_id               String                   @db.Uuid
+  group_id               String?                  @db.Uuid
+  store_group_id         String?                  @db.Uuid
+  productUnit            String                   @db.Uuid
+  product_type           String                   @db.VarChar(255)
+  medicine_id            String?                  @db.VarChar(255)
+  barcode                String?                  @db.VarChar(255)
+  product_no             String                   @db.VarChar(255)
+  register_no            String?                  @db.VarChar(255)
+  product_name           String                   @db.VarChar(255)
+  lot_no                 String?                  @db.VarChar(255)
+  shortcut               String?                  @db.VarChar(255)
+  original_price         Float
+  sell_price             Float
+  weight                 Float?
+  quantity_of_stock      Int
+  using_id               Int
+  base_unit              String                   @db.VarChar(255)
+  status                 Int                      @default(1)
+  import_date            DateTime?                @default(now()) @db.Timestamptz(6)
+  expire_date            DateTime?                @default(now()) @db.Timestamptz(6)
+  created_at             DateTime                 @default(now()) @db.Timestamptz(6)
+  updated_at             DateTime                 @default(now()) @db.Timestamptz(6)
+  min_quantity           Int
+  max_quantity           Int
+  description            String?                  @db.VarChar(255)
+  note                   String?                  @db.VarChar(255)
+  manufacturer           String?                  @db.VarChar(255)
+  made_in                String?                  @db.VarChar(255)
+  deleted_at             DateTime?                @db.Timestamptz(6)
+  deleted_by             String?                  @db.Uuid
+  avg_original_price     Float
+  default_image          String?                  @db.VarChar(255)
+  quantity               Json                     @db.Json
+  product_unit_labels    product_unit_labels[]    @ignore
+  groups                 groups?                  @relation(fields: [group_id], references: [id])
+  product_units          product_units            @relation(fields: [productUnit], references: [id])
+  stores                 stores                   @relation(fields: [store_id], references: [id])
+  store_group            store_group?             @relation(fields: [store_group_id], references: [id])
+  product_assets         product_assets[]
+  product_groups         product_groups[]
+  invoice_items          invoice_items[]
+  import_invoice_product import_invoice_product[]
 
   @@index([store_id])
   @@index([group_id])
@@ -255,6 +256,45 @@ model products {
   @@index([barcode])
   @@index([product_no])
   @@index([medicine_id])
+}
+
+model import_invoices {
+  id                     String                   @id @default(uuid()) @db.Uuid
+  store_id               String                   @db.Uuid
+  provider_id            String                   @db.Uuid
+  invoice_no             String                   @db.VarChar(255)
+  name                   String
+  total_amount           Float
+  amount_due             Float
+  amount_paid            Float
+  debit                  Float
+  notes                  String?
+  vat                    Float
+  status                 Int                      @default(1)
+  createdAt              DateTime                 @default(now()) @db.Timestamptz(6)
+  updatedAt              DateTime                 @updatedAt @db.Timestamptz(6)
+  stores                 stores                   @relation(fields: [store_id], references: [id])
+  providers              providers                @relation(fields: [provider_id], references: [id])
+  import_invoice_product import_invoice_product[]
+
+  @@index([store_id])
+  @@index([provider_id])
+}
+
+model import_invoice_product {
+  id              String          @id @default(uuid()) @db.Uuid
+  import_invoice  String          @db.Uuid
+  product_id      String          @db.Uuid
+  quantity        Float
+  price           Float
+  total           Float
+  createdAt       DateTime        @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime        @updatedAt @db.Timestamptz(6)
+  import_invoices import_invoices @relation(fields: [import_invoice], references: [id])
+  product         products        @relation(fields: [product_id], references: [id])
+
+  @@index([import_invoice])
+  @@index([product_id])
 }
 
 model stores {
@@ -283,6 +323,7 @@ model stores {
   points             points[]
   product_assets     product_assets[]
   store_assets       store_assets[]
+  import_invoices    import_invoices[]
 
   @@index([branch_id])
   @@index([store_name])
@@ -371,6 +412,8 @@ model providers {
   createdAt   DateTime @default(now()) // Thời điểm tạo
   updatedAt   DateTime @updatedAt // Thời điểm cập nhật tự động
   store       stores   @relation(fields: [storeId], references: [id])
+
+  import_invoices import_invoices[]
 }
 
 model admins {
@@ -538,6 +581,7 @@ model invoices {
   customerId         String?   @db.Uuid
   priceList          String?
   isPrescriptionSale Boolean?
+  vat                Float     @default(0)
   totalPrice         Float
   discount           Float     @default(0)
   amountDue          Float

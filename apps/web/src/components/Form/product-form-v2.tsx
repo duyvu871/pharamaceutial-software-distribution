@@ -72,7 +72,7 @@ export default function ProductFormV2({onSubmit, modalProps}: ProductFormProps) 
 			useBefore: '30',
 			vat: '10',
 			unit: 'vien',
-			largerUnit: '10',
+			largerUnit: '',
 		},
 	})
 	const [files, setFiles] = useState<FileWithPath[]>([])
@@ -127,7 +127,7 @@ export default function ProductFormV2({onSubmit, modalProps}: ProductFormProps) 
 		setValue('useBefore', '30')
 		setValue('vat', '10')
 		setValue('unit', 'vien')
-		setValue('largerUnit', '10')
+		setValue('largerUnit', '')
 		setValue('largerUnitValue', '')
 	}
 

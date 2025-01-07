@@ -157,6 +157,7 @@ const ProductAutocomplete = forwardRef<HTMLInputElement, ProductAutocompleteProp
 						onFocus={handleFocus} // Open on focus
 						onBlur={handleBlur} // Close on blur with delay
 						rightSection={isSearching && <Loader size="xs" />}
+						value={""}
 						{...inputProps}
 						ref={ref}
 					/>

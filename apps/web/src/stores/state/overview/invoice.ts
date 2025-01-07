@@ -18,6 +18,11 @@ const defaultInvoice: InvoiceType = {
 	saleTime: '',
 	customerName: '',
 	priceList: '',
+	point: {
+		used: 0,
+		pointValue: 0,
+	},
+	vat: 0,
 	isPrescriptionSale: false,
 	totalPrice: 0,
 	discount: 0,
@@ -104,19 +109,26 @@ export const invoiceActionAtom = atom(
 				return;
 			}
 
-			const updatedInvoiceData = calculateInvoicePrice(
-				currentInvoice[id],
-				{ type: 'update', invoice }
-			)
 
 			const updatedInvoice = {
 				...currentInvoice[id],
 				invoiceData: {
 					...currentInvoice[id].invoiceData,
-					...updatedInvoiceData,
+					// ...updatedInvoiceData,
 					...invoice,
 				},
 			}
+
+			const updatedInvoiceData = calculateInvoicePrice(
+				updatedInvoice,
+				{ type: 'update', invoice }
+			)
+
+			updatedInvoice.invoiceData = {
+				...updatedInvoice.invoiceData,
+				...updatedInvoiceData,
+			}
+
 			set(invoiceAtom, {
 				...currentInvoice,
 				[id]: updatedInvoice,
@@ -129,11 +141,6 @@ export const invoiceActionAtom = atom(
 				return;
 			}
 
-			const updatedInvoice = calculateInvoicePrice(
-				currentInvoiceActive,
-				{ type: 'add-item', item }
-			);
-
 			const isItemExists = currentInvoiceActive.invoiceData.items.find(i => i.id === item.id);
 
 			const newItems = isItemExists ? currentInvoiceActive.invoiceData.items.map(i =>
@@ -143,15 +150,29 @@ export const invoiceActionAtom = atom(
 					total: (i.quantity + 1) * (i.price)
 				} : i
 			) : [...currentInvoiceActive.invoiceData.items, item];
+
+			const updatedInvoiceStateActive = {
+				...currentInvoiceActive,
+				invoiceData: {
+					...currentInvoiceActive.invoiceData,
+					items: newItems,
+				},
+			}
+
+			const updatedInvoice = calculateInvoicePrice(
+				updatedInvoiceStateActive,
+				{ type: 'add-item', item }
+			);
+
+			updatedInvoiceStateActive.invoiceData = {
+				...updatedInvoiceStateActive.invoiceData,
+				...updatedInvoice,
+			}
+
 			set(invoiceAtom, {
 				...currentInvoice,
 				[id]: {
-					...currentInvoiceActive,
-					invoiceData: {
-						...currentInvoiceActive.invoiceData,
-						...updatedInvoice,
-						items: newItems,
-					},
+					...updatedInvoiceStateActive,
 				},
 			});
 		}
@@ -162,24 +183,31 @@ export const invoiceActionAtom = atom(
 				return;
 			}
 
+			const updatedInvoiceStateActive = {
+				...currentInvoiceActive,
+				invoiceData: {
+					...currentInvoiceActive.invoiceData,
+					items: currentInvoiceActive.invoiceData.items.map(i =>
+						i.id === itemId ? {
+							...i,
+							...item,
+							total: (item.quantity || i.quantity) * (item.price || i.price)
+						} : i
+					),
+				}
+			}
+
 			const updatedInvoice = calculateInvoicePrice(
-				currentInvoiceActive,
+				updatedInvoiceStateActive,
 				{ type: 'update-item', itemId, item }
 			);
 			set(invoiceAtom, {
 				...currentInvoice,
 				[id]: {
-					...currentInvoiceActive,
+					...updatedInvoiceStateActive,
 					invoiceData: {
-						...currentInvoiceActive.invoiceData,
+						...updatedInvoiceStateActive.invoiceData,
 						...updatedInvoice,
-						items: currentInvoiceActive.invoiceData.items.map(i =>
-							i.id === itemId ? {
-							...i,
-							...item,
-							total: (item.quantity || i.quantity) * (item.price || i.price)
-						} : i
-						),
 					},
 				},
 			});
@@ -286,7 +314,7 @@ export const calculateInvoicePrice = (
 	discount: number;
 	otherCharges: { name: string; value: number }[];
 } => {
-	let { totalPrice, discount, otherCharges, amountPaid, debit, items } = invoiceState.invoiceData;
+	let { totalPrice, discount, otherCharges, amountPaid, debit, items, vat, point } = invoiceState.invoiceData;
 
 	switch (action.type) {
 		case 'add-item':
@@ -324,7 +352,14 @@ export const calculateInvoicePrice = (
 	totalPrice =
 		items.reduce((sum, item) => sum + item.total, 0)
 		+ otherCharges.reduce((sum, charge) => sum + charge.value, 0);
-	const amountDue = totalPrice - discount;
+
+	// totalPrice = totalPrice + totalPrice * vat / 100;
+
+	// discount = ( point ? point.used * point.pointValue : 0);
+
+	const amountDue = totalPrice - ( point ? point.used * point.pointValue : 0) + totalPrice * vat / 100;
+
+	console.log("amountDue", amountDue, "point", point);
 
 	debit = amountPaid - amountDue;
 

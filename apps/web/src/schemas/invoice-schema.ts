@@ -14,6 +14,11 @@ export const invoiceSchema = z.object({
 	}).refine(val => typeof val === 'string', {
 		message: "Giờ bán hàng phải là chuỗi"
 	}),
+	point: z.object({
+		used: z.number().optional().default(0),
+		pointValue: z.number().optional().default(0),
+	}).optional(),
+	vat: z.number().optional().default(0),
 	customerName: z.string().optional(),
 	customerId: z.string().optional(),
 	priceList: z.string().optional(),

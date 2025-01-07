@@ -1,5 +1,5 @@
 import { Group, Text, rem } from '@mantine/core';
-import { IconUpload, IconPhoto, IconX } from '@tabler/icons-react';
+import { IconUpload, IconPhoto, IconX, IconPhotoPlus } from '@tabler/icons-react';
 import { Dropzone, DropzoneProps, IMAGE_MIME_TYPE } from '@mantine/dropzone';
 
 type UploadDropzoneProps = {
@@ -37,7 +37,7 @@ export function UploadDropzone(props: Partial<DropzoneProps & UploadDropzoneProp
 				</Dropzone.Reject>
 				<Dropzone.Idle>
 					{props.idleIcon || (
-						<IconPhoto
+						<IconPhotoPlus
 							style={{ width: rem(52), height: rem(52), color: 'var(--mantine-color-dimmed)' }}
 							stroke={1.5}
 						/>

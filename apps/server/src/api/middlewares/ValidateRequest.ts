@@ -88,8 +88,8 @@ const validate = (type: ValidateType, ...schemas: ZodType<any>[]) => {
 						const errorMessage = error.errors.map((err) => {
 							const field = err.path[0];
 							const message = schema.shape[field]?.invalid ? schema.shape[field]?.invalid(undefined) : err.message;
-							// return `Field ${field} in ${type}: ${message}`;
-							throw new BadRequest('BAD_REQUEST', 'Bad request', message);
+							return `Field ${field} in ${type}: ${message}`;
+							// throw new BadRequest('BAD_REQUEST', 'Bad request', message);
 							// return message;
 						}).join(', ');
 						throw new BadRequest('BAD_REQUEST', 'Bad request', errorMessage);

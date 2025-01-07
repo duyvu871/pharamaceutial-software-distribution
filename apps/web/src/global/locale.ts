@@ -41,3 +41,13 @@ export const genderVi = {
 	female: 'Nữ',
 	other: 'Khác',
 } as const
+
+export const unitVi = {
+	lo: 'Lọ',
+	vien: 'Viên',
+	vi: 'Vỉ',
+	hop: 'Hộp',
+	chai: 'Chai',
+	tuyp: 'Tuýp',
+	goi: "Gói",
+} as const;

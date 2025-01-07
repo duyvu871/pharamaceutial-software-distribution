@@ -28,7 +28,7 @@ export const ImportProductFormProvider = ({children}: ImportProductFormProviderP
 			// useBefore: '30',
 			// vat: '10',
 			unit: 'vien',
-			largerUnit: '10',
+			largerUnit: '',
 		},
 	})
 
@@ -54,7 +54,7 @@ export const ImportProductFormProvider = ({children}: ImportProductFormProviderP
 		// setValue('useBefore', '30')
 		// setValue('vat', '0')
 		setValue('unit', 'vien')
-		setValue('largerUnit', '10')
+		setValue('largerUnit', '')
 		setValue('largerUnitValue', '')
 	}
 

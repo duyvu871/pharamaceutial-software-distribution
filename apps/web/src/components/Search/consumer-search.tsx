@@ -199,7 +199,7 @@ function ConsumerSearch({ makeOptional, setValue, key }: ConsumerAutocompletePro
 												)}
 											>
 												{tableRenderData.map((item) => (
-													<Table.Td>{item.render(consumer)}</Table.Td>
+													<Table.Td key={`td-${item.title}`}>{item.render(consumer)}</Table.Td>
 												))}
 												<Table.Td className={cn("w-24")}>
 													{consumerSelected.id === consumer.id && consumerSelected.id && (

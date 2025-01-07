@@ -19,13 +19,13 @@ const fontSans = Montserrat({
 });
 
 export const metadata: Metadata = {
-	title: "Erado",
-	description: "Erado - phần mềm quản lý nhà thuốc",
-	generator: 'Erado',
-	applicationName: 'Erado',
+	title: "Era8 - Phần mềm quản lý nhà thuốc",
+	description: "Phần mềm quản lý nhà thuốc giúp bạn quản lý thuốc, khách hàng, nhà cung cấp, hóa đơn, báo cáo, ...",
+	generator: 'Era8',
+	applicationName: 'Era8 - Phần mềm quản lý nhà thuốc',
 	referrer: 'origin-when-cross-origin',
-	keywords: ['Erado', 'era8', 'erp', 'phần mềm quản lý nhà thuốc'],
-	authors: [{ name: 'DuBui' }],
+	keywords: ['Era8', 'thuốc', 'phần mềm', 'quản lý', 'nhà thuốc', 'pharmacy', 'management', 'software'],
+	authors: [{ name: 'DuBui' }, { name: 'Du', url: 'v1.era8.vn' }],
 	creator: 'BuiDu',
 	publisher: 'BuiDu',
 	formatDetection: {

@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next'
 
-export default function _manifest(): MetadataRoute.Manifest {
+export default function manifest(): MetadataRoute.Manifest {
     return {
         name: 'Phần mềm quản lý nhà thuốc',
         short_name: 'Quản lý nhà thuốc',

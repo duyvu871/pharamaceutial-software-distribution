@@ -41,6 +41,10 @@ import { useImportProductState } from '@hook/dashboard/import/use-import-product
 import { Label } from '@component/label'
 import ProductAutocomplete from '@component/product-search.tsx';
 import { useImportProductForm } from '@hook/dashboard/import/use-import-product-form.ts';
+import { MoneyInput } from '@component/money-input.tsx';
+import { uploadImage } from '@api/product.ts';
+import { useDashboard } from '@hook/dashboard/use-dasboard.ts';
+import { unitVi } from '@global/locale.ts';
 dayjs.extend(customParseFormat);
 
 export type ProductFormProps = {
@@ -52,54 +56,25 @@ export type ProductFormProps = {
 }
 
 export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps) {
-	// const { control, handleSubmit, formState: { errors }, watch, getValues, setValue } = useForm<ProductFormData>({
-	// 	resolver: zodResolver(productFormSchema),
-	// 	defaultValues: {
-	// 		type: 'thuoc',
-	// 		code: 'HH-0000014',
-	// 		useBefore: '30',
-	// 		vat: '10',
-	// 		unit: 'vien',
-	// 		largerUnit: '10',
-	// 	},
-	// })
 
+	const {branchId} = useDashboard();
 	const {useForm, resetForm} = useImportProductForm();
 	const {addProductItem, activeTab: importActiveTab, removeProductItem} = useImportProductState();
 
 	const { control, handleSubmit, formState: { errors }, watch, getValues, setValue } = useForm;
+	const [unit, setUnit] = useState<string>('vien')
 	const [files, setFiles] = useState<FileWithPath[]>([])
+	const [images, setImages] = useState<{url: string; id: string}[]>([])
 	const [invoices, invoiceDispatch] = useAtom(invoiceActionAtom);
 	const [activeTab] = useAtom(invoiceActiveTabActionAtom);
 
-	// const [importProducts, setImportProducts] = useAtom(importProductAtom);
-	// const [activeTabStoreFullForm, setActiveTabStoreFullForm] = useAtom(importProductActiveTabAtom)
-	// const [, importProductActions] = useAtom(importProductActionAtom);
-	// const [, importProductActiveTabActions] = useAtom(importProductActiveTabActionAtom);
-
-
 	const submit = (data: ProductFormData) => {
 		onSubmit && onSubmit(data)
-		console.log(data)
-		addProductItem(importActiveTab, data)
-		invoiceDispatch({
-			type: 'add-item',
-			id: activeTab,
-			item: {
-				note: data.notes,
-				productName: data.name,
-				quantity: data.quantity,
-				price: data.sellingPrice,
-				total: data.sellingPrice * data.quantity,
-				unit: data.unit,
-				id: data.code,
-			}
-		});
-		// importDispatch({
-		// 	type: 'add',
-		// 	// id: activeTab,
-		// 	// product: data
-		// });
+		// console.log(data)
+		addProductItem(importActiveTab, {
+			...data,
+			images: images.map(image => image.id)
+		})
 	}
 
 	const clearForm = () => {
@@ -124,7 +99,13 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 	})
 
 	const addImage = (file: FileWithPath[]) => {
-		setFiles((currentFiles) => [...currentFiles, ...file])
+		setFiles((currentFiles) => [...currentFiles, ...file]);
+		uploadImage(file[0], branchId).then((response) => {
+			if (response) {
+				setImages((currentImages) => [...currentImages, {url: response.asset.url, id: response.id}])
+				// console.log(response)
+			}
+		});
 	}
 
 	const removeImage = (index: number) => {
@@ -134,7 +115,7 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 	const previews = files.map((file, index) => {
 		const imageUrl = URL.createObjectURL(file)
 		return (
-			<div className={"w-[100px] h-[100px] aspect-square relative group overflow-hidden border border-gray-300"}>
+			<div key={`image-${index}-${file.name}`} className={"w-[100px] h-[100px] aspect-square relative group overflow-hidden border border-gray-300"}>
 				<div className={"rounded-md w-[100px] h-[100px] bg-opacity-0 group-hover:bg-zinc-300/30 aspect-square absolute transition-colors"}>
 					<div className={"flex justify-center items-center w-full h-full"}>
                         <span className={"block"} onClick={() => removeImage(index)}>
@@ -168,13 +149,6 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 										name="name"
 										control={control}
 										render={({ field }) => (
-											// <TextInput
-											// 	label="Tên"
-											// 	placeholder="Tìm kiếm hàng hóa"
-											// 	required
-											// 	error={errors.name?.message}
-											// 	{...field}
-											// />
 											<ProductAutocomplete
 													label="Tên"
 													placeholder="Tìm kiếm hàng hóa"
@@ -227,9 +201,7 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 							</Group>
 
 						</Grid.Col>
-						{/*<Grid.Col span={{ base: 12, sm: 6, md: 4 }}>*/}
 
-						{/*</Grid.Col>*/}
 						<Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
 							<Group wrap={"nowrap"}>
 								<Box w={"100%"}>
@@ -239,7 +211,6 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 										render={({ field }) => (
 											<TextInput
 												label="Số Đăng Kí"
-												// required
 												error={errors.registrationNumber?.message}
 												{...field}
 											/>
@@ -251,30 +222,14 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 										name="code"
 										control={control}
 										render={({ field }) => (
-											<TextInput
-												label="Mã Thuốc"
-												readOnly
-												{...field}
-											/>
+											<TextInput label="Mã Thuốc"{...field} />
 										)}
 									/>
 								</Box>
 							</Group>
 
 						</Grid.Col>
-						{/*<Grid.Col span={{ base: 12, sm: 6, md: 4 }}>*/}
-						{/*	<Controller*/}
-						{/*		name="code"*/}
-						{/*		control={control}*/}
-						{/*		render={({ field }) => (*/}
-						{/*			<TextInput*/}
-						{/*				label="Mã Thuốc"*/}
-						{/*				readOnly*/}
-						{/*				{...field}*/}
-						{/*			/>*/}
-						{/*		)}*/}
-						{/*	/>*/}
-						{/*</Grid.Col>*/}
+
 						<Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
 							<Group wrap={'nowrap'}>
 								<Box w={"100%"}>
@@ -282,13 +237,9 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 										name="purchasePrice"
 										control={control}
 										render={({ field }) => (
-											<NumberInput
-												label="Giá Nhập"
-												allowNegative={false}
-												required
-												error={errors.purchasePrice?.message}
-												{...field}
-											/>
+											<Label label={"Giá Nhập"} position={"top"}>
+												<MoneyInput {...field} className={"rounded"} />
+											</Label>
 										)}
 									/>
 								</Box>
@@ -297,22 +248,14 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 										name="sellingPrice"
 										control={control}
 										render={({ field }) => (
-											<NumberInput
-												allowNegative={false}
-												label="Giá Bán"
-												required
-												error={errors.sellingPrice?.message}
-												{...field}
-											/>
+											<Label label={"Giá Bán"} position={"top"}>
+												<MoneyInput{...field} className={"rounded"} />
+											</Label>
 										)}
 									/>
 								</Box>
 							</Group>
 						</Grid.Col>
-						<Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
-
-						</Grid.Col>
-
 					</Grid>
 
 					<Grid>
@@ -579,6 +522,10 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 												error={errors.unit?.message}
 												required
 												{...field}
+												onChange={(value) => {
+													setValue('unit', value)
+													setUnit(value)
+												}}
 											>
 												<Group>
 													<Radio value="vien" label="Viên" />
@@ -617,6 +564,9 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 																	defaultValue={"vien"}
 																	error={errors.largerUnit?.message}
 																	{...field}
+																	onChange={(value) => {
+																		setValue('largerUnit', String(value || ""))
+																	}}
 																	{...rightSectionLabel('Đơn vị')}
 																/>
 															)}
@@ -633,7 +583,12 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 																<NumberInput
 																	error={errors.largerUnitValue?.message}
 																	{...field}
-																	{...rightSectionLabel('Viên')}
+																	onChange={(value) => {
+																		setValue('largerUnitValue', String(value))
+																	}}
+																	{...rightSectionLabel(
+																		unit ? unitVi[unit as keyof typeof unitVi] : 'Viên'
+																	)}
 																/>
 															)}
 														/>
@@ -661,7 +616,7 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 												accept={['image/png', 'image/jpeg', 'image/gif']}
 												maxFiles={1}
 												onDrop={addImage}
-												className="cursor-pointer rounded-md border-2 !border-dashed hover:bg-zinc-200 transition-colors flex justify-center items-center"
+												className="cursor-pointer rounded-md border-2 !border-dashed hover:bg-zinc-100 transition-colors flex justify-center items-center"
 											/>
 										</SimpleGrid>
 									</Label>

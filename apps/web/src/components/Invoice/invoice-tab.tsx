@@ -154,10 +154,12 @@ function InvoiceTab() {
 	const {branchId} = useDashboard()
 	const {userSessionInfo} = useAuth();
 	const {
+		rewardPoint,
 		calculateRewardPoint,
 		currentRewardPoint,
 		setCurrentRewardPoint,
-		setRewardPoint
+		setRewardPoint,
+		checkRewardPoint,
 	} = useRewardPoint();
 
 	const {showErrorToast} = useToast();
@@ -274,7 +276,16 @@ function InvoiceTab() {
 	// }
 
 	const handleSubmit = async () => {
-		const submit = await submitInvoice(invoices[activeTab]);
+		const invoice = invoices[activeTab];
+
+		if (!activeTab) return;
+		if (invoices[activeTab]?.invoiceData?.items.length === 0) {
+			showErrorToast('Chưa có sản phẩm nào trong hóa đơn');
+			return;
+		}
+		if (invoices[activeTab]?.invoiceData?.amountPaid === 0) {}
+
+		const submit = await submitInvoice(invoice);
 		console.log('submit', submit);
 		if (!submit) {
 			showErrorToast('Thanh toán thất bại');
@@ -309,6 +320,7 @@ function InvoiceTab() {
 				}
 			}
 		});
+		// console.log('branchId', branchId);
 	}, [branchId, userSessionInfo]);
 
 	useEffect(() => {
@@ -334,12 +346,12 @@ function InvoiceTab() {
 		}
 	}, [selectedDate]);
 
-	useEffect(() => {
-		const vatPrice = (totalPrice * vat) / 100;
-		const total = totalPrice + vatPrice;
-		// setTotalPrice(total);
-		setAmountDue(total);
-	}, [vat]);
+	// useEffect(() => {
+	// 	const vatPrice = (totalPrice * vat) / 100;
+	// 	const total = totalPrice + vatPrice;
+	// 	// setTotalPrice(total);
+	// 	setAmountDue(total);
+	// }, [vat]);
 
 	useEffect(() => {
 		setSelectedDate(new Date());
@@ -588,6 +600,7 @@ function InvoiceTab() {
 								defaultChecked
 								color={"teal"}
 								// label="I agree to sell my privacy"
+								onChange={(e) => console.log(e.currentTarget.checked)}
 							/>
 							<Typography className={"select-none"} weight={'semibold'}>Tích điểm</Typography>
 						</label>
@@ -608,33 +621,57 @@ function InvoiceTab() {
 								{totalPrice.toLocaleString()}đ
 							</span>
 						</div>
-						<div className="flex justify-between items-center">
-							<Typography weight={'semibold'}>Đổi điểm</Typography>
-							<div className="flex items-center gap-2">
-								<NumberInput
-									// value={currentRewardPoint?.point_to_convert || 0}
-									allowNegative={false}
-									onChange={(value) => {
-										// setDiscount(value);
-										if (currentRewardPoint) {
-											const parsedValue = Number(value);
-											const rewardPoint = calculateRewardPoint(parsedValue);
-											setDiscount(rewardPoint);
-										}
-									}}
-									className={'w-[120px]'}
-								/>
+						{currentRewardPoint ? (
+							<div className="flex justify-between items-center">
+								<Typography weight={'semibold'}>Đổi điểm</Typography>
+								<div className="flex items-center gap-2">
+									<NumberInput
+										defaultValue={currentRewardPoint?.point_to_convert || 0}
+										allowNegative={false}
+										onChange={(value) => {
+											// setDiscount(value);
+											if (currentRewardPoint) {
+												console.log('reward point', currentRewardPoint);
+
+												const parsedValue = Number(value);
+												const rewardPointOk = parsedValue <= currentRewardPoint.point_remain;
+												console.log('reward point ok', rewardPointOk);
+												if (!rewardPointOk) {
+													return;
+												}
+												invoiceDispatch({
+													type: 'update',
+													id: activeTab || '',
+													invoice: {
+														point: {
+															used: parsedValue,
+															pointValue: branchDetail?.store.store_reward_point?.point_value || 0,
+														}
+													}
+												})
+											}
+										}}
+										className={'w-[120px]'}
+									/>
+								</div>
 							</div>
-						</div>
+						) : null}
 						<div className="flex justify-between items-center">
 							<Typography weight={'semibold'}>VAT</Typography>
 							<span className="text-lg rounded">
 								<NumberInput
-									value={vat}
+									value={invoices[activeTab]?.invoiceData?.vat}
 									allowNegative={false}
 									max={100}
 									onChange={(value) => {
-										setVat(Number(value));
+										// setVat(Number(value));
+										invoiceDispatch({
+											type: 'update',
+											id: activeTab || '',
+											invoice: {
+												vat: Number(value)
+											}
+										})
 									}}
 									rightSection={'%'}
 									className={'w-[120px]'}

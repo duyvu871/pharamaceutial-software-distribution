@@ -39,7 +39,7 @@ const defaultProductData: ProductFormData = {
 	importDate: new Date(),
 	// vat: '0',
 	unit: 'vien',
-	largerUnit: '10',
+	largerUnit: '',
 	largerUnitValue: '',
 	notes: '',
 	images: [],
@@ -142,16 +142,25 @@ export const importProductActionAtom = atom(
 				return;
 			}
 
-			const newImportPrice = calculateImportProductPrice(importProduct, { type: 'update', invoice: state });
+			const updatedImport = {
+				...importProduct,
+				...state,
+				productData: state.productData || importProduct.productData
+			};
 
-			const newProductData = state.productData || importProduct.productData;
+			const newImportPrice = calculateImportProductPrice(updatedImport, { type: 'update', invoice: state });
+
+			// const newProductData =
 
 			set(importProductAtom, {
 				...currentImportProduct,
 				[invoiceId]: {
+					// ...importProduct,
+					// ...state,
+					// ...newImportPrice,
+					// productData: newProductData,
 					...importProduct,
 					...newImportPrice,
-					productData: newProductData,
 				},
 			});
 
@@ -165,11 +174,19 @@ export const importProductActionAtom = atom(
 
 			const importProduct = currentImportProduct[invoiceId];
 
-			const isProductExists = importProduct.productData.some((item) => item.name === product.name);
+			const isProductExists = importProduct.productData.some((item) => item.code === product.code);
 
 			const newProductData =
 				isProductExists
-					? importProduct.productData
+					? importProduct.productData.map(
+						(item) =>
+							item.code === product.code ? {
+								...item,
+								quantity: item.quantity + product.quantity,
+								purchasePrice: product.purchasePrice,
+								sellingPrice: product.sellingPrice,
+							} : item
+					)
 					: [...importProduct.productData, product];
 
 			const newImportPrice = calculateImportProductPrice(importProduct, { type: 'add-product', item: product });
@@ -198,14 +215,18 @@ export const importProductActionAtom = atom(
 
 			const updatedProductData = importProduct.productData.filter((_, index) => index !== productIndex);
 
-			const newImportPrice = calculateImportProductPrice(importProduct, { type: 'remove-product', itemId: productIndex });
+			const updatedImport = {
+				...importProduct,
+				productData: updatedProductData
+			}
+
+			const newImportPrice = calculateImportProductPrice(updatedImport, { type: 'remove-product', itemId: productIndex });
 
 			set(importProductAtom, {
 				...currentImportProduct,
 				[invoiceId]: {
 					...importProduct,
 					...newImportPrice,
-					productData: updatedProductData,
 				},
 			});
 		}
@@ -218,19 +239,24 @@ export const importProductActionAtom = atom(
 				return;
 			}
 
+			const updatedImport = {
+				...importProduct,
+				productData: importProduct.productData.map((item, i) => i === index ? { ...item, ...state } : item)
+			}
+
 			const newImportPrice = calculateImportProductPrice(
-				importProduct, { type: 'update-product', itemId: index, item: state }
+				updatedImport, { type: 'update-product', itemId: index, item: state }
 			);
-			const newProductData = importProduct.productData.map((item, i) => i === index ? { ...item, ...state } : item);
+			// const newProductData = importProduct.productData.map((item, i) => i === index ? { ...item, ...state } : item);
 
 			console.log('newImportPrice', newImportPrice, state);
 
 			set(importProductAtom, {
 				...currentImportProduct,
 				[invoiceId]: {
-					...importProduct,
+					...updatedImport,
 					...newImportPrice,
-					productData: newProductData,
+					// productData: newProductData,
 				},
 			});
 		}
@@ -310,6 +336,7 @@ export const calculateImportProductPrice = (
 			amountPaid = action.invoice.amountPaid ?? amountPaid;
 			debit = action.invoice.debit ?? debit;
 			productData = action.invoice.productData ?? productData;
+			vat = action.invoice.vat ?? vat;
 			break;
 		case 'remove-product':
 			productData = productData.filter((i, index) => index !== action.itemId);

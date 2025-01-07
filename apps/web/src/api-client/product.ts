@@ -5,6 +5,7 @@ import { topSaleData } from '../_mock/chart-mock.ts';
 import { useMock } from 'config';
 import {mockProductDetails} from '../_mock/product-mock.ts';
 import { Product, ProductRender } from '@schema/product-schema.ts';
+import { UploadResponse } from '@type/api/upload.ts';
 
 export const getProductList = async (
 	filter: {
@@ -52,7 +53,7 @@ export const getProductList = async (
 	}
 }
 
-export const uploadImage = async (file: File, branchId: string): Promise<{url: string} | null> => {
+export const uploadImage = async (file: File, branchId: string): Promise<UploadResponse | null> => {
 	if (!file) {
 		return null;
 	}
@@ -63,7 +64,7 @@ export const uploadImage = async (file: File, branchId: string): Promise<{url: s
 	formData.append('image', file);
 
 	try {
-		const response = await axiosWithAuth.post<SuccessResponse<{url: string}>>(`/product/${branchId}/upload/image`, formData, {
+		const response = await axiosWithAuth.post<SuccessResponse<UploadResponse>>(`/product/${branchId}/upload/image`, formData, {
 			headers: {
 				'Content-Type': 'multipart/form-data',
 			},

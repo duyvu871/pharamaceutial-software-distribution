@@ -23,10 +23,12 @@ import { Label } from '@component/label';
 import { ProviderModal } from '@component/Modal/provider-modal.tsx';
 import { useImportProductState } from '@hook/dashboard/import/use-import-product-state.ts';
 import { importProductActionAtom } from '@store/state/overview/import-product.ts';
+import { unitVi } from '@global/locale.ts';
+import { createImportProduct } from '@api/import.ts';
 
 function ImportTab() {
 	const {generateUID} = useUID();
-	const {} = useDashboard()
+	const {branchId} = useDashboard()
 	const {userSessionInfo} = useAuth();
 
 	const {
@@ -65,9 +67,9 @@ function ImportTab() {
 		: [];
 
 
-	const handleInvoiceSubmit = () => {
+	const handleInvoiceSubmit = async () => {
 		console.log('submit invoice', importProducts[activeTab]);
-		console.log('submit import products', importProducts);
+		await createImportProduct(importProducts[activeTab], branchId);
 	}
 
 	useEffect(() => {
@@ -91,12 +93,13 @@ function ImportTab() {
 	}, [importProducts, activeTab]);
 
 	// update price by vat change
-	useEffect(() => {
-		const vatPrice = (totalPrice * vat) / 100;
-		const total = totalPrice + vatPrice;
-		// setTotalPrice(total);
-		setAmountDue(total);
-	}, [vat]);
+	// useEffect(() => {
+	// 	const vatPrice = (totalPrice * vat) / 100;
+	// 	const total = totalPrice + vatPrice;
+	//
+	// 	// setTotalPrice(total);
+	// 	setAmountDue(total);
+	// }, [vat]);
 
 	return (
 		<>
@@ -109,7 +112,6 @@ function ImportTab() {
 				<Divider size="md" />
 
 				<ScrollArea h={300} pos={'relative'} id={'table'} className=" flex flex-grow h-full overflow-hidden p-4 bg-white">
-					{/*<div className={'absolute z-[99] top-0 bg-white w-full h-[200px]'}></div>*/}
 					{/* Main content area */}
 					<div className="w-full h-full relative">
 						<div className="hidden">
@@ -123,14 +125,6 @@ function ImportTab() {
 									<p className="text-xl">Số HĐ: {importProducts[activeTab].id}</p>
 									<p className="text-xl">Ngày: {new Date().toLocaleString()}</p>
 								</div>
-
-								{/* Customer Info */}
-								{/*<div className="mb-6 text-xl">*/}
-								{/*	<p>*/}
-								{/*		<span className="font-semibold">Khách hàng: </span>*/}
-								{/*		{importProducts[activeTab].invoiceData.customerName || customer.name}*/}
-								{/*	</p>*/}
-								{/*</div>*/}
 
 								<table
 									className="p-5 w-full table border-collapse border border-gray-300 [&_th,&_td]:whitespace-nowrap [&_th,&_td]:text-left">
@@ -197,7 +191,7 @@ function ImportTab() {
 										<Table.Tr key={`tr-${generateUID()}`} className="border-b">
 											<Table.Td className="p-1">{index + 1}</Table.Td>
 											<Table.Td className="p-1">{product.name}</Table.Td>
-											<Table.Td className="p-1">{product.unit}</Table.Td>
+											<Table.Td className="p-1">{unitVi?.[product.unit as keyof typeof unitVi] || product.unit}</Table.Td>
 											<Table.Td className="p-2">
 												<NumberInput
 													className={'!w-16'}
@@ -332,6 +326,8 @@ function ImportTab() {
 									max={100}
 									onChange={(value) => {
 										setVat(Number(value));
+										console.log('vat', value);
+										updateProductInvoice(activeTab, { vat: Number(value) })
 									}}
 									rightSection={'%'}
 									className={'w-[120px]'}
