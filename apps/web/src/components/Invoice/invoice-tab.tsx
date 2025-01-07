@@ -12,7 +12,7 @@ import { readNumber } from '@util/number.ts';
 import ConsumerAutocomplete from '@component/Autocomplete/consumer-autocomplete.tsx';
 import { useReactToPrint } from 'react-to-print';
 import { useDashboard } from '@hook/dashboard/use-dasboard.ts';
-import { currentBranchAtom } from '@store/state/overview/branch.ts';
+import { currentBranchAtom, qrCodeAtom } from '@store/state/overview/branch.ts';
 import { useAuth } from '@hook/auth';
 import { useDebounce } from '@uidotdev/usehooks';
 import { ConsumerSearchModal } from '@component/Modal/consumer-search-modal.tsx';
@@ -171,6 +171,7 @@ function InvoiceTab() {
 
 	const [invoices, invoiceDispatch] = useAtom(invoiceActionAtom);
 	const [activeTab, activeTabDispatch] = useAtom(invoiceActiveTabActionAtom);
+	const [qrSupport, ] = useAtom(qrCodeAtom);
 
 	const [autoprint, setAutoprint] = useState(false)
 	const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -181,6 +182,7 @@ function InvoiceTab() {
 	const [amountDue, setAmountDue] = useState<number>(0);
 	const [discount, setDiscountState] = useState<number>(0);
 	const [otherCharges, setOtherCharges] = useState<InvoiceType['otherCharges']>([]);
+
 	const [debited, setDebited] = useState<number>(0);
 	const [customer, setCustomer] = useState<{name:string, id:string}>({name: '', id: ''});
 	const [qrURL, setQrURL] = useState<string | null>(null);
@@ -387,6 +389,13 @@ function InvoiceTab() {
 			}
 		}
 	}, [branchDetail])
+
+
+	useEffect(() => {
+		if (qrSupport) {
+			setQrURL(qrSupport.asset.url);
+		}
+	}, [qrSupport])
 
 	return (
 		<>
