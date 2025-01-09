@@ -313,6 +313,7 @@ export const calculateImportProductPrice = (
 	debit: number;
 	amountDue: number;
 	amountPaid: number;
+	vat: number;
 } => {
 
 	let { total, debit, amountDue, amountPaid, vat, productData } = importProduct;
@@ -353,6 +354,8 @@ export const calculateImportProductPrice = (
 
 	total =
 		productData.reduce((sum, item) => sum + item.purchasePrice*item.quantity , 0);
+	console.log('total', total);
+	console.log('vat', vat);
 	amountDue = total + (vat / 100) * total;
 	debit = amountPaid - amountDue;
 
@@ -361,5 +364,6 @@ export const calculateImportProductPrice = (
 		amountDue,
 		debit,
 		amountPaid,
+		vat,
 	};
 }

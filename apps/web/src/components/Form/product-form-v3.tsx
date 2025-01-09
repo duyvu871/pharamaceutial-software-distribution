@@ -142,7 +142,7 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 				<Stack gap="md">
 					<Box w={"100%"}>
 						<Controller
-							name="name"
+							name="barcode"
 							control={control}
 							render={({ field }) => (
 								<Label
@@ -153,10 +153,8 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 									classNames={{
 										wrapper: "w-full"
 									}}
-									// error={errors.name?.message}
 								>
 									<ProductAutocomplete
-										// label="Tên"
 										queryBy={"barcode"}
 										autoCapitalize={"none"}
 										autoComplete={"off"}
@@ -181,9 +179,11 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 											setValue('ingredients', product.drug_ingredients || '')
 											setValue('packaging', product.drug_packaging || '')
 											setValue('lotNumber', product.product_no)
-											// setValue('unit', product.productUnit.name || 'vien')
-											// setValue('largerUnit', product.productUnit.no)
-											// setValue('largerUnitValue', product.larger_unit_value)
+											setValue('unit', product?.productUnit?.name || 'vien')
+											if (!product?.productUnit?.is_base) {
+												setValue('largerUnit', product?.productUnit?.no || 'vien')
+												setValue('largerUnitValue', String(product?.productUnit?.value || 1))
+											}
 										}}
 									/>
 								</Label>
@@ -221,10 +221,14 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 														// setValue('activeIngredient', product.drug_ingredients || '')
 														setValue('content', product.drug_content || '')
 														setValue('usage', product.drug_usage || '')
-														setValue('ingredients', product.drug_ingredients || '')
-														setValue('packaging', product.drug_packaging || '')
-														setValue('lotNumber', product.product_no)
-														// setValue('unit', product.productUnit.name || 'vien')
+														setValue('ingredients', product.drug_ingredients || '');
+														setValue('packaging', product.drug_packaging || '');
+														setValue('lotNumber', product.product_no);
+														setValue('unit', product?.productUnit?.name || 'vien');
+														if (!product?.productUnit?.is_base) {
+															setValue('largerUnit', product?.productUnit?.no || 'vien')
+															setValue('largerUnitValue', String(product?.productUnit?.value || 1))
+														}
 														// setValue('largerUnit', product.productUnit.no)
 														// setValue('largerUnitValue', product.larger_unit_value)
 													}}

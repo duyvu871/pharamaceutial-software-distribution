@@ -157,7 +157,7 @@ const ExternalProductAutocomplete = forwardRef<HTMLInputElement, ProductAutocomp
 			<Popover
 				opened={popoverOpened}
 				onClose={() => setPopoverOpened(false)}
-				position="bottom"
+				position="bottom-start"
 				withArrow
 				shadow="md"
 			>
