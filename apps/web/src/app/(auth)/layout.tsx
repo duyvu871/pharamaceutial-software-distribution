@@ -1,7 +1,7 @@
 import "@app/globals.css";
 import "@repo/ui/styles.css";
 import '@mantine/core/styles.css';
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { cn } from '@lib/tailwind-merge.ts';
 import React from 'react';
@@ -25,6 +25,15 @@ export const metadata: Metadata = {
 		telephone: false,
 	},
 };
+
+export const viewport: Viewport = {
+	width: 'device-width',
+	initialScale: 1,
+	maximumScale: 1,
+	userScalable: false,
+	// Also supported but less commonly used
+	// interactiveWidget: 'resizes-visual',
+}
 
 export default function RootLayout({
 																		 children,

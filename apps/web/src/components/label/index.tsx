@@ -2,6 +2,7 @@ import * as React from 'react';
 import { cn } from '@lib/tailwind-merge.ts';
 import { VariantProps } from 'tailwind-variants';
 import { tv } from '@lib/tailwind-variants.ts';
+import { Typography } from '@component/Typography';
 
 const v = tv({
 	base: 'text-md',
@@ -42,6 +43,7 @@ type LabelProps = {
 	children: React.ReactNode;
 	label: React.ReactNode;
 	position?: 'left' | 'right' | 'top' | 'bottom';
+	required?: boolean;
 	className?: string;
 	classNames?: {
 		wrapper?: string;
@@ -60,6 +62,7 @@ export function Label({
 												position = 'left',
 												className,
 												classNames = defaultClassNames,
+												required = false,
 												color = 'text',
 												size = 'content',
 												weight = 'semibold',
@@ -116,7 +119,10 @@ export function Label({
 					classNames?.label
 				)
 			}
-		>{label}</span>;
+		>
+			{label}
+			{required && <Typography className={"ml-1"} size={size} weight={weight} color={"alert"}>*</Typography>}
+		</span>;
 
 	return (
 		<div className={cn('flex items-center', wrapper, className, classNames?.wrapper)} {...props}>

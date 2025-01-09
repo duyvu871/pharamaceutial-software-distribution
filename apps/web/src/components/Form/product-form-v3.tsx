@@ -137,9 +137,60 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 	})
 
 	return (
-		<Paper w={"100%"} className={"p-5"}>
-			<form onSubmit={handleSubmit(submit)}>
+		<Paper w={"100%"}  className={"p-5 "}>
+			<form onSubmit={handleSubmit(submit)} className={"h-fit"}>
 				<Stack gap="md">
+					<Box w={"100%"}>
+						<Controller
+							name="name"
+							control={control}
+							render={({ field }) => (
+								<Label
+									label={"Mã vạch"}
+									position={"left"}
+									size={"sm"}
+									required
+									classNames={{
+										wrapper: "w-full"
+									}}
+									// error={errors.name?.message}
+								>
+									<ProductAutocomplete
+										// label="Tên"
+										queryBy={"barcode"}
+										autoCapitalize={"none"}
+										autoComplete={"off"}
+										autoCorrect={"off"}
+										className={"w-full"}
+										placeholder="Nhập mã vạch"
+										required
+										error={errors.name?.message}
+										{...field}
+										onSelectProduct={(product) => {
+											setValue('name', product.product_name)
+											setValue('code', product.product_id || 'HH-0000014')
+											setValue('registrationNumber', product.register_no || '')
+											setValue('manufacturer', product.manufacturer || '')
+											setValue('expiryDate', dayjs(product.expire_date, 'YYYY-MM-DD').toDate())
+											setValue('purchasePrice', product.original_price)
+											setValue('sellingPrice', product.sell_price)
+											setValue('quantity', product.quantity_of_stock)
+											// setValue('activeIngredient', product.drug_ingredients || '')
+											setValue('content', product.drug_content || '')
+											setValue('usage', product.drug_usage || '')
+											setValue('ingredients', product.drug_ingredients || '')
+											setValue('packaging', product.drug_packaging || '')
+											setValue('lotNumber', product.product_no)
+											// setValue('unit', product.productUnit.name || 'vien')
+											// setValue('largerUnit', product.productUnit.no)
+											// setValue('largerUnitValue', product.larger_unit_value)
+										}}
+									/>
+								</Label>
+
+							)}
+						/>
+					</Box>
 					<Grid>
 						{/* Row 1: Required Fields */}
 						<Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
@@ -154,6 +205,9 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 													placeholder="Tìm kiếm hàng hóa"
 													required
 													error={errors.name?.message}
+													autoCapitalize={"none"}
+													autoComplete={"off"}
+													autoCorrect={"off"}
 													{...field}
 													onSelectProduct={(product) => {
 														setValue('name', product.product_name)
@@ -210,6 +264,9 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 										control={control}
 										render={({ field }) => (
 											<TextInput
+												autoCapitalize={"none"}
+												autoComplete={"off"}
+												autoCorrect={"off"}
 												label="Số Đăng Kí"
 												error={errors.registrationNumber?.message}
 												{...field}
@@ -222,7 +279,12 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 										name="code"
 										control={control}
 										render={({ field }) => (
-											<TextInput label="Mã Thuốc"{...field} />
+											<TextInput
+												autoCapitalize={"none"}
+												autoComplete={"off"}
+												autoCorrect={"off"}
+												label="Mã Thuốc"
+												{...field} />
 										)}
 									/>
 								</Box>
@@ -238,7 +300,13 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 										control={control}
 										render={({ field }) => (
 											<Label label={"Giá Nhập"} position={"top"}>
-												<MoneyInput {...field} className={"rounded"} />
+												<MoneyInput
+													autoCapitalize={"none"}
+													autoComplete={"off"}
+													autoCorrect={"off"}
+													{...field}
+													className={"rounded"}
+												/>
 											</Label>
 										)}
 									/>
@@ -249,7 +317,13 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 										control={control}
 										render={({ field }) => (
 											<Label label={"Giá Bán"} position={"top"}>
-												<MoneyInput{...field} className={"rounded"} />
+												<MoneyInput
+													autoCapitalize={"none"}
+													autoComplete={"off"}
+													autoCorrect={"off"}
+													{...field}
+													className={"rounded"}
+												/>
 											</Label>
 										)}
 									/>
@@ -292,6 +366,9 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 												<DateInput
 													label="Hạn Sử Dụng"
 													required
+													autoCapitalize={"none"}
+													autoComplete={"off"}
+													autoCorrect={"off"}
 													error={errors.expiryDate?.message}
 													{...field}
 													locale="vi"
@@ -312,6 +389,9 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 													render={({ field }) => (
 														<Textarea
 															label="Liều Dùng"
+															autoCapitalize={"none"}
+															autoComplete={"off"}
+															autoCorrect={"off"}
 															error={errors.usage?.message}
 															{...field}
 														/>
@@ -324,6 +404,9 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 													control={control}
 													render={({ field }) => (
 														<Textarea
+															autoCapitalize={"none"}
+															autoComplete={"off"}
+															autoCorrect={"off"}
 															label="Thành Phần"
 															error={errors.ingredients?.message}
 															{...field}
@@ -346,6 +429,9 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 											control={control}
 											render={({ field }) => (
 												<TextInput
+													autoCapitalize={"none"}
+													autoComplete={"off"}
+													autoCorrect={"off"}
 													label="Số Lô"
 													required
 													error={errors.lotNumber?.message}
@@ -360,6 +446,9 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 											control={control}
 											render={({ field }) => (
 												<NumberInput
+													autoCapitalize={"none"}
+													autoComplete={"off"}
+													autoCorrect={"off"}
 													label="Số Lượng Nhập"
 													allowNegative={false}
 													required
@@ -379,6 +468,9 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 													control={control}
 													render={({ field }) => (
 														<Textarea
+															autoCapitalize={"none"}
+															autoComplete={"off"}
+															autoCorrect={"off"}
 															label="Hoạt Chất"
 															error={errors.activeIngredient?.message}
 															{...field}
@@ -392,6 +484,9 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 													control={control}
 													render={({ field }) => (
 														<Textarea
+															autoCapitalize={"none"}
+															autoComplete={"off"}
+															autoCorrect={"off"}
 															label="Hàm Lượng"
 															error={errors.content?.message}
 															{...field}
@@ -412,6 +507,9 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 										control={control}
 										render={({ field }) => (
 											<Textarea
+												autoCapitalize={"none"}
+												autoComplete={"off"}
+												autoCorrect={"off"}
 												label="Quy Cách Đóng Gói"
 												rows={1}
 												error={errors.packaging?.message}
@@ -581,6 +679,10 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 															control={control}
 															render={({ field }) => (
 																<NumberInput
+																	autoCapitalize={"none"}
+																	autoComplete={"off"}
+																	autoCorrect={"off"}
+																	allowNegative={false}
 																	error={errors.largerUnitValue?.message}
 																	{...field}
 																	onChange={(value) => {

@@ -37,6 +37,7 @@ const defaultProductData: ProductFormData = {
 	expiryDate: new Date(),
 	quantity: 0,
 	importDate: new Date(),
+	barcode: '',
 	// vat: '0',
 	unit: 'vien',
 	largerUnit: '',

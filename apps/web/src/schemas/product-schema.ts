@@ -63,7 +63,7 @@ export const ProductZodSchema = z.object({
 		latest_parcel_no: z.string().nullable(), // Số lô gần nhất (có thể null)
 		latest_parcel_exp_date: z.string().nullable(), // Ngày hết hạn của lô gần nhất (có thể null)
 		avg_original_price: z.number(), // Giá gốc trung bình
-	}),
+	}).nullable(),
 	quantity: z.object({ // Thông tin về số lượng sản phẩm
 		id: z.number(), // ID số lượng
 		store_id: z.number(), // ID cửa hàng
@@ -94,6 +94,7 @@ export const productFormSchema = z.object({
 	expiryDate: z.date({ required_error: 'Hạn sử dụng là bắt buộc' }),
 	quantity: z.number().int().nonnegative({ message: 'Số lượng nhập phải là số nguyên dương' }),
 	importDate: z.date({ required_error: 'Ngày nhập hàng là bắt buộc' }),
+	barcode: z.string(),
 	// useBefore: z.string().optional(),
 	// vat: z.string(),
 	unit: z.enum(['vien', 'vi', 'goi', 'chai', 'lo', 'hop']).or(z.string()),

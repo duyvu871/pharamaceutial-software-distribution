@@ -18,6 +18,8 @@
       <excludeFolder url="file://$MODULE_DIR$/packages/database/node_modules" />
       <excludeFolder url="file://$MODULE_DIR$/packages/logger/node_modules" />
       <excludeFolder url="file://$MODULE_DIR$/packages/schedule/node_modules" />
+      <excludeFolder url="file://$MODULE_DIR$/apps/server/logs" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/orm/node_modules" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

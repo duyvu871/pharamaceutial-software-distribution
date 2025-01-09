@@ -1,7 +1,11 @@
 import { useState, useEffect, ChangeEventHandler, ChangeEvent, memo, forwardRef } from 'react';
 import { Autocomplete, Box, Divider, InputProps, List, Loader, Popover, Stack, TextInput } from '@mantine/core';
 import { useDebounce } from "@uidotdev/usehooks";
-import { autocomplete, autoCompleteSearchStoreProduct } from '@api/autocomplete.ts';
+import {
+	autocomplete,
+	autoCompleteSearchStoreProduct,
+	AutocompleteSearchStoreProductFilter,
+} from '@api/autocomplete.ts';
 // import { SearchProductType } from '@schema/autocomplete.ts';
 // import { useDisclosure } from '@mantine/hooks';
 // import Image from 'next/image';
@@ -19,9 +23,13 @@ import { TextInputProps } from '@mantine/core';
 
 export type ProductAutocompleteProps = TextInputProps & {
 	onSelectProduct?: (product: Product) => void;
+	onDataReady?: (data: Product[]) => void;
 	onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
 	onBlur?: (e: ChangeEvent<HTMLInputElement>) => void;
 	onFocus?: (e: ChangeEvent<HTMLInputElement>) => void;
+	queryBy?: 'barcode' | 'product_no' | 'product_name';
+	showRecentSearches?: boolean;
+	showSearchList?: boolean;
 }
 
 const ListItems =({item, onClick}: {item: Product, onClick: () => void}) => {
@@ -59,163 +67,169 @@ const ListItems =({item, onClick}: {item: Product, onClick: () => void}) => {
 	)
 }
 
-const ProductAutocomplete = forwardRef<HTMLInputElement, ProductAutocompleteProps>(({onSelectProduct, onChange, onBlur, onFocus, ...inputProps}, ref) => {
-	const {branchId} = useDashboard();
+const ProductAutocomplete = forwardRef<HTMLInputElement, ProductAutocompleteProps>(
+	({onSelectProduct, onChange, onBlur, onFocus, queryBy, onDataReady,  ...inputProps}, ref) => {
+		const {branchId} = useDashboard();
 
-	const [searchTerm, setSearchTerm] = useState<string>("");
-	const [selected, setSelected] = useState<string>("");
-	const [results, setResults] =useState<Product[]>([]);
-	const [recentResults, setRecentResults] = useState<Product[]>([]);
+		const [searchTerm, setSearchTerm] = useState<string>("");
+		const [selected, setSelected] = useState<string>("");
+		const [results, setResults] =useState<Product[]>([]);
+		const [recentResults, setRecentResults] = useState<Product[]>([]);
 
-	const [isSearching, setIsSearching] = useState<boolean>(false);
-	const [shouldSearch, setShouldSearch] = useState<boolean>(true);
-	const [popoverOpened, setPopoverOpened] = useState<boolean>(false);
+		const [isSearching, setIsSearching] = useState<boolean>(false);
+		const [shouldSearch, setShouldSearch] = useState<boolean>(true);
+		const [popoverOpened, setPopoverOpened] = useState<boolean>(false);
 
-	// const [dropdownOpened, { toggle, open, close }] = useDisclosure();
-	const debouncedSearchTerm = useDebounce(searchTerm, 500);
-	// const {generateUID} = useUID();
+		// const [dropdownOpened, { toggle, open, close }] = useDisclosure();
+		const debouncedSearchTerm = useDebounce(searchTerm, 500);
+		// const {generateUID} = useUID();
 
-	const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-		setSearchTerm(e.target.value);
-		setShouldSearch(true);
-		onChange && onChange(e);
-	};
-
-	const handleBlur = (e: ChangeEvent<HTMLInputElement>) => {
-		// console.log('blur');
-		// setPopoverOpened(false)
-		setTimeout(() => setPopoverOpened(false), 200)
-		onBlur && onBlur(e);
-	}
-
-	const handleFocus = (e: ChangeEvent<HTMLInputElement>) => {
-		// console.log('focus');
-		setPopoverOpened(true)
-		onFocus && onFocus(e);
-	}
-
-	useEffect(() => {
-		const searchHN = async () => {
-			setIsSearching(true);
-			try { // Add try/catch for error handling
-				// close();
-				if (!debouncedSearchTerm) {
-					setResults([]);
-					return;
-				}
-				const data = await autoCompleteSearchStoreProduct({
-					query: debouncedSearchTerm,
-					branchId: branchId,
-				});
-				setResults(data);
-				console.log("Search results:", data);
-			} catch (error) {
-				console.error("Search error:", error);
-				setResults([]); // Clear results on error
-			} finally {
-				setIsSearching(false);
-				// open();
-			}
+		const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+			setSearchTerm(e.target.value);
+			setShouldSearch(true);
+			onChange && onChange(e);
 		};
 
-		if (shouldSearch && debouncedSearchTerm) { // Only call API if there's a search term
-			searchHN();
-		} else {
-			// setResults([]);  // Clear results if search term is empty
+		const handleBlur = (e: ChangeEvent<HTMLInputElement>) => {
+			// console.log('blur');
+			// setPopoverOpened(false)
+			setTimeout(() => setPopoverOpened(false), 200)
+			onBlur && onBlur(e);
 		}
 
-	}, [debouncedSearchTerm, shouldSearch]);
-
-	useEffect(() => {  // This useEffect updates localStorage
-		localStorage.setItem("recentSearches", JSON.stringify(recentResults.slice(0, 5))); // Store up to 5 recent searches
-	}, [recentResults]);
-
-	useEffect(() => {
-		const recentSearches = localStorage.getItem("recentSearches");
-		if (recentSearches) {
-			setRecentResults(parseJson<Product[]>(recentSearches) || []);
+		const handleFocus = (e: ChangeEvent<HTMLInputElement>) => {
+			// console.log('focus');
+			setPopoverOpened(true)
+			onFocus && onFocus(e);
 		}
-		console.log('rerender');
-	}, []);
 
-	return (
-		// <div className="w-96 relative"> {/* relative for Popover positioning */}
-			<Popover
-				opened={popoverOpened}
-				onClose={() => setPopoverOpened(false)}
-				position="bottom"
-				withArrow
-				shadow="md"
-				closeOnClickOutside={true}
-				// clickOutsideEvents={['mouseup', 'touchend']}
-			>
-				<Popover.Target>
-					<TextInput
-						// value={searchTerm}
-						onChange={handleChange}
-						placeholder="Tìm sản phẩm"
-						onFocus={handleFocus} // Open on focus
-						onBlur={handleBlur} // Close on blur with delay
-						rightSection={isSearching && <Loader size="xs" />}
-						value={""}
-						{...inputProps}
-						ref={ref}
-					/>
-				</Popover.Target>
-				<Popover.Dropdown className={'!z-[150] !w-full max-w-md overflow-y-auto sm:max-h-[600px]'}>
-					<List className={'w-full max-w-md'}>
-						{results.slice(0, 5).map(item => (
-							<ListItems
-								key={item.id}
-								item={item}
-								onClick={() => {
-									onSelectProduct && onSelectProduct(item);
-									setShouldSearch(false);
-									setPopoverOpened(false);
-									setResults([]);
-									const updatedRecentResults = [
-										item,
-										...recentResults.filter(i =>
-											i.product_no !== item.product_no
-										)
-									].slice(0,5);
-									setRecentResults(updatedRecentResults);
-								}}
-							/>
-						))}
-						{!isSearching && results.length === 0 && searchTerm && (
-							<Typography size="sm" color="text">No results found</Typography>
-						)}
-						{recentResults.length > 0 &&
-							<>
-								<Divider size="xs" label="Tìm kiếm gần đây" />
-								{recentResults.map((item) =>
-									<ListItems
-										key={`${item.product_no}-2`}
-										item={item}
-										onClick={() => {
-											onSelectProduct && onSelectProduct(item);
-											setShouldSearch(false);
-											setPopoverOpened(false);
-											setResults([]);
-											const updatedRecentResults = [
-												item,
-												...recentResults.filter(i =>
-													i.product_no !== item.product_no
-												)
-											].slice(0,5);
-											setRecentResults(updatedRecentResults);
-										}}
-									/>)}
-							</>
-						}
-					</List>
-				</Popover.Dropdown>
-			</Popover>
+		useEffect(() => {
+			const searchHN = async () => {
+				setIsSearching(true);
+				try {
+					if (!debouncedSearchTerm) {
+						setResults([]);
+						return;
+					}
+					const queryOption: AutocompleteSearchStoreProductFilter = {
+						query: debouncedSearchTerm,
+						branchId: branchId,
+					}
 
-		// </div>
-	);
-});
+					queryBy && (queryOption.queryBy = queryBy);
+
+					const data = await autoCompleteSearchStoreProduct(queryOption);
+					onDataReady && onDataReady(data);
+					setResults(data);
+					console.log("Search results:", data);
+				} catch (error) {
+					console.error("Search error:", error);
+					setResults([]); // Clear results on error
+				} finally {
+					setIsSearching(false);
+					// open();
+				}
+			};
+
+			if (shouldSearch && debouncedSearchTerm) { // Only call API if there's a search term
+				searchHN();
+			} else {
+				// setResults([]);  // Clear results if search term is empty
+			}
+
+		}, [debouncedSearchTerm, shouldSearch]);
+
+		useEffect(() => {  // This useEffect updates localStorage
+			localStorage.setItem("recentSearches", JSON.stringify(recentResults.slice(0, 5))); // Store up to 5 recent searches
+		}, [recentResults]);
+
+		useEffect(() => {
+			const recentSearches = localStorage.getItem("recentSearches");
+			if (recentSearches) {
+				setRecentResults(parseJson<Product[]>(recentSearches) || []);
+			}
+			console.log('rerender');
+		}, []);
+
+		return (
+			// <div className="w-96 relative"> {/* relative for Popover positioning */}
+				<Popover
+					opened={popoverOpened}
+					onClose={() => setPopoverOpened(false)}
+					position="bottom"
+					withArrow
+					shadow="md"
+					closeOnClickOutside={true}
+					// clickOutsideEvents={['mouseup', 'touchend']}
+				>
+					<Popover.Target>
+						<TextInput
+							// value={searchTerm}
+							onChange={handleChange}
+							placeholder="Tìm sản phẩm"
+							onFocus={handleFocus} // Open on focus
+							onBlur={handleBlur} // Close on blur with delay
+							rightSection={isSearching && <Loader size="xs" />}
+							value={""}
+							{...inputProps}
+							ref={ref}
+						/>
+					</Popover.Target>
+					<Popover.Dropdown className={'!z-[150] !w-full max-w-md overflow-y-auto sm:max-h-[600px]'}>
+						<List className={'w-full max-w-md'}>
+							{results.slice(0, 5).map(item => (
+								<ListItems
+									key={item.id}
+									item={item}
+									onClick={() => {
+										onSelectProduct && onSelectProduct(item);
+										setShouldSearch(false);
+										setPopoverOpened(false);
+										setResults([]);
+										const updatedRecentResults = [
+											item,
+											...recentResults.filter(i =>
+												i.product_no !== item.product_no
+											)
+										].slice(0,5);
+										setRecentResults(updatedRecentResults);
+									}}
+								/>
+							))}
+							{!isSearching && results.length === 0 && searchTerm && (
+								<Typography size="sm" color="text">No results found</Typography>
+							)}
+							{recentResults.length > 0 &&
+								<>
+									<Divider size="xs" label="Tìm kiếm gần đây" />
+									{recentResults.map((item) =>
+										<ListItems
+											key={`${item.product_no}-2`}
+											item={item}
+											onClick={() => {
+												onSelectProduct && onSelectProduct(item);
+												setShouldSearch(false);
+												setPopoverOpened(false);
+												setResults([]);
+												const updatedRecentResults = [
+													item,
+													...recentResults.filter(i =>
+														i.product_no !== item.product_no
+													)
+												].slice(0,5);
+												setRecentResults(updatedRecentResults);
+											}}
+										/>)}
+								</>
+							}
+						</List>
+					</Popover.Dropdown>
+				</Popover>
+
+			// </div>
+		);
+	}
+);
 ProductAutocomplete.displayName = "ProductAutocomplete";
 
 export default ProductAutocomplete;

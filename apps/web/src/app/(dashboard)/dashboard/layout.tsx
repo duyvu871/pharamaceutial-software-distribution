@@ -5,7 +5,7 @@ import '@mantine/core/styles.css';
 import '@mantine/charts/styles.css';
 import '@mantine/dates/styles.css';
 import '@mantine/tiptap/styles.css';
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter as FontSans, Montserrat } from "next/font/google";
 import {cn} from "@lib/tailwind-merge";
 import { ThemeProvider } from "@layout/global-theme";
@@ -35,6 +35,15 @@ export const metadata: Metadata = {
 	},
 	// metadataBase: new URL("./public/graphics/feature_1.png"),
 };
+
+export const viewport: Viewport = {
+	width: 'device-width',
+	initialScale: 1,
+	maximumScale: 1,
+	userScalable: false,
+	// Also supported but less commonly used
+	// interactiveWidget: 'resizes-visual',
+}
 
 export default function RootLayout({
 																		 children,

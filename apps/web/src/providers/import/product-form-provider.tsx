@@ -25,6 +25,8 @@ export const ImportProductFormProvider = ({children}: ImportProductFormProviderP
 		defaultValues: {
 			type: 'thuoc',
 			code: '',
+			purchasePrice: 0,
+			sellingPrice: 0,
 			// useBefore: '30',
 			// vat: '10',
 			unit: 'vien',

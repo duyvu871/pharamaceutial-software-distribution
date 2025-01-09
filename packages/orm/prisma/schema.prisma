@@ -205,7 +205,7 @@ model product_units {
 
 model products {
   id                     String                   @id @default(uuid()) @db.Uuid
-  product_id             String?
+  product_id             String                   @unique
   store_id               String                   @db.Uuid
   group_id               String?                  @db.Uuid
   store_group_id         String?                  @db.Uuid
@@ -232,9 +232,15 @@ model products {
   min_quantity           Int
   max_quantity           Int
   description            String?                  @db.VarChar(255)
+  usage                  String?                  @db.VarChar(255)
+  ingredient             String?                  @db.VarChar(255)
+  packing                String?                  @db.VarChar(255)
+  active_ingredient      String?                  @db.VarChar(255)
+  content                String?                  @db.VarChar(255)
   note                   String?                  @db.VarChar(255)
   manufacturer           String?                  @db.VarChar(255)
   made_in                String?                  @db.VarChar(255)
+
   deleted_at             DateTime?                @db.Timestamptz(6)
   deleted_by             String?                  @db.Uuid
   avg_original_price     Float
@@ -256,12 +262,13 @@ model products {
   @@index([barcode])
   @@index([product_no])
   @@index([medicine_id])
+  @@index([product_id])
 }
 
 model import_invoices {
   id                     String                   @id @default(uuid()) @db.Uuid
   store_id               String                   @db.Uuid
-  provider_id            String                   @db.Uuid
+  provider_id            String?                   @db.Uuid
   invoice_no             String                   @db.VarChar(255)
   name                   String
   total_amount           Float
@@ -274,7 +281,7 @@ model import_invoices {
   createdAt              DateTime                 @default(now()) @db.Timestamptz(6)
   updatedAt              DateTime                 @updatedAt @db.Timestamptz(6)
   stores                 stores                   @relation(fields: [store_id], references: [id])
-  providers              providers                @relation(fields: [provider_id], references: [id])
+  providers              providers?                @relation(fields: [provider_id], references: [id])
   import_invoice_product import_invoice_product[]
 
   @@index([store_id])

@@ -10,6 +10,6 @@ export const importRoute = Router();
 importRoute.route('/import/:branchId/product').post(
 	...authChain,
 	validateParams(BranchValidation.branchIdParam),
-	// validateBody(ImportValidation.createImportProduct),
+	validateBody(ImportValidation.createImportProduct),
 	ImportController.importProduct
 );

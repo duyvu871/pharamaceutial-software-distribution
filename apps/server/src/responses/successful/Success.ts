@@ -10,6 +10,16 @@ class Success {
         this._data = data;
     }
 
+    public statusCode(statusCode: number) {
+        this._statusCode = statusCode;
+        return this;
+    }
+
+    public message(message: string) {
+        this._message = message;
+        return this;
+    }
+
     get toJson(): ISuccessResponse {
 
         // const response: ISuccessResponse = {

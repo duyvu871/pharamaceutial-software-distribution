@@ -163,6 +163,7 @@ export class InvoiceController {
 				// 	branchId: req.params.branchId
 				// }
 				// const invoice = await prisma.invoices.create({ data: invoiceCreate });
+				// @ts-ignore
 				const invoice = await SalesInvoiceTask.createInvoiceWithStockUpdate(reqBody);
 				const response = new Success(invoice).toJson;
 				return res.status(201).json(response).end();

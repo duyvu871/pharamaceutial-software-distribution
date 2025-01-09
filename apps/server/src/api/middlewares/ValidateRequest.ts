@@ -68,13 +68,14 @@ const validate = (type: ValidateType, ...schemas: ZodType<any>[]) => {
 			for (const schema of schemas) {
 				if (schema instanceof ZodObject) {
 					const DTOToValidate = Object.keys(schema.shape).reduce((acc, key) => {
-						if (req[type][key]) {
+						if (key in req[type]) {
 							acc[key] = req[type][key];
 						}
 						return acc;
 					}, {} as Record<string, string | string[] | undefined>);
-
-					schema.parse(DTOToValidate);
+					console.log('DTOToValidate: ', DTOToValidate);
+					const schemaParse = schema.parse(DTOToValidate);
+					console.log('schemaParse: ', schemaParse);
 					validatedData = { ...validatedData, ...DTOToValidate };
 				}
 			}

@@ -35,13 +35,16 @@ export const autoCompleteSearchRegion = async (group: 'tinh'|'huyen'|'xa', targe
 	}
 }
 
-export const autoCompleteSearchStoreProduct = async (filter: {
+export type AutocompleteSearchStoreProductFilter = {
 	query: string,
 	branchId: string,
 	limit?: number,
 	page?: number,
 	orderBy?: string,
-}): Promise<Product[]> => {
+	queryBy?: string,
+}
+
+export const autoCompleteSearchStoreProduct = async (filter: AutocompleteSearchStoreProductFilter): Promise<Product[]> => {
 	try {
 		const response = await axiosWithAuth.get<SuccessResponse<Product[]>>(`/product/${filter.branchId}`, {
 			params: {
