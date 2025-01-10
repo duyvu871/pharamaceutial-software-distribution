@@ -44,20 +44,20 @@ export default function RootLayout({
 																	 }: {
 	children: React.ReactNode;
 }): JSX.Element {
-	return redirect('/login');
-	// return (
-	// 	<html lang="en" suppressHydrationWarning>
-	// 	<body className={cn(fontSans.className, "flex justify-center items-center w-full min-h-screen h-fit font-sans antialiased")}>
-	// 	<ThemeProvider
-	// 		attribute="class"
-	// 		defaultTheme="light"
-	// 		disableTransitionOnChange
-	// 		// enableSystem
-	// 		forcedTheme={'light'}
-	// 	>
-	// 		{children}
-	// 	</ThemeProvider>
-	// 	</body>
-	// 	</html>
-	// );
+	// return redirect('/login');
+	return (
+		<html lang="en" suppressHydrationWarning>
+		<body className={cn(fontSans.className, "flex justify-center items-center w-full min-h-screen h-fit font-sans antialiased")}>
+		<ThemeProvider
+			attribute="class"
+			defaultTheme="light"
+			disableTransitionOnChange
+			// enableSystem
+			forcedTheme={'light'}
+		>
+			{children}
+		</ThemeProvider>
+		</body>
+		</html>
+	);
 }
