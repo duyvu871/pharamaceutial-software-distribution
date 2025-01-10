@@ -42,7 +42,7 @@ const defaultProductData: ProductFormData = {
 	unit: 'vien',
 	largerUnit: '',
 	largerUnitValue: '',
-	notes: '',
+	note: '',
 	images: [],
 }
 
@@ -160,7 +160,7 @@ export const importProductActionAtom = atom(
 					// ...state,
 					// ...newImportPrice,
 					// productData: newProductData,
-					...importProduct,
+					...updatedImport,
 					...newImportPrice,
 				},
 			});
@@ -208,25 +208,27 @@ export const importProductActionAtom = atom(
 
 			const importProduct = currentImportProduct[invoiceId];
 
-
 			if (!importProduct) {
 				return;
 			}
 
-
 			const updatedProductData = importProduct.productData.filter((_, index) => index !== productIndex);
+
+			console.log('updatedProductData', updatedProductData);
 
 			const updatedImport = {
 				...importProduct,
 				productData: updatedProductData
 			}
 
+
+
 			const newImportPrice = calculateImportProductPrice(updatedImport, { type: 'remove-product', itemId: productIndex });
 
 			set(importProductAtom, {
 				...currentImportProduct,
 				[invoiceId]: {
-					...importProduct,
+					...updatedImport,
 					...newImportPrice,
 				},
 			});

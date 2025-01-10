@@ -25,6 +25,8 @@ import { useImportProductState } from '@hook/dashboard/import/use-import-product
 import { importProductActionAtom } from '@store/state/overview/import-product.ts';
 import { unitVi } from '@global/locale.ts';
 import { createImportProduct } from '@api/import.ts';
+import useToast from '@hook/client/use-toast-notification.ts';
+import { cn } from '@lib/tailwind-merge';
 
 function ImportTab() {
 	const {generateUID} = useUID();
@@ -40,6 +42,8 @@ function ImportTab() {
 		updateProductInvoice
 	} = useImportProductState();
 
+	const {showSuccessToast, showErrorToast} = useToast();
+
 	const [autoprint, setAutoprint] = useState(false)
 	const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
 	// const [consumerPayment, setConsumerPayment] = useState<number>(0);
@@ -48,6 +52,8 @@ function ImportTab() {
 
 	// const [invoices, invoiceDispatch] = useAtom(invoiceActionAtom);
 	// const [activeTab, activeTabDispatch] = useAtom(invoiceActiveTabActionAtom);
+
+	const [submitting, setSubmitting] = useState<boolean>(false);
 
 	const [vat, setVat] = useState<number>(0);
 	const [totalPrice, setTotalPrice] = useState<number>(0);
@@ -68,8 +74,20 @@ function ImportTab() {
 
 
 	const handleInvoiceSubmit = async () => {
+		setSubmitting(true);
 		console.log('submit invoice', importProducts[activeTab]);
-		await createImportProduct(importProducts[activeTab], branchId);
+		const activeInvoice = importProducts[activeTab];
+		if (!activeInvoice) return;
+		if (!activeInvoice.productData.length) return;
+		await createImportProduct(importProducts[activeTab], branchId)
+			.then((res) => {
+				setSubmitting(false);
+				showSuccessToast('Đã tạo hóa đơn thành công');
+			})
+			.catch((res => {
+				setSubmitting(false);
+				showErrorToast(res.message);
+			}));
 	}
 
 	useEffect(() => {
@@ -100,6 +118,8 @@ function ImportTab() {
 	// 	// setTotalPrice(total);
 	// 	setAmountDue(total);
 	// }, [vat]);
+
+
 
 	return (
 		<>
@@ -153,7 +173,7 @@ function ImportTab() {
 											</td>
 											<td className="p-2">{(product.purchasePrice * product.quantity).toLocaleString()}đ</td>
 											<td className="p-2">
-												{product.notes}
+												{product.note}
 											</td>
 										</tr>
 									))}
@@ -198,18 +218,21 @@ function ImportTab() {
 													defaultValue={product.quantity}
 													allowNegative={false}
 													allowDecimal={false}
-													onChange={(quantity) => {
-														console.log('quantity', quantity);
+													onBlur={(quantity) => {
+														console.log('quantity', quantity.currentTarget.value);
 														// updateProductState(index, {
 														// 	quantity: Number(quantity) || 1,
 														// });
+														const quantityValue = Number(quantity.currentTarget.value) || 1;
+
+														if (quantityValue === product.quantity) return;
 
 														importProductActions({
 															type: 'update-product',
 															invoiceId: activeTab,
 															index: index,
 															state: {
-																quantity: Number(quantity) || 1
+																quantity: Number(quantity.currentTarget.value) || 1
 															}
 														});
 													}} />
@@ -236,7 +259,19 @@ function ImportTab() {
 											</Table.Td>
 											<Table.Td className="p-1">{(product.purchasePrice * product.quantity).toLocaleString()}đ</Table.Td>
 											<Table.Td className="p-1">
-												<Textarea />
+												<Textarea
+													defaultValue={product.note}
+													onBlur={(e) => {
+														importProductActions({
+															type: 'update-product',
+															invoiceId: activeTab,
+															index: index,
+															state: {
+																note: e.currentTarget.value
+															}
+														});
+													}}
+												/>
 											</Table.Td>
 											<Table.Td className="p-1">
 												<button onClick={() => {
@@ -284,17 +319,19 @@ function ImportTab() {
 						{/*<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />*/}
 						<Label label={"Nhà cung cấp"}>
 							<div className={"w-full relative"}>
-								<ProviderAutocomplete setValue={({ name, id }) => {
-									console.log('provider', name, id);
-									// updateProductInvoice(activeTab, { provider: id })
-									importProductActions({
-										type: 'update',
-										invoiceId: activeTab,
-										state: {
-											provider: id
-										}
-									});
-								}} />
+								<ProviderAutocomplete
+									setValue={({ name, id }) => {
+										console.log('provider', name, id);
+										// // updateProductInvoice(activeTab, { provider: id })
+										// importProductActions({
+										// 	type: 'update',
+										// 	invoiceId: activeTab,
+										// 	state: {
+										// 		provider: id
+										// 	}
+										// });
+										updateProductInvoice(activeTab, { provider: id })
+									}} />
 								<ProviderModal>
 									<button
 										className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
@@ -394,6 +431,9 @@ function ImportTab() {
 						placeholder="Ghi chú"
 						className="w-full p-2 border rounded resize-none"
 						rows={2}
+						onBlur={(e) => {
+							updateProductInvoice(activeTab, { notes: e.currentTarget.value })
+						}}
 					></textarea>
 
 					{/*<div className="flex justify-between items-center">*/}
@@ -422,14 +462,17 @@ function ImportTab() {
 					{/*		description={'Chọn file qr'}*/}
 					{/*	/>*/}
 					{/*</div>*/}
-					<button onClick={() => {
-						handleInvoiceSubmit();
-						if (autoprint) {
-							reactToPrintFn();
-						}
-					}}
-									className="w-full py-3 bg-teal-500 text-white rounded text-lg hover:bg-teal-600">
-						Thanh toán (F7)
+					<button
+						onClick={() => {
+							void handleInvoiceSubmit();
+							if (autoprint) reactToPrintFn();
+						}}
+						className={cn("w-full py-3 bg-teal-500 text-white rounded text-lg hover:bg-teal-600 transition-all ", {
+							'bg-zinc-300 hover:bg-zinc-200 cursor-not-allowed': submitting
+						})}
+						disabled={submitting}
+					>
+						{submitting ? 'Đang xử lý...' : 'Thanh toán (F7)'}
 					</button>
 
 					<div className="flex justify-center items-center gap-2 text-sm text-gray-500">

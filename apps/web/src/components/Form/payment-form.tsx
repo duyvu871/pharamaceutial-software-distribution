@@ -3,17 +3,19 @@ import { useForm, zodResolver } from '@mantine/form';
 import { Typography } from '@component/Typography';
 import { z } from 'zod';
 import { Label } from '@component/label';
+import { PaymentFormValues, paymentSchema } from '@schema/branch-schema.ts';
+import { getBranchPayment, upsertBranchPayment } from '@api/branch.ts';
+import { useDashboard } from '@hook/dashboard/use-dasboard';
+import useToast from '@hook/client/use-toast-notification.ts';
+import { useEffect } from 'react';
 
-// Define Zod schema for form validation
-const paymentSchema = z.object({
-	bankName: z.string().min(1, 'Tên ngân hàng là bắt buộc'),
-	bankAccount: z.string().min(1, 'Số tài khoản là bắt buộc'),
-	bankOwner: z.string().min(1, 'Chủ tài khoản là bắt buộc'),
-});
 
-type PaymentFormValues = z.infer<typeof paymentSchema>;
 
 export default function PaymentForm() {
+	const {branchId} = useDashboard();
+
+	const {showErrorToast, showSuccessToast} = useToast();
+
 	const form = useForm<PaymentFormValues>({
 		validate: zodResolver(paymentSchema),
 		initialValues: {
@@ -26,7 +28,31 @@ export default function PaymentForm() {
 	const handleSubmit = (values: PaymentFormValues) => {
 		console.log(values);
 		// Handle form submission
+		upsertBranchPayment(
+			branchId,
+			{
+				...values
+			}
+		)
+			.then(response => {
+				console.log(response);
+				showSuccessToast("Lưu thông tin thanh toán thành công")
+			})
+			.catch(error => {
+				console.log(error);
+				showErrorToast(error.message || 'Lỗi khi lưu thông tin thanh toán \n vui lòng thử lại')
+			});
 	};
+
+	useEffect(() => {
+		getBranchPayment(branchId)
+			.then(response => {
+				if (!response) return;
+				form.setFieldValue("bankName", response.payment_bank);
+				form.setFieldValue("bankAccount", response.payment_account_number);
+				form.setFieldValue("bankOwner", response.payment_account_owner);
+			})
+	}, []);
 
 
 	return (
@@ -52,7 +78,7 @@ export default function PaymentForm() {
 
 					<TextInput
 						label="Số tài khoản"
-						placeholder="Nhập số tiền"
+						placeholder="Nhập số tài khoản"
 						min={0}
 						step={1000}
 						{...form.getInputProps('bankAccount')}
@@ -61,7 +87,7 @@ export default function PaymentForm() {
 
 					<TextInput
 						label="Chủ tài khoản"
-						placeholder="Nhập số tiền"
+						placeholder="Nhập tên chủ tài khoản"
 						min={0}
 						step={1000}
 						{...form.getInputProps('bankOwner')}

@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 export function generateTimeBasedId(length: number = 15) {
 	const timestamp = Date.now().toString(36);
 	const randomPartLength = length - timestamp.length;
@@ -13,4 +15,14 @@ export function generateTimeBasedId(length: number = 15) {
 	const randomPart = Array.from(randomArray, (byte) => chars[byte % chars.length]).join('');
 
 	return timestamp + randomPart;
+}
+
+export const checkUUIDv4 = (uuid: string): boolean => {
+	try {
+		const uuidSchema = z.string().uuid();
+		uuidSchema.parse(uuid);
+		return true;
+	} catch (error) {
+		return false;
+	}
 }

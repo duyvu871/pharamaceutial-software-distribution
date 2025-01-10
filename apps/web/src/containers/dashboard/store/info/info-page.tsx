@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Card, Text, Group, Badge, Accordion, Grid, Container, Title, Paper, ThemeIcon, List, AppShell, Burger, Skeleton, Box, Stack, Tabs, ScrollArea } from '@mantine/core';
+import { Card, Text, Group, Badge, Accordion, Grid, Container, Title, Paper, ThemeIcon, List, AppShell, Burger, Skeleton, Box, Stack, Tabs, ScrollArea, Divider } from '@mantine/core';
 import { IconMapPin, IconUser, IconCertificate, IconCalendar } from '@tabler/icons-react';
 import { Typography } from '@component/Typography';
 import { TbLicense } from "react-icons/tb";
@@ -14,6 +14,7 @@ import { useDashboard } from '@hook/dashboard/use-dasboard.ts';
 import PaymentForm from '@component/Form/payment-form.tsx';
 import QRSupportForm from '@component/Form/qr-payment-form.tsx';
 import { cn } from '@lib/tailwind-merge.ts';
+import { CenterBox } from '@component/CenterBox';
 
 interface PharmacyDetails {
 	id: string;
@@ -63,76 +64,83 @@ const PharmacyInfo: React.FC<{ branchId?: string }> = ({ branchId }) => {
 		);
 	}
 
+	const tabsParam = (searchParams?.get("tab") || "license")
+
+	const tabs = [
+		{
+			key: "license",
+			label: "Cài đặt giấy phép",
+			icon: TbLicense,
+			renderSection: () => <LicenseTab />
+		},
+		{
+			key: "pharmacy",
+			label: "Thông tin nhà thuốc",
+			icon: Hospital,
+			renderSection: () => (
+				<Group align={'start'} className="h-full overflow-hidden !gap-10">
+					<PharmacyForm />
+					<QRSupportForm />
+				</Group>
+			)
+		},
+		{
+			key: "reward",
+			label: "Thông tin tích điểm",
+			icon: IconCertificate,
+			renderSection: () => <RewardPointForm />
+		},
+		{
+			key: "payment",
+			label: "Thông tin thanh toán",
+			icon: IconCalendar,
+			renderSection: () => <PaymentForm />
+		}
+	]
+
 	return (
-			<Group h={"100%"} wrap={"nowrap"}>
-				<Tabs
-					color={"teal"}
-					w={"100%"}
-					h={"100%"}
-					defaultValue="license"
-					orientation="vertical"
-					value={tab || "license"}
-					onChange={(value) => {
-						router.push(`/dashboard/store/${branchId}/info?tab=${value}`);
-					}}
-					styles={{
-						tab: {
-							// "--tab-border-width": "4px",
-							borderRightWidth: "5px",
-						}
-					}}
-					className={"[&[data-active]]:!bg-teal-500"}
-				>
-					<Tabs.List pt={20}>
-						<Tabs.Tab className={cn("h-14 w-[230px] group", tab === "license" && "!bg-teal-500/20")} value="license">
-							<Typography weight={"semibold"} className={"flex items-center gap-2 group-hover:text-teal-500  transition-all"}>
-								Cài đặt giấy phép
-							</Typography>
-						</Tabs.Tab>
-						<Tabs.Tab className={cn("h-14 w-[230px] group", tab === "pharmacy" && "!bg-teal-500/20")} value="pharmacy">
-							<Typography weight={"semibold"} className={"flex items-center gap-2 group-hover:text-teal-500  transition-all"}>
-								Thông tin nhà thuốc
-							</Typography>
-						</Tabs.Tab>
-						<Tabs.Tab className={cn("h-14 w-[230px] group", tab === "reward" && "!bg-teal-500/20")} value="reward">
-							<Typography weight={"semibold"} className={"flex items-center gap-2 group-hover:text-teal-500  transition-all"}>
-								Thông tin tích điểm
-							</Typography>
-						</Tabs.Tab>
-						<Tabs.Tab className={cn("h-14 w-[230px] group", tab === "payment" && "!bg-teal-500/20")} value="payment">
-							<Typography weight={"semibold"} className={"flex items-center gap-2 group-hover:text-teal-500  transition-all"}>
-								Thông tin thanh toán
-							</Typography>
-						</Tabs.Tab>
-					</Tabs.List>
-
-					{/*<Tabs.Panel p={20} value="gallery">Gallery tab content</Tabs.Panel>*/}
-					{/*<Tabs.Panel p={20} value="messages">Messages tab content</Tabs.Panel>*/}
-					{/*<Tabs.Panel p={20} value="settings">Settings tab content</Tabs.Panel>*/}
-					<Tabs.Panel p={40} value="license" className={"overflow-y-auto "}>
-						{/*<Container size={"xl"}>*/}
-						{/*	<ScrollArea>*/}
-								<LicenseTab />
-							{/*</ScrollArea>*/}
-						{/*</Container>*/}
-					</Tabs.Panel>
-					<Tabs.Panel p={40} value="pharmacy" className={"overflow-y-auto "}>
-						{/*<ScrollArea>*/}
-						<Group align={'start'} className="h-full overflow-hidden !flex-nowrap !gap-10">
-							<PharmacyForm />
-							<QRSupportForm />
-						</Group>
-							{/*</ScrollArea>*/}
-
-					</Tabs.Panel>
-					<Tabs.Panel p={40} value="reward">
-						<RewardPointForm />
-					</Tabs.Panel>
-					<Tabs.Panel p={40} value="payment">
-						<PaymentForm />
-					</Tabs.Panel>
-				</Tabs>
+		<CenterBox
+			className={'flex-1 bg-zinc-100 h-full overflow-hidden'}
+			classNames={{
+				inner: 'flex flex-col w-full max-w-full h-full'
+			}}
+		>
+			<Group h={"100%"} wrap={"nowrap"} gap={0}>
+				<Stack h={"100%"} gap={0} className={"bg-white pt-5"}>
+					{tabs.map((tab) => (
+						<div
+							className={cn(
+								"px-5 py-3 cursor-pointer group border-r-4 ",
+								{
+									"bg-teal-500/20 border-teal-500": tab.key === tabsParam,
+									"border-zinc-400/0 hover:bg-zinc-400/20 hover:border-zinc-400 transition-all": tab.key !== tabsParam
+								}
+							)}
+							onClick={() => router.push(`/dashboard/store/${branchId}/info?tab=${tab.key}`)}
+						>
+							<Typography
+								className={cn(
+									"transition-all whitespace-nowrap",
+									{
+										"text-teal-600": tab.key === tabsParam
+									}
+								)}
+								weight={"semibold"}
+								size={"content"}
+							>{tab.label}</Typography>
+						</div>
+					))}
+				</Stack>
+				<Divider orientation="vertical" />
+				<Box h={"100%"} w={"100%"} className={"overflow-y-hidden bg-white"}>
+					<ScrollArea style={{ height: '100%' }}>
+						<Box h={"100%"} w={"100%"} className={" p-10"}>
+							{tabs.find((t) => t.key === tabsParam)?.renderSection()}
+						</Box>
+					</ScrollArea>
+				</Box>
 			</Group>
+		</CenterBox>
 	);
 };
 

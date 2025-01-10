@@ -122,7 +122,7 @@ export class ConsumerController {
 	);
 
 	public static createConsumer = AsyncMiddleware.asyncHandler(
-		async (req: Request<GetConsumerParam, any, CreateConsumer>, res: Response) => {
+		async (req: Request<BranchIdParam, any, CreateConsumer>, res: Response) => {
 			try {
 				const parsed = req.body;
 				const consumerObj = {
@@ -132,6 +132,21 @@ export class ConsumerController {
 
 				const consumer = await prisma.consumers.create({
 					data: consumerObj
+				});
+
+				const points = await prisma.points.create({
+					data: {
+						consumerId: consumer.id,
+						totalPoints: 0
+					}
+				});
+
+				const point_transaction = await prisma.point_transactions.create({
+					data: {
+						pointId: points.id,
+						amount: 0,
+						type: 'reward',
+					}
 				});
 				const response = new Success(consumer).toJson;
 				return res.status(201).json(response).end();

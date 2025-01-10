@@ -164,6 +164,8 @@ export const invoiceActionAtom = atom(
 				{ type: 'add-item', item }
 			);
 
+			console.log("updatedInvoice", updatedInvoice);
+
 			updatedInvoiceStateActive.invoiceData = {
 				...updatedInvoiceStateActive.invoiceData,
 				...updatedInvoice,
@@ -318,7 +320,8 @@ export const calculateInvoicePrice = (
 
 	switch (action.type) {
 		case 'add-item':
-			items = [...items, action.item];
+			items = [...items];
+			// console.log("items", items);
 			break;
 		case 'update-item':
 			items = items.map(i =>

@@ -8,10 +8,13 @@ import { BranchDetails, branchDetailsSchema } from '@schema/branch-schema.ts';
 import { updateBranchDetail } from '@api/branch.ts';
 import { useDashboard } from '@hook/dashboard/use-dasboard.ts';
 import { Loader2 } from 'lucide-react';
-
+import useToast from '@hook/client/use-toast-notification.ts';
 
 export default function PharmacyForm() {
 	const {branchId} = useDashboard();
+
+	const { showErrorToast, showSuccessToast } = useToast();
+
 	const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 	const form = useForm<BranchDetails>({
 		validate: zodResolver(branchDetailsSchema),

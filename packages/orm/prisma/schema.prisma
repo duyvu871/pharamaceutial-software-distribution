@@ -26,22 +26,22 @@ model branches {
   invoices            invoices[]
   branch_details      branch_details[]
   subscriptions       subscriptions[]
-  branch_intergration branch_intergration[]
+  branch_integration branch_integration[]
   branch_payment      branch_payment[]
 
   @@index([branch_name])
   @@index([owner_id])
 }
 
-model branch_intergration {
+model branch_integration {
   id        String @id @default(uuid()) @db.Uuid
-  branch_id String @db.Uuid
+  branch_id String @db.Uuid @unique
   type      String @db.VarChar(255)
   status    Int    @default(1)
 
-  intergration_id       String
-  intergration_account  String
-  intergration_password String
+  integration_id       String
+  integration_account  String
+  integration_password String
 
   createdAt  DateTime  @default(now()) @db.Timestamptz(6)
   updatedAt  DateTime  @default(now()) @db.Timestamptz(6)
@@ -54,7 +54,7 @@ model branch_intergration {
 
 model branch_payment {
   id                     String    @id @default(uuid()) @db.Uuid
-  branch_id              String    @db.Uuid
+  branch_id              String    @db.Uuid @unique
   type                   String    @db.VarChar(255)
   status                 Int       @default(1)
   payment_bank           String
@@ -338,7 +338,7 @@ model stores {
 
 model store_reward_point {
   id           String    @id @default(uuid()) @db.Uuid
-  store_id     String    @db.Uuid
+  store_id     String    @db.Uuid @unique
   convert_to   String    @default("VND") @db.VarChar(255)
   convert_rate Int       @default(100000)
   point_value  Int       @default(5000)
@@ -570,7 +570,7 @@ model points {
 
 model point_transactions {
   id        String   @id @default(uuid()) @db.Uuid // Primary key
-  pointId   String   @db.Uuid // Liên kết đến bảng points
+  pointId   String   @db.Uuid @unique // Liên kết đến bảng points
   type      String   @db.VarChar(255) // Loại giao dịch (e.g., "add", "redeem")
   amount    Int // Số điểm giao dịch (có thể âm hoặc dương)
   note      String?  @db.Text // Ghi chú

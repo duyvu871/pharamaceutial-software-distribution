@@ -11,6 +11,50 @@ export type ProductRender = {
 	status: 'active' | 'inactive';
 };
 
+export interface IProduct {
+	id: string
+	product_id: string
+	store_id: string
+	group_id: any
+	store_group_id: string
+	productUnit: string
+	product_type: string
+	medicine_id: any
+	barcode: string
+	product_no: string
+	register_no: string
+	product_name: string
+	lot_no: string
+	shortcut: any
+	original_price: number
+	sell_price: number
+	weight: any
+	quantity_of_stock: number
+	using_id: number
+	base_unit: string
+	status: number
+	import_date: string
+	expire_date: string
+	created_at: string
+	updated_at: string
+	min_quantity: number
+	max_quantity: number
+	description: string
+	usage: string
+	ingredient: string
+	packing: string
+	active_ingredient: any
+	content: string
+	note: string
+	manufacturer: string
+	made_in: string
+	deleted_at: string
+	deleted_by: string
+	avg_original_price: number
+	default_image: string
+	quantity: string
+}
+
 export const ProductZodSchema = z.object({
 	store_id: z.number().or(z.string()), // ID của cửa hàng, có thể là số hoặc chuỗi
 	id: z.string(), // ID sản phẩm
@@ -79,7 +123,7 @@ export type Product = z.infer<typeof ProductZodSchema>;
 
 export const productFormSchema = z.object({
 	name: z.string().min(1, { message: 'Tên là bắt buộc' }),
-	type: z.enum(['thuoc', 'thuc_pham_chuc_nang', 'my_pham', 'dung_cu_y_te', 'hang_hoa_khac']),
+	type: z.enum(['thuoc', 'thuc-pham-chuc-nang', 'my-pham', 'dung-cu-y-te', 'hang-hoa-khac']),
 	code: z.string(),
 	registrationNumber: z.string().min(1, { message: 'Số đăng kí là bắt buộc' }),
 	purchasePrice: z.number().nonnegative({ message: 'Giá nhập phải lớn hơn 0' }),
@@ -100,7 +144,7 @@ export const productFormSchema = z.object({
 	unit: z.enum(['vien', 'vi', 'goi', 'chai', 'lo', 'hop']).or(z.string()),
 	largerUnit: z.string().optional(),
 	largerUnitValue: z.string().optional(),
-	notes: z.string().optional(),
+	note: z.string().optional(),
 	images: z.array(z.string()).optional(),
 })
 

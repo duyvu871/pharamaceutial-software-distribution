@@ -32,7 +32,7 @@ export default function CustomerDashboard({branchId}: {branchId: string}) {
 	const [consumers, setConsumers] = useState<ConsumerAttributes[]>([]);
 	useLayoutEffect(() => {
 		if (branchId) {
-			getConsumerList({branchId, search: '', orderBy: 'createdAt:ASC', limit: 20, page: 1}).then(consumerList => {
+			getConsumerList({branchId, search: '', orderBy: 'createdAt:DESC', limit: 20, page: 1}).then(consumerList => {
 				// const transformedData: Customer[] = consumerList.map(consumer => ({
 				// 	id: consumer.id,
 				// 	name: consumer.consumer_name,
@@ -47,6 +47,12 @@ export default function CustomerDashboard({branchId}: {branchId: string}) {
 			})
 		}
 	}, [branchId]);
+
+	const reloadConsumerList = () => {
+		getConsumerList({branchId, search: '', orderBy: 'createdAt:DESC', limit: 20, page: 1}).then(consumerList => {
+			setConsumers(consumerList);
+		})
+	}
 
 	if (!isAuthenticated) {
 		return <></>;
@@ -139,12 +145,15 @@ export default function CustomerDashboard({branchId}: {branchId: string}) {
 								<Upload className="w-4 h-4" />
 								<span>Tải lên</span>
 							</button>
+							{/*<button*/}
+							{/*	className="flex items-center gap-2 bg-teal-500/80 text-white px-3 py-2 rounded-md hover:bg-teal-600 transition-colors">*/}
+							{/*	<FileSpreadsheet className="w-4 h-4" />*/}
+							{/*	<span>Xuất Excel</span>*/}
+							{/*</button>*/}
 							<button
-								className="flex items-center gap-2 bg-teal-500/80 text-white px-3 py-2 rounded-md hover:bg-teal-600 transition-colors">
-								<FileSpreadsheet className="w-4 h-4" />
-								<span>Xuất Excel</span>
-							</button>
-							<button className="flex items-center gap-2 bg-teal-500 text-white px-3 py-2 rounded-md hover:bg-teal-600">
+								className="flex items-center gap-2 bg-teal-500 text-white px-3 py-2 rounded-md hover:bg-teal-600"
+								onClick={reloadConsumerList}
+							>
 								<RotateCw className="w-4 h-4" />
 								<span>Làm mới</span>
 							</button>

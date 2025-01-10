@@ -1,4 +1,4 @@
-import { ConsumerAttributes } from '@schema/consumer-schema.ts';
+import { ConsumerAttributes, ConsumerCreationAttributes } from '@schema/consumer-schema.ts';
 import axiosWithAuth from '@lib/axios.ts';
 import { SuccessResponse } from '@type/api/response.ts';
 import { RewardPointResponse } from '@schema/reward-point-schema.ts';
@@ -33,6 +33,17 @@ export const getConsumerList = async (
 		// throw error;
 		console.error(`Error fetching consumers: ${error.message}`);
 		return [];
+	}
+}
+
+export const createConsumer = async (branchId: string, data: ConsumerCreationAttributes): Promise<ConsumerAttributes> => {
+	try {
+		const response = await axiosWithAuth.post<SuccessResponse<ConsumerAttributes>>(`/consumer/${branchId}`, data);
+		return response.data.data;
+	} catch (error: any) {
+		// throw error;
+		console.error(`Error creating consumer: ${error.message}`);
+		throw new Error('Failed to create consumer');
 	}
 }
 

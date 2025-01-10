@@ -12,11 +12,14 @@ import { ConsumerCreationAttributes, ConsumerZodSchema } from '@schema/consumer-
 import { zodResolver } from '@hookform/resolvers/zod';
 import { type } from 'os';
 import useToast from '@hook/client/use-toast-notification.ts';
+import { createConsumer } from '@api/consumer.ts';
+import { useDashboard } from '@hook/dashboard/use-dasboard';
 
 export function AddCustomerModal(
-	{ children, branchId, data }:
+	{ children, data }:
 		{ children: React.ReactNode; branchId?: string; data?: ConsumerCreationAttributes; }
 ) {
+	const {branchId} = useDashboard();
 	const [opened, { open, close }] = useDisclosure(false);
 	const [visible, { toggle, open: openOverlay, close: closeOverlay }] = useDisclosure(false)
 	const [loading, setLoading] = useState(false);
@@ -46,16 +49,22 @@ export function AddCustomerModal(
 		setLoading(true);
 		openOverlay();
 		console.log(data);
-		setTimeout(() => {
-			setLoading(false);
-			showSuccessToast('Thêm khách hàng thành công');
-
-			setTimeout(() => {
-				clearForm();
-				closeOverlay();
-				close();
-			}, 1000)
-		}, 2000);
+		createConsumer(branchId, data)
+			.then((res) => {
+				setLoading(false);
+				showSuccessToast('Thêm khách hàng thành công');
+			})
+			.catch((err) => {
+				setLoading(false);
+				showErrorToast('Thêm khách hàng thất bại');
+			})
+			.finally(() => {
+				setTimeout(() => {
+					clearForm();
+					closeOverlay();
+					close();
+				}, 1000)
+			});
 	};
 
 

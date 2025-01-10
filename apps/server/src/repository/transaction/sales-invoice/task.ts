@@ -48,9 +48,24 @@ export class SalesInvoiceTask {
 	public static async createInvoiceWithStockUpdate(invoiceData: InvoiceCreateInput) {
 		try {
 			const invoice = await prisma.$transaction(async (tx) => {
-
 				// Update points
 				if (invoiceData.customerId && invoiceData.point) {
+					// Get store
+					const store = await tx.stores.findFirst({
+						where: { branch_id: invoiceData.branchId },
+						select: {id: true}
+					});
+					if (!store) {
+						throw new BadRequest("store_not_found", "Không tìm thấy cửa hàng", `Không tìm thấy cửa hàng với id ${invoiceData.branchId}`);
+					}
+					// Get store reward point
+					const store_reward_point = await tx.store_reward_point.findFirst({
+						where: { store_id: store.id }
+					});
+					if (!store_reward_point) {
+						throw new BadRequest("store_reward_point_not_found", "Không tìm thấy cài đặt điểm thưởng", `Không tìm thấy cài đặt điểm thưởng cho cửa hàng ${store.id}`);
+					}
+					// find consumer points
 					const consumer_points = await tx.points.findFirst({
 						where: {
 							consumerId: invoiceData.customerId,
@@ -58,30 +73,8 @@ export class SalesInvoiceTask {
 					});
 
 					if (consumer_points) {
-						const new_points = consumer_points.totalPoints - invoiceData.point.used;
-
-						const consumer_stats: Partial<Prisma.consumersUpdateInput> = {}
-
-						if (invoiceData.debit && invoiceData.debit < 0) {
-							consumer_stats.debit = {
-								increment: Math.abs(invoiceData.debit)
-							};
-						}
-
-						if (invoiceData.amountPaid && invoiceData.amountPaid > 0) {
-							consumer_stats.debit = {
-								increment: invoiceData.amountPaid
-							};
-						}
-
-						if (Object.keys(consumer_stats).length > 0) {
-							tx.consumers.update({
-								where: {
-									id: invoiceData.customerId
-								},
-								data: consumer_stats
-							});
-						}
+						// Calculate new points if used
+						let new_points = consumer_points.totalPoints - invoiceData.point.used;
 
 						if (new_points < 0) {
 							throw new BadRequest(
@@ -90,7 +83,83 @@ export class SalesInvoiceTask {
 								`Không đủ điểm cho khách hàng ${invoiceData.customerName}`);
 						}
 
-						tx.points.update({
+						// Update consumer points
+						const consumer_stats: Partial<Prisma.consumersUpdateInput> = {}
+
+						if (invoiceData.debit && invoiceData.debit < 0) {
+							consumer_stats.debit = {
+								increment: Math.abs(invoiceData.debit)
+							};
+						}
+
+						// if (invoiceData.amountPaid && invoiceData.amountPaid > 0) {
+						// 	consumer_stats.debit = {
+						// 		increment: invoiceData.amountPaid
+						// 	};
+						// }
+
+						// update consumer stats
+						if (Object.keys(consumer_stats).length > 0) {
+							await tx.consumers.update({
+								where: {
+									id: invoiceData.customerId
+								},
+								data: consumer_stats
+							});
+						}
+
+						/*
+						TODO:
+						 In here we just implement the fucking simple logic to calculate point reward for customer
+						 The business logic will be implemented in the future
+						 */
+
+						// Calculate new points if earned
+						const point_resolved = Math.floor(invoiceData.totalPrice / store_reward_point.convert_rate);
+						// Calculate remaining amount after resolved
+						const amount_resolved_remain = Math.floor(invoiceData.totalPrice % store_reward_point.point_value);
+
+						const point_transaction = await tx.point_transactions.findFirst({
+							where: {
+								pointId: consumer_points.id,
+							},
+							select: {
+								id: true,
+								amount: true
+							}
+						});
+						const point_transaction_amount = point_transaction?.amount || 0;
+						let new_point_transaction_amount = point_transaction_amount;
+
+						// Update point transaction
+						if (point_resolved > 0) {
+							new_points += point_resolved;
+						}
+						// Update point transaction
+						if ((point_transaction_amount + amount_resolved_remain) >= store_reward_point.point_value) {
+							// Calculate new points if earned
+							new_points += (point_transaction_amount + amount_resolved_remain) / store_reward_point.point_value;
+							// Calculate new point transaction amount
+							new_point_transaction_amount = (point_transaction_amount + amount_resolved_remain) % store_reward_point.point_value;
+
+							// Upsert point transaction
+							await tx.point_transactions.upsert({
+								where: {
+									id: point_transaction?.id
+								},
+								update: {
+									amount: new_point_transaction_amount
+								},
+								create:{
+									amount: new_point_transaction_amount,
+									pointId: consumer_points.id,
+									type: 'reward'
+								}
+							});
+						}
+
+						// Update consumer points
+						await tx.points.update({
 							where: {
 								id: consumer_points.id
 							},
@@ -99,11 +168,18 @@ export class SalesInvoiceTask {
 							}
 						});
 					} else {
-						tx.points.create({
+						// Create consumer points and point transaction if not exists
+						await tx.points.create({
 							data: {
 								consumerId: invoiceData.customerId,
-								totalPoints: 0
-							}
+								totalPoints: 0,
+								pointTransactions: {
+									create: {
+										amount: invoiceData.totalPrice,
+										type: 'reward'
+									}
+								}
+							},
 						});
 					}
 				}

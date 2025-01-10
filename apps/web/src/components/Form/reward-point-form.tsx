@@ -5,20 +5,21 @@ import { z } from 'zod';
 import { Label } from '@component/label';
 import { currentBranchAtom } from '@store/state/overview/branch.ts';
 import { useAtom } from 'jotai';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { PointSettingsFormValues, pointSettingsSchema } from '@schema/branch-schema.ts';
+import { upsertBranchRewardPoint } from '@api/branch.ts';
+import { useDashboard } from '@hook/dashboard/use-dasboard.ts';
+import useToast from '@hook/client/use-toast-notification';
+import { Loader2 } from 'lucide-react';
 
-// Define Zod schema for form validation
-const pointSettingsSchema = z.object({
-	conversionRate: z.number().min(1, 'Tỷ lệ quy đổi phải lớn hơn 0'),
-	pointValue: z.number().min(1, 'Giá trị điểm phải lớn hơn 0'),
-	applyPoints: z.boolean(),
-});
 
-type PointSettingsFormValues = z.infer<typeof pointSettingsSchema>;
 
 export default function RewardPointForm() {
 	const [branchDetail] = useAtom(currentBranchAtom);
+	const {branchId} = useDashboard()
+	const {showErrorToast, showSuccessToast} = useToast()
 
+	const [submitting, setSubmitting] = useState<boolean>(false);
 	const form = useForm<PointSettingsFormValues>({
 		validate: zodResolver(pointSettingsSchema),
 		initialValues: {
@@ -29,8 +30,21 @@ export default function RewardPointForm() {
 	});
 
 	const handleSubmit = (values: PointSettingsFormValues) => {
-		console.log(values);
+		// console.log(values);
+		setSubmitting(true);
 		// Handle form submission
+		upsertBranchRewardPoint(branchId, values)
+			.then(response => {
+				// console.log(response);
+				showSuccessToast("Lưu thông tin tích điểm thành công");
+			})
+			.catch(error => {
+				// console.log(error);
+				showErrorToast(error.message || 'Lỗi khi lưu thông tin tích điểm \n vui lòng thử lại');
+			})
+			.finally(() => {
+				setSubmitting(false);
+			});
 	};
 
 	useEffect(() => {
@@ -132,8 +146,16 @@ export default function RewardPointForm() {
 						color="teal"
 						mt="sm"
 						maw={200}
+						disabled={submitting}
 					>
-						Lưu
+						{
+							submitting ? (
+								<>
+									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+									Đang lưu...
+								</>
+							) : 'Lưu'
+						}
 					</Button>
 				</Stack>
 			</form>

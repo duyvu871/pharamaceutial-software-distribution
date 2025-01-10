@@ -245,10 +245,10 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 												label="Kiểu Hàng Hóa"
 												data={[
 													{ value: 'thuoc', label: 'Thuốc' },
-													{ value: 'thuc_pham_chuc_nang', label: 'Thực phẩm chức năng' },
-													{ value: 'my_pham', label: 'Mỹ phẩm' },
-													{ value: 'dung_cu_y_te', label: 'Dụng cụ y tế' },
-													{ value: 'hang_hoa_khac', label: 'Hàng hóa khác' },
+													{ value: 'thuc-pham-chuc-nang', label: 'Thực phẩm chức năng' },
+													{ value: 'my-pham', label: 'Mỹ phẩm' },
+													{ value: 'dung-cu-y-te', label: 'Dụng cụ y tế' },
+													{ value: 'hang-hoa-khac', label: 'Hàng hóa khác' },
 												]}
 												error={errors.type?.message}
 												{...field}

@@ -7,8 +7,8 @@ interface MoneyInputComponentPropsExtend
 		MoneyInputProps {}
 
 interface MoneyInputProps {
-	value: number;
-	onChange: (value: number) => void;
+	value?: number;
+	onChange?: (value: number) => void;
 	onBlur?: (value: number) => void;
 	currency?: string;
 	className?: string;
@@ -33,7 +33,7 @@ export const MoneyInput = forwardRef<MoneyInputRef, MoneyInputComponentPropsExte
 		});
 
 		useEffect(() => {
-			if (!isEditing) {
+			if (!isEditing && value !== undefined) {
 				setDisplayValue(formatter.format(value));
 			}
 		}, [value, isEditing, formatter]);
@@ -44,8 +44,9 @@ export const MoneyInput = forwardRef<MoneyInputRef, MoneyInputComponentPropsExte
 		}));
 
 		const handleFocus = () => {
+			// if (!value) return;
 			setIsEditing(true);
-			setDisplayValue(value.toString());
+			setDisplayValue((value || 0).toString());
 			setTimeout(() => inputRef.current?.select(), 0);
 		};
 
@@ -57,9 +58,9 @@ export const MoneyInput = forwardRef<MoneyInputRef, MoneyInputComponentPropsExte
 			// const numericValue = parseFloat(displayValue.replace(/[^\d.-]/g, ''));
 			const numericValue = parseFloat(displayValue.replace(/[^\d]/g, ''));
 			if (!isNaN(numericValue)) {
-				onChange(numericValue);
+				onChange && onChange(numericValue);
 			} else {
-				setDisplayValue(formatter.format(value));
+				setDisplayValue(formatter.format(value || 0));
 			}
 		};
 

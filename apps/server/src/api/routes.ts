@@ -72,6 +72,32 @@ apiRouter.route('/branch/:branchId/qrcode').get(
   permissionMiddleware([BranchPermission.ALL, BranchPermission.UPDATE]),
   BranchController.getQRCode
 )
+apiRouter.route('/branch/:branchId/upsert-integration').post(
+  ...authChain,
+  validateParams(BranchValidation.branchIdParam),
+  validateBody(BranchValidation.upsertBranchIntegrationBody),
+  BranchController.upsertBranchIntegration);
+apiRouter.route('/branch/:branchId/get-integration').get(
+  ...authChain,
+  validateParams(BranchValidation.branchIdParam),
+  BranchController.getBranchIntegration);
+apiRouter.route('/branch/:branchId/upsert-payment').post(
+  ...authChain,
+  validateParams(BranchValidation.branchIdParam),
+  validateBody(BranchValidation.upsertPaymentBody),
+  BranchController.upsertPaymentIntegration
+);
+apiRouter.route('/branch/:branchId/get-payment').get(
+  ...authChain,
+  validateParams(BranchValidation.branchIdParam),
+  BranchController.getPaymentIntegration
+);
+apiRouter.route('/branch/:branchId/upsert-reward-point').post(
+  ...authChain,
+  validateParams(BranchValidation.branchIdParam),
+  validateBody(BranchValidation.upsertBranchRewardPointBody),
+  BranchController.upsertBranchRewardPoint
+);
 
 // Autocomplete route
 apiRouter.route('/autocomplete/product').get(
@@ -173,6 +199,7 @@ apiRouter.route('/invoice/:branchId/delete/:invoiceId').delete(
   validateParams(BranchValidation.branchIdParam),
   validateParams(InvoiceValidation.invoiceId),
   InvoiceController.deleteInvoice);
+
 
 // Store routes
 apiRouter.use(storeRouter);

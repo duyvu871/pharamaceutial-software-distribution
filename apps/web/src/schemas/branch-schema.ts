@@ -12,6 +12,12 @@ export interface Branch {
 	updatedAt: string
 }
 
+export interface IntegrationFormValues {
+	integrationCode: string;
+	integrationAccount: string;
+	integrationPassword: string;
+}
+
 export const branchDetailsSchema = z.object({
 	so_dang_ky: z.string().nonempty("Số đăng ký không được để trống."),
 	ten_nha_thuoc: z.string().nonempty("Tên nhà thuốc không được để trống."),
@@ -162,3 +168,21 @@ export type CreatedBranchResponse = {
 	createdAt: Date | null;
 	updatedAt: Date;
 }
+
+// Define Zod schema for form validation
+export const paymentSchema = z.object({
+	bankName: z.string().min(1, 'Tên ngân hàng là bắt buộc'),
+	bankAccount: z.string().min(1, 'Số tài khoản là bắt buộc'),
+	bankOwner: z.string().min(1, 'Chủ tài khoản là bắt buộc'),
+});
+
+export type PaymentFormValues = z.infer<typeof paymentSchema>;
+
+// Define Zod schema for form validation
+export const pointSettingsSchema = z.object({
+	conversionRate: z.number().min(1, 'Tỷ lệ quy đổi phải lớn hơn 0'),
+	pointValue: z.number().min(1, 'Giá trị điểm phải lớn hơn 0'),
+	applyPoints: z.boolean(),
+});
+
+export type PointSettingsFormValues = z.infer<typeof pointSettingsSchema>;

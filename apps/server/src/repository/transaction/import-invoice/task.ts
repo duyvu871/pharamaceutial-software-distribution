@@ -1,7 +1,8 @@
-import { ImportProductBody } from 'validations/ImportValidation.ts';
-import prisma from "repository/prisma.ts"
+import * as ImportValidationTs from 'validations/ImportValidation.ts';
+import prisma from 'repository/prisma.ts';
 import Forbidden from 'responses/clientErrors/Forbidden.ts';
-import { Prisma, PrismaClient, products } from '@prisma/client';
+import { Prisma, PrismaClient, products, product_units } from '@prisma/client';
+import { checkUUIDv4 } from 'web/src/utils/uid.ts';
 
 type SuccessImportProduct = {
 	productName: string;
@@ -12,7 +13,8 @@ type SuccessImportProduct = {
 }
 
 export class ImportInvoiceTask {
-	public static async importInvoices(storeId: string, importInvoice: ImportProductBody) {
+	// @Benchmark()
+	public static async importInvoices(storeId: string, importInvoice: ImportValidationTs.ImportProductBody) {
 		try {
 			// Store all successfully imported products
 			const successImportProducts = new Set<products>();
@@ -56,19 +58,31 @@ export class ImportInvoiceTask {
 							updated_at: new Date(),
 						}
 
-						// Upsert product unit
-						const currentProductUnit = await tx.product_units.upsert({
-							where: { id: isProductExist?.productUnit || "" },
-							update: { ...productUnitValue },
-							create: {
-								...productUnitValue,
-								store_id: storeId,
-								created_at: new Date()
-							}
-						});
+						let productUnit: product_units;
+
+						if (isProductExist?.productUnit && checkUUIDv4(isProductExist?.productUnit)) {
+							productUnit = await tx.product_units.upsert({
+								where: { id: isProductExist?.productUnit },
+								update: { ...productUnitValue },
+								create: {
+									...productUnitValue,
+									store_id: storeId,
+									created_at: new Date()
+								}
+							});
+						} else {
+							// create product unit
+							productUnit = await tx.product_units.create({
+								data: {
+									...productUnitValue,
+									store_id: storeId,
+									created_at: new Date()
+								}
+							});
+						}
 
 						// Upsert product
-						const updateProduct = await tx.products.upsert({
+						const upsertProduct = await tx.products.upsert({
 							where: { product_id: product.code },
 							update: {
 								quantity_of_stock: {
@@ -77,8 +91,9 @@ export class ImportInvoiceTask {
 								product_id: product.code || `NH-${(product_count + 1).toString().padStart(6, '0')}`,
 								product_name: product.name,
 								store_group_id: storeGroupId,
-								productUnit: currentProductUnit.id,
+								productUnit: productUnit.id,
 								base_unit: product?.unit,
+								// default_image: defaultImage,
 								// product_type: "",
 								manufacturer: product?.manufacturer,
 								barcode: product?.barcode,
@@ -103,9 +118,10 @@ export class ImportInvoiceTask {
 								product_id: product.code || `NH-${(product_count + 1).toString().padStart(6, '0')}`,
 								product_name: product.name,
 								store_group_id: storeGroupId,
-								productUnit: currentProductUnit.id,
+								productUnit: productUnit.id,
 								base_unit: product.unit,
 								quantity_of_stock: product.quantity,
+								// default_image: defaultImage,
 								product_type: "",
 								manufacturer: product.manufacturer,
 								barcode: product.barcode,
@@ -130,21 +146,46 @@ export class ImportInvoiceTask {
 							}
 						});
 
-						// Add product to success import products
-						successImportProducts.add(updateProduct);
-
 						// Add product to success import products (image, ....)
-						const updateProductAsset = Promise.all(
+						const updateProductAsset = await Promise.all(
 							product.images.map(async (image) => {
-								await tx.product_assets.update({
+								return tx.product_assets.update({
 									where: { id: image },
-									data: { product_id: updateProduct.id, }
+									data: { product_id: upsertProduct.id, },
+									include: {
+										asset: true
+									}
 								})
 							})
 						);
 
+						// Get default image for product, if product has images
+						// then set the first image as default image
+						let defaultImage: string | undefined;
+						if (product.images.length > 0) {
+							defaultImage = updateProductAsset[0]?.asset?.url
+						}
+
+						// Check if product has default image and product has no default image
+						if (defaultImage && !upsertProduct.default_image) {
+							// Update default image for product
+							await tx.products.update({
+								where: { id: upsertProduct.id },
+								data: { default_image: defaultImage }
+							})
+						}
+
+						// Add product to success import products
+						successImportProducts.add({
+							...upsertProduct,
+							quantity_of_stock: product.quantity
+						});
+
 						return {
-							product: updateProduct
+							product: {
+								...upsertProduct,
+								quantity_of_stock: product.quantity
+							}
 						}
 					} catch (error) {
 						console.error('Error creating product', error);
@@ -164,7 +205,7 @@ export class ImportInvoiceTask {
 				const createImport = await tx.import_invoices.create({
 					data: {
 						store_id: storeId,
-						...(importInvoice.provider && { provider: importInvoice.provider }),
+						provider_id: importInvoice.provider ,
 						invoice_no: `NH-${(importInvoiceCount + 1).toString().padStart(6, '0')}`,
 						name: importInvoice.name,
 						total_amount: importInvoice.total,
@@ -173,15 +214,15 @@ export class ImportInvoiceTask {
 						debit: importInvoice.debit,
 						notes: importInvoice.notes,
 						vat: importInvoice.vat,
-						status: 0,
+						status: 1,
 						createdAt: new Date(importInvoice.time),
 					},
 				});
 				// Create import invoice product from history and additional data
-				const importInvoiceProductCreate = Promise.all([...successImportProducts].map(async state => {
+				const importInvoiceProductCreate = await Promise.all([...successImportProducts].map(async state => {
 					return tx.import_invoice_product.create({
 						data: {
-							import_invoice: importInvoiceCreate.id,
+							import_invoice: createImport.id,
 							product_id: state.id,
 							quantity: state.quantity_of_stock,
 							total: state.original_price * state.quantity_of_stock,
@@ -194,6 +235,11 @@ export class ImportInvoiceTask {
 
 				return createImport;
 			})
+
+			return {
+				...importInvoiceCreate,
+				products: [...successImportProducts]
+			};
 		} catch (error) {
 			console.error('Error creating import product', error);
 			throw error; // Re-throw error to be handled by the caller

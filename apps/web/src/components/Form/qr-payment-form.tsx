@@ -70,7 +70,7 @@ export default function QRSupportForm() {
 				<Stack gap="md" maw={500}>
 					<Box>
 						<div
-							className={'w-[300px] h-[300px] aspect-square relative group rounded-md overflow-hidden border border-gray-200'}>
+							className={'w-[300px] h-[300px] flex justify-center items-center aspect-square relative group rounded-md overflow-hidden border border-gray-200'}>
 							{imageURL && (
 								<Image
 									src={imageURL}

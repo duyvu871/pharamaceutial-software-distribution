@@ -164,13 +164,12 @@ const ProductAutocomplete = forwardRef<HTMLInputElement, ProductAutocompleteProp
 				>
 					<Popover.Target>
 						<TextInput
-							// value={searchTerm}
+							value={searchTerm}
 							onChange={handleChange}
 							placeholder="Tìm sản phẩm"
 							onFocus={handleFocus} // Open on focus
 							onBlur={handleBlur} // Close on blur with delay
 							rightSection={isSearching && <Loader size="xs" />}
-							value={""}
 							{...inputProps}
 							ref={ref}
 						/>
