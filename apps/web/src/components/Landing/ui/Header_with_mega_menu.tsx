@@ -38,7 +38,7 @@ export function HeaderMegaMenu() {
 					<Group h="100%" gap={0} visibleFrom="sm">
 						<Text mr={{  md: '0px', lg: '150px' }}>  </Text>
 						<a href="#" className={classes.link}>
-							<Image src="\images\img\logoPMthuoc.png" alt="Logo" w="80px" h="60px" />
+							<Image src="/images/logo-MP-thuoc.png" alt="Era8" w="80px" h="60px" />
 						</a>
 						<Text mr={{  md: '-50px', lg: '350' }} >   </Text>
 						<a href="#" style={{ color: '#555', textDecoration: 'none' }} className={classes.link} >TRANG CHỦ</a>
