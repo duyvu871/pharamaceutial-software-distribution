@@ -7,6 +7,8 @@ import { IoIosSettings,  } from "react-icons/io";
 import { usePathname } from '@route/hooks';
 import { IoExitOutline } from "react-icons/io5";
 import { cn } from '@lib/tailwind-merge.ts';
+import { useDashboard } from '@hook/dashboard/use-dasboard.ts';
+import { pathToRegex } from '@util/regex.ts';
 
 
 type NavItem = {
@@ -18,27 +20,29 @@ type NavItem = {
 	action?: () => void
 }
 
-const navLinkItems: NavItem[] = [
-	{
-		path: /dashboard/, // regex for dashboard page only
-		href: '/dashboard',
-		icon: MdOutlineSpaceDashboard ,
-		label: 'Tổng quan',
-		description: '',
-		action: () => console.log('Tổng quan')
-	},
-	{
-		path: /settings/, // regex for settings page only
-		href: '/settings',
-		icon: IoIosSettings,
-		label: 'Cài đặt',
-		description: '',
-	},
-]
 
 function ContextHeader() {
 	const {profile: userProfile} = useProfile();
 	const pathname = usePathname();
+	const {branchId} = useDashboard();
+
+	const navLinkItems: NavItem[] = [
+		{
+			path: /dashboard/, // regex for dashboard page only
+			href: '/dashboard',
+			icon: MdOutlineSpaceDashboard ,
+			label: 'Tổng quan',
+			description: '',
+			action: () => console.log('Tổng quan')
+		},
+		{
+			path: pathToRegex(`/dashboard/branch/${branchId}/user/settings`),///`dashboard\/branch\/`${branchId}`\/user\/settings`, // regex for settings page only
+			href: `/dashboard/branch/${branchId}/user/settings`,
+			icon: IoIosSettings,
+			label: 'Cài đặt',
+			description: '',
+		},
+	]
 
 	return (
 		<Popover position="bottom" offset={0} withArrow shadow='xs'>
@@ -63,7 +67,7 @@ function ContextHeader() {
 								: false
 							return  (
 								<NavLink
-									color={'green'}
+									color={'teal'}
 									href={item.href || ''}
 									key={item.label}
 									active={active}
@@ -73,7 +77,7 @@ function ContextHeader() {
 											weight={'semibold'}
 											className={
 												cn({
-													'text-emerald-500': active,
+													'text-teal-500': active,
 												})
 											}
 										>{item.label}</Typography>

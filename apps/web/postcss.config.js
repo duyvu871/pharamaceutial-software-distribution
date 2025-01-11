@@ -6,5 +6,6 @@ module.exports = {
     tailwindcss: {},
     autoprefixer: {},
     "postcss-nested": {},
+    'postcss-preset-mantine': {},
   },
 };

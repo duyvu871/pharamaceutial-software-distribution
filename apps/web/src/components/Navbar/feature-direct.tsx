@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { LayoutDashboard, Package, Receipt, Users, ShoppingCart, Store, StoreIcon as Shop, Wallet, BarChart2, PieChart, TrendingUp, List, PlusCircle, History, FileText, UserPlus, Truck, ShoppingBag, Building, Info, Settings, DollarSign, Minus, BarChart, LineChart, Undo2, Pill, Building2, Stethoscope, UserCircle, PiggyBank, Calendar, BookOpen, UndoDot, ShoppingBasket, Factory, Hospital } from 'lucide-react'
+import { LayoutDashboard, Package, Receipt, Users, ShoppingCart, Store, StoreIcon as Shop, Wallet, BarChart2, PieChart, TrendingUp, List, PlusCircle, History, FileText, UserPlus, Truck, ShoppingBag, Building, Info, Settings, DollarSign, Minus, BarChart, LineChart, Undo2, Pill, Building2, Stethoscope, UserCircle, PiggyBank, Calendar, BookOpen, UndoDot, ShoppingBasket, Factory, Hospital, User } from 'lucide-react'
 import { LiaFileInvoiceDollarSolid } from "react-icons/lia";
 import { Typography } from '@component/Typography';
 import { usePathname } from '@route/hooks';
@@ -197,6 +197,12 @@ export function NavbarFeatureDirect() {
 					path: `/dashboard/store/${branchId}/info`,
 					href: pathToRegex(`/dashboard/store/${branchId}/info`),
 					icon: Info,
+				},
+				{
+					title: "Tài khoản",
+					path: `/dashboard/stores/${branchId}/user/settings`,
+					href: pathToRegex(`/dashboard/branch/${branchId}/user/settings`),
+					icon: User,
 				},
 				{
 					title: 'Cài đặt',
