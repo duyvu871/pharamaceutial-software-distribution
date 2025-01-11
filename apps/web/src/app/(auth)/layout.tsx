@@ -6,6 +6,7 @@ import { Inter } from "next/font/google";
 import { cn } from '@lib/tailwind-merge.ts';
 import React from 'react';
 import { ThemeProvider } from '@layout/global-theme.tsx';
+import RootLayoutClient from '@layout/root-layout-client.tsx';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -24,6 +25,7 @@ export const metadata: Metadata = {
 		address: false,
 		telephone: false,
 	},
+	manifest: "/manifest.json",
 };
 
 export const viewport: Viewport = {
@@ -50,7 +52,9 @@ export default function RootLayout({
 					// enableSystem
 					forcedTheme={'light'}
 				>
-					{children}
+					<RootLayoutClient>
+						{children}
+					</RootLayoutClient>
 				</ThemeProvider>
 			</body>
 		</html>

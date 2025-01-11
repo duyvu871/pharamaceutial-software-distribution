@@ -6,6 +6,7 @@ import { Inter as FontSans } from "next/font/google";
 import {cn} from "@lib/tailwind-merge";
 import { ThemeProvider } from "@layout/global-theme";
 import { redirect } from "next/navigation";
+import RootLayoutClient from '@layout/root-layout-client.tsx';
 
 const fontSans = FontSans({
 	subsets: ['latin', 'vietnamese'],
@@ -27,6 +28,7 @@ export const metadata: Metadata = {
 		address: false,
 		telephone: false,
 	},
+	manifest: "/manifest.json",
 	// metadataBase: new URL("./public/graphics/feature_1.png"),
 };
 
@@ -47,6 +49,13 @@ export default function RootLayout({
 	// return redirect('/login');
 	return (
 		<html lang="en" suppressHydrationWarning>
+		{/*<head>*/}
+		{/*	<link*/}
+		{/*		rel="manifest"*/}
+		{/*		href="/manifest.json"*/}
+		{/*	/>*/}
+		{/*	<title></title>*/}
+		{/*</head>*/}
 		<body className={cn(fontSans.className, "min-h-screen h-fit font-sans antialiased bg-[#ffffff]")}>
 		<ThemeProvider
 			attribute="class"
@@ -55,7 +64,9 @@ export default function RootLayout({
 			// enableSystem
 			forcedTheme={'light'}
 		>
-			{children}
+			<RootLayoutClient>
+				{children}
+			</RootLayoutClient>
 		</ThemeProvider>
 		</body>
 		</html>

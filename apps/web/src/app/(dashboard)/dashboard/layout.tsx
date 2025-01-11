@@ -11,6 +11,7 @@ import {cn} from "@lib/tailwind-merge";
 import { ThemeProvider } from "@layout/global-theme";
 import 'dayjs/locale/vi';
 import dayjs from "dayjs";
+import RootLayoutClient from '@layout/root-layout-client.tsx';
 dayjs().locale('vi')
 
 const fontSans = Montserrat({
@@ -33,6 +34,8 @@ export const metadata: Metadata = {
 		address: false,
 		telephone: false,
 	},
+	manifest: "/manifest.json",
+
 	// metadataBase: new URL("./public/graphics/feature_1.png"),
 };
 
@@ -60,7 +63,9 @@ export default function RootLayout({
 					// enableSystem
 					forcedTheme={'light'}
 				>
-					{children}
+					<RootLayoutClient>
+						{children}
+					</RootLayoutClient>
 				</ThemeProvider>
 			</body>
 		</html>
