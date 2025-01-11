@@ -19,8 +19,8 @@ export default function RootLayoutClient({ children }: {children: ReactNode}) {
 
 	return (
 		<>
-			<PushNotificationManager />
-			<InstallPrompt />
+			{/*<PushNotificationManager />*/}
+			{/*<InstallPrompt />*/}
 			{children}
 		</>
 	);

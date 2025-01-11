@@ -48,7 +48,11 @@ export default function RootLayout({
 }): JSX.Element {
 	// return redirect('/login');
 	return (
-		<html lang="en" suppressHydrationWarning>
+		<html
+			lang="en"
+			suppressHydrationWarning
+			className={"overscroll-contain scroll-smooth"}
+		>
 		{/*<head>*/}
 		{/*	<link*/}
 		{/*		rel="manifest"*/}
@@ -56,7 +60,7 @@ export default function RootLayout({
 		{/*	/>*/}
 		{/*	<title></title>*/}
 		{/*</head>*/}
-		<body className={cn(fontSans.className, "min-h-screen h-fit font-sans antialiased bg-[#ffffff]")}>
+		<body className={cn(fontSans.className, "min-h-dvh  font-sans antialiased bg-[#ffffff]")}>
 		<ThemeProvider
 			attribute="class"
 			defaultTheme="light"

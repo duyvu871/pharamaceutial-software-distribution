@@ -43,8 +43,12 @@ export default function RootLayout({
 	children: React.ReactNode;
 }): JSX.Element {
 	return (
-		<html lang="en" suppressHydrationWarning>
-			<body className={cn(inter.className, "flex justify-center items-center w-full min-h-screen h-fit font-sans")}>
+		<html
+			lang="en"
+			suppressHydrationWarning
+			className={"overscroll-contain scroll-smooth"}
+		>
+			<body className={cn(inter.className, "flex justify-center items-center w-full min-h-dvh font-sans")}>
 				<ThemeProvider
 					attribute="class"
 					defaultTheme="light"
