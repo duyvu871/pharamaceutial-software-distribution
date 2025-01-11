@@ -1,0 +1,769 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["omitApi"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model branches {
+  branch_id      String                      @id @default(uuid()) @db.Uuid
+  branch_name    String                      @db.VarChar(255)
+  address        String                      @db.VarChar(255)
+  phone_number   String                      @db.VarChar(255)
+  branch_status  enum_branches_branch_status
+  owner_id       String                      @db.Uuid
+  createdAt      DateTime?                   @db.Timestamptz(6)
+  updatedAt      DateTime?                   @db.Timestamptz(6)
+  enabled_points Boolean                     @default(true)
+  users          users                       @relation(fields: [owner_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  consumers           consumers[]
+  memberships         memberships[]
+  stores              stores[]
+  invoices            invoices[]
+  branch_details      branch_details[]
+  subscriptions       subscriptions[]
+  branch_integration branch_integration[]
+  branch_payment      branch_payment[]
+
+  @@index([branch_name])
+  @@index([owner_id])
+}
+
+model branch_integration {
+  id        String @id @default(uuid()) @db.Uuid
+  branch_id String @db.Uuid @unique
+  type      String @db.VarChar(255)
+  status    Int    @default(1)
+
+  integration_id       String
+  integration_account  String
+  integration_password String
+
+  createdAt  DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt  DateTime  @default(now()) @db.Timestamptz(6)
+  deleted_at DateTime? @db.Timestamptz(6)
+  deleted_by String?   @db.Uuid
+  branches   branches  @relation(fields: [branch_id], references: [branch_id], onDelete: Cascade)
+
+  @@index([branch_id])
+}
+
+model branch_payment {
+  id                     String    @id @default(uuid()) @db.Uuid
+  branch_id              String    @db.Uuid @unique
+  type                   String    @db.VarChar(255)
+  status                 Int       @default(1)
+  payment_bank           String
+  payment_account_number String
+  payment_account_owner  String
+  createdAt              DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt              DateTime  @default(now()) @db.Timestamptz(6)
+  deleted_at             DateTime? @db.Timestamptz(6)
+  deleted_by             String?   @db.Uuid
+  branches               branches  @relation(fields: [branch_id], references: [branch_id], onDelete: Cascade)
+
+  @@index([branch_id])
+}
+
+model branch_details {
+  id                                String    @id @default(uuid()) @db.Uuid
+  branch_id                         String    @db.Uuid
+  so_dang_ky                        String
+  ten_nha_thuoc                     String
+  loai_hinh                         String
+  tinh                              String
+  huyen                             String
+  dia_chi                           String
+  nguoi_dai_dien                    String
+  nguoi_chiu_trach_nhiem            String
+  nguoi_chiu_trach_nhiem_chuyen_mon String
+  so_chung_chi_hanh_nghe            String
+  createdAt                         DateTime? @default(now())
+  updatedAt                         DateTime  @updatedAt
+
+  branches branches @relation(fields: [branch_id], references: [branch_id], onDelete: Cascade)
+}
+
+model consumers {
+  id             String                 @id @default(uuid()) @db.Uuid
+  branch_id      String                 @db.Uuid
+  revenue        BigInt?                @default(0)
+  debit          BigInt?                @default(0)
+  consumer_name  String                 @db.VarChar(255)
+  gender         enum_consumers_gender?
+  consumer_email String?                @db.VarChar(255)
+  phone_number   String                 @db.VarChar(255)
+  tax_code       String?                @db.VarChar(255)
+  company_name   String?                @db.VarChar(255)
+  date_of_birth  DateTime?              @db.Timestamptz(6)
+  facebook       String?                @db.VarChar(255)
+  address        String?                @db.VarChar(255)
+  notes          String?                @db.VarChar(255)
+  province_city  String?                @db.VarChar(255)
+  district       String?                @db.VarChar(255)
+  ward           String?                @db.VarChar(255)
+  createdAt      DateTime?              @db.Timestamptz(6)
+  updatedAt      DateTime?              @db.Timestamptz(6)
+  branches       branches               @relation(fields: [branch_id], references: [branch_id], onDelete: Cascade)
+  invoices       invoices[]
+  points         points[]
+
+  @@index([branch_id])
+  @@index([consumer_name])
+  @@index([consumer_email])
+  @@index([phone_number])
+}
+
+model groups {
+  id             String           @id @default(uuid()) @db.Uuid
+  store_id       String           @db.Uuid
+  group_name     String           @db.VarChar(255)
+  description    String?          @db.VarChar(255)
+  status         Int              @default(1)
+  created_at     DateTime         @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime         @default(now()) @db.Timestamptz(6)
+  deleted_at     DateTime?        @db.Timestamptz(6)
+  deleted_by     String?          @db.Uuid
+  stores         stores           @relation(fields: [store_id], references: [id])
+  product_groups product_groups[]
+  products       products[]
+
+  @@index([store_id])
+  @@index([group_name])
+}
+
+model memberships {
+  id              String                           @id @default(uuid()) @db.Uuid
+  branch_id       String                           @db.Uuid
+  username        String                           @db.VarChar(255)
+  first_name      String                           @db.VarChar(255)
+  last_name       String                           @db.VarChar(255)
+  hire_date       DateTime                         @db.Timestamptz(6)
+  password        String                           @db.VarChar(255)
+  email           String?                          @db.VarChar(255)
+  phone_number    String?                          @db.VarChar(255)
+  avatar          String?                          @db.VarChar(255)
+  notes           String?                          @db.VarChar(255)
+  employee_status enum_memberships_employee_status
+  reset_token     String?                          @db.VarChar(255)
+  permission      String[]                         @db.VarChar(255)
+  createdAt       DateTime?                        @db.Timestamptz(6)
+  updatedAt       DateTime?                        @db.Timestamptz(6)
+  branches        branches                         @relation(fields: [branch_id], references: [branch_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([branch_id])
+  @@index([username])
+  @@index([email])
+  @@index([phone_number])
+}
+
+model product_groups {
+  product_id String   @db.Uuid
+  group_id   String   @db.Uuid
+  createdAt  DateTime @default(dbgenerated("'2024-12-10 16:55:24.726+07'::timestamp with time zone")) @db.Timestamptz(6)
+  updatedAt  DateTime @default(dbgenerated("'2024-12-10 16:55:24.727+07'::timestamp with time zone")) @db.Timestamptz(6)
+  groups     groups   @relation(fields: [group_id], references: [id], onDelete: Cascade)
+  products   products @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  @@id([product_id, group_id])
+  @@index([group_id])
+}
+
+model product_unit_labels {
+  product_id    String        @db.Uuid
+  product_unit  String        @db.Uuid
+  createdAt     DateTime      @db.Timestamptz(6)
+  updatedAt     DateTime      @db.Timestamptz(6)
+  products      products      @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  product_units product_units @relation(fields: [product_unit], references: [id], onDelete: Cascade)
+
+  @@ignore // ignore because no id
+}
+
+model product_units {
+  id                     String                @id @default(uuid()) @db.Uuid
+  store_id               String                @db.Uuid
+  name                   String                @db.VarChar(255)
+  value                  Int
+  no                     String                @db.VarChar(255)
+  is_base                Int
+  latest_parcel_no       String?               @db.VarChar(255)
+  latest_parcel_exp_date String?               @db.VarChar(255)
+  created_at             DateTime              @db.Timestamptz(6)
+  updated_at             DateTime              @db.Timestamptz(6)
+  product_unit_labels    product_unit_labels[] @ignore
+  stores                 stores                @relation(fields: [store_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  products               products[]
+
+  @@index([store_id])
+  @@index([name])
+}
+
+model products {
+  id                     String                   @id @default(uuid()) @db.Uuid
+  product_id             String                   @unique
+  store_id               String                   @db.Uuid
+  group_id               String?                  @db.Uuid
+  store_group_id         String?                  @db.Uuid
+  productUnit            String                   @db.Uuid
+  product_type           String                   @db.VarChar(255)
+  medicine_id            String?                  @db.VarChar(255)
+  barcode                String?                  @db.VarChar(255)
+  product_no             String                   @db.VarChar(255)
+  register_no            String?                  @db.VarChar(255)
+  product_name           String                   @db.VarChar(255)
+  lot_no                 String?                  @db.VarChar(255)
+  shortcut               String?                  @db.VarChar(255)
+  original_price         Float
+  sell_price             Float
+  weight                 Float?
+  quantity_of_stock      Int
+  using_id               Int
+  base_unit              String                   @db.VarChar(255)
+  status                 Int                      @default(1)
+  import_date            DateTime?                @default(now()) @db.Timestamptz(6)
+  expire_date            DateTime?                @default(now()) @db.Timestamptz(6)
+  created_at             DateTime                 @default(now()) @db.Timestamptz(6)
+  updated_at             DateTime                 @default(now()) @db.Timestamptz(6)
+  min_quantity           Int
+  max_quantity           Int
+  description            String?                  @db.VarChar(255)
+  usage                  String?                  @db.VarChar(255)
+  ingredient             String?                  @db.VarChar(255)
+  packing                String?                  @db.VarChar(255)
+  active_ingredient      String?                  @db.VarChar(255)
+  content                String?                  @db.VarChar(255)
+  note                   String?                  @db.VarChar(255)
+  manufacturer           String?                  @db.VarChar(255)
+  made_in                String?                  @db.VarChar(255)
+
+  deleted_at             DateTime?                @db.Timestamptz(6)
+  deleted_by             String?                  @db.Uuid
+  avg_original_price     Float
+  default_image          String?                  @db.VarChar(255)
+  quantity               Json                     @db.Json
+  product_unit_labels    product_unit_labels[]    @ignore
+  groups                 groups?                  @relation(fields: [group_id], references: [id])
+  product_units          product_units            @relation(fields: [productUnit], references: [id])
+  stores                 stores                   @relation(fields: [store_id], references: [id])
+  store_group            store_group?             @relation(fields: [store_group_id], references: [id])
+  product_assets         product_assets[]
+  product_groups         product_groups[]
+  invoice_items          invoice_items[]
+  import_invoice_product import_invoice_product[]
+
+  @@index([store_id])
+  @@index([group_id])
+  @@index([product_name])
+  @@index([barcode])
+  @@index([product_no])
+  @@index([medicine_id])
+  @@index([product_id])
+}
+
+model import_invoices {
+  id                     String                   @id @default(uuid()) @db.Uuid
+  store_id               String                   @db.Uuid
+  provider_id            String?                   @db.Uuid
+  invoice_no             String                   @db.VarChar(255)
+  name                   String
+  total_amount           Float
+  amount_due             Float
+  amount_paid            Float
+  debit                  Float
+  notes                  String?
+  vat                    Float
+  status                 Int                      @default(1)
+  createdAt              DateTime                 @default(now()) @db.Timestamptz(6)
+  updatedAt              DateTime                 @updatedAt @db.Timestamptz(6)
+  stores                 stores                   @relation(fields: [store_id], references: [id])
+  providers              providers?                @relation(fields: [provider_id], references: [id])
+  import_invoice_product import_invoice_product[]
+
+  @@index([store_id])
+  @@index([provider_id])
+}
+
+model import_invoice_product {
+  id              String          @id @default(uuid()) @db.Uuid
+  import_invoice  String          @db.Uuid
+  product_id      String          @db.Uuid
+  quantity        Float
+  price           Float
+  total           Float
+  createdAt       DateTime        @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime        @updatedAt @db.Timestamptz(6)
+  import_invoices import_invoices @relation(fields: [import_invoice], references: [id])
+  product         products        @relation(fields: [product_id], references: [id])
+
+  @@index([import_invoice])
+  @@index([product_id])
+}
+
+model stores {
+  id                 String               @id @default(uuid()) @db.Uuid
+  branch_id          String               @db.Uuid
+  store_name         String               @db.VarChar(255)
+  address            String               @db.VarChar(255)
+  phone              String?              @db.VarChar(255)
+  email              String?              @db.VarChar(255)
+  created_at         DateTime             @default(now()) @db.Timestamptz(6)
+  updated_at         DateTime             @default(now()) @db.Timestamptz(6)
+  status             Int                  @default(1)
+  description        String?              @db.VarChar(255)
+  deleted_at         DateTime?            @db.Timestamptz(6)
+  deleted_by         String?              @db.Uuid
+  branches           branches             @relation(fields: [branch_id], references: [branch_id], onDelete: NoAction, onUpdate: NoAction)
+  groups             groups[]
+  product_units      product_units[]
+  products           products[]
+  providers          providers[]
+  clinics            clinics[]
+  doctors            doctors[]
+  store_group        store_group[]
+  assets             assets[]
+  store_reward_point store_reward_point[]
+  points             points[]
+  product_assets     product_assets[]
+  store_assets       store_assets[]
+  import_invoices    import_invoices[]
+
+  @@index([branch_id])
+  @@index([store_name])
+}
+
+model store_reward_point {
+  id           String    @id @default(uuid()) @db.Uuid
+  store_id     String    @db.Uuid @unique
+  convert_to   String    @default("VND") @db.VarChar(255)
+  convert_rate Int       @default(100000)
+  point_value  Int       @default(5000)
+  created_at   DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime  @default(now()) @db.Timestamptz(6)
+  status       Int       @default(1)
+  description  String?   @db.VarChar(255)
+  deleted_at   DateTime? @db.Timestamptz(6)
+  deleted_by   String?   @db.Uuid
+  stores       stores    @relation(fields: [store_id], references: [id])
+
+  @@index([store_id])
+}
+
+model store_group {
+  id          String     @id @default(uuid()) @db.Uuid
+  store_id    String     @db.Uuid
+  group_slug  String     @db.VarChar(255)
+  group_name  String     @db.VarChar(255)
+  created_at  DateTime   @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime   @default(now()) @db.Timestamptz(6)
+  status      Int        @default(1)
+  description String?    @db.VarChar(255)
+  deleted_at  DateTime?  @db.Timestamptz(6)
+  deleted_by  String?    @db.Uuid
+  stores      stores     @relation(fields: [store_id], references: [id])
+  products    products[]
+
+  @@index([store_id])
+  @@index([group_name])
+}
+
+model clinics {
+  id          String    @id @default(uuid()) @db.Uuid
+  store_id    String    @db.Uuid
+  clinic_name String    @db.VarChar(255)
+  address     String    @db.VarChar(255)
+  phone       String?   @db.VarChar(255)
+  email       String?   @db.VarChar(255)
+  created_at  DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime  @default(now()) @db.Timestamptz(6)
+  status      Int       @default(1)
+  description String?   @db.VarChar(255)
+  deleted_at  DateTime? @db.Timestamptz(6)
+  store       stores    @relation(fields: [store_id], references: [id])
+
+  @@index([store_id])
+}
+
+model doctors {
+  id             String    @id @default(uuid()) @db.Uuid
+  store_id       String    @db.Uuid
+  doctor_name    String    @db.VarChar(255)
+  specialization String?   @db.VarChar(255)
+  phone          String?   @db.VarChar(255)
+  email          String?   @db.VarChar(255)
+  created_at     DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime  @default(now()) @db.Timestamptz(6)
+  status         Int       @default(1)
+  deleted_at     DateTime? @db.Timestamptz(6)
+  store          stores    @relation(fields: [store_id], references: [id])
+
+  @@index([store_id])
+}
+
+model providers {
+  id          String   @id @default(uuid()) @db.Uuid // Primary key
+  companyName String // Tên công ty
+  phoneNumber String // Số điện thoại
+  email       String? // Email (có thể null)
+  taxCode     String? // Mã số thuế (có thể null)
+  address     String? // Địa chỉ (có thể null)
+  city        String // Thành phố
+  district    String // Quận/huyện
+  wards       String // Xã/phường
+  note        String? // Ghi chú (có thể null)
+  storeId     String   @db.Uuid // ID cửa hàng (liên kết đến bảng Store)
+  createdAt   DateTime @default(now()) // Thời điểm tạo
+  updatedAt   DateTime @updatedAt // Thời điểm cập nhật tự động
+  store       stores   @relation(fields: [storeId], references: [id])
+
+  import_invoices import_invoices[]
+}
+
+model admins {
+  id                String              @id @default(uuid()) @db.Uuid
+  username          String              @db.VarChar(255)
+  last_name         String              @db.VarChar(255)
+  first_name        String              @db.VarChar(255)
+  gender            enum_gender
+  password          String              @db.VarChar(255)
+  email             String?             @db.VarChar(255)
+  phone_number      String?             @db.VarChar(255)
+  postal_code       String?             @db.VarChar(255)
+  address           String?             @db.VarChar(255)
+  avatar            String?             @db.VarChar(255)
+  notes             String?             @db.VarChar(255)
+  bio               String?             @db.VarChar(255)
+  is_active         Boolean             @default(true)
+  last_login        DateTime?           @db.Timestamptz(6)
+  reset_token       String?             @db.VarChar(255)
+  permission        String[]            @default(["Store.All", "Report.All", "Supplier.All", "Medicine.All", "Membership.All", "Promotion.All", "Customer.All", "User.All"]) @db.VarChar(255)
+  roleId            String?             @db.Uuid
+  createdAt         DateTime?           @db.Timestamptz(6)
+  updatedAt         DateTime?           @db.Timestamptz(6)
+  roles             roles?              @relation(fields: [roleId], references: [id])
+  admin_to_user     admin_to_user[]
+  admin_subsciption admin_subsciption[]
+}
+
+model admin_to_user {
+  id        String   @id @default(uuid()) @db.Uuid
+  adminId   String   @db.Uuid
+  userId    String   @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+  admins    admins   @relation(fields: [adminId], references: [id])
+  users     users    @relation(fields: [userId], references: [id])
+}
+
+model users {
+  id            String          @id @default(uuid()) @db.Uuid
+  username      String          @db.VarChar(255)
+  password      String          @db.VarChar(255)
+  email         String?         @db.VarChar(255)
+  age           Int?
+  phone_number  String?         @db.VarChar(255)
+  address       String?         @db.VarChar(255)
+  avatar        String?         @db.VarChar(255)
+  notes         String?         @db.VarChar(255)
+  is_active     Boolean         @default(true)
+  last_login    DateTime?       @db.Timestamptz(6)
+  reset_token   String?         @db.VarChar(255)
+  permission    String[]        @default(["Store.All", "Report.All", "Supplier.All", "Medicine.All", "Membership.All", "Promotion.All", "Customer.All", "User.Read", "User.Update", "User.Create"]) @db.VarChar(255)
+  createdAt     DateTime?       @db.Timestamptz(6)
+  updatedAt     DateTime?       @db.Timestamptz(6)
+  branches      branches[]
+  // points       points[]
+  admin_to_user admin_to_user[]
+
+  @@index([username])
+  @@index([email])
+  @@index([phone_number])
+}
+
+model subscriptions {
+  id         String   @id @default(uuid()) @db.Uuid
+  branch_id  String   @db.Uuid
+  plan_type  String   @db.VarChar(255)
+  plan_id    String   @db.Uuid
+  start_date DateTime @default(now()) @db.Timestamptz(6)
+  end_date   DateTime
+  status     String   @db.VarChar(50) // e.g., "active", "expired", "pending"
+  createdAt  DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt  DateTime @updatedAt
+
+  branches     branches     @relation(fields: [branch_id], references: [branch_id], onDelete: Cascade)
+  branch_plans branch_plans @relation(fields: [plan_id], references: [id], onDelete: Cascade)
+
+  @@index([branch_id])
+  @@index([plan_id])
+}
+
+model branch_plans {
+  id          String   @id @default(uuid()) @db.Uuid
+  plan_name   String   @db.VarChar(255)
+  plan_type   String   @db.VarChar(255)
+  price       Float
+  duration    Int
+  description String?  @db.VarChar(255)
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+
+  subscriptions subscriptions[]
+}
+
+model admin_subsciption {
+  id         String   @id @default(uuid()) @db.Uuid
+  admin_id   String   @db.Uuid
+  plan_id    String   @db.Uuid
+  start_date DateTime @default(now()) @db.Timestamptz(6)
+  end_date   DateTime
+  status     String   @db.VarChar(50) // e.g., "active", "expired", "pending"
+  createdAt  DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt  DateTime @updatedAt @db.Timestamptz(6)
+
+  admins      admins      @relation(fields: [admin_id], references: [id], onDelete: Cascade)
+  admin_plans admin_plans @relation(fields: [plan_id], references: [id], onDelete: Cascade)
+}
+
+model admin_plans {
+  id          String   @id @default(uuid()) @db.Uuid
+  plan_name   String   @db.VarChar(255)
+  plan_type   String   @db.VarChar(255)
+  price       Float
+  duration    Int
+  description String?  @db.VarChar(255)
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+
+  admin_subsciption admin_subsciption[]
+}
+
+model roles {
+  id         String   @id @default(uuid()) @db.Uuid
+  role_name  String   @db.VarChar(255)
+  permission String   @db.VarChar(255) // ex: "Store.All, Report.All, Supplier.All, Medicine.All, Membership.All, Promotion.All, Customer.All, User.All"
+  createdAt  DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt  DateTime @updatedAt @db.Timestamptz(6)
+
+  admins admins[]
+}
+
+model points {
+  id          String   @id @default(uuid()) @db.Uuid // Primary key
+  consumerId  String   @unique @db.Uuid // Liên kết đến bảng users
+  storeId     String?  @db.Uuid // Liên kết đến bảng stores
+  totalPoints Int      @default(0) // Tổng số điểm hiện tại
+  createdAt   DateTime @default(now()) // Thời gian tạo
+  updatedAt   DateTime @updatedAt // Thời gian cập nhật tự động
+
+  store             stores?              @relation(fields: [storeId], references: [id], onDelete: Cascade) // Liên kết đến bảng stores
+  consumer          consumers            @relation(fields: [consumerId], references: [id], onDelete: Cascade) // Quan hệ 1-1 với bảng users
+  pointTransactions point_transactions[] // Danh sách giao dịch điểm
+
+  @@index([consumerId])
+  @@map("points")
+}
+
+model point_transactions {
+  id        String   @id @default(uuid()) @db.Uuid // Primary key
+  pointId   String   @db.Uuid @unique // Liên kết đến bảng points
+  type      String   @db.VarChar(255) // Loại giao dịch (e.g., "add", "redeem")
+  amount    Int // Số điểm giao dịch (có thể âm hoặc dương)
+  note      String?  @db.Text // Ghi chú
+  createdAt DateTime @default(now()) // Thời gian thực hiện giao dịch
+
+  points points @relation(fields: [pointId], references: [id], onDelete: Cascade) // Quan hệ 1-n với bảng points
+}
+
+model invoices {
+  id                 String    @id @default(uuid()) @db.Uuid
+  branchId           String    @db.Uuid
+  saleDate           DateTime  @db.Date
+  saleTime           String
+  customerName       String?
+  customerId         String?   @db.Uuid
+  priceList          String?
+  isPrescriptionSale Boolean?
+  vat                Float     @default(0)
+  totalPrice         Float
+  discount           Float     @default(0)
+  amountDue          Float
+  amountPaid         Float     @default(0)
+  debit              Float     @default(0)
+  notes              String?
+  autoPrintInvoice   Boolean?
+  printBatchNumber   Boolean?
+  userType           UserType?
+  userId             String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  items        invoice_items[]
+  otherCharges other_charges[]
+  branches     branches        @relation(fields: [branchId], references: [branch_id])
+  customers    consumers?      @relation(fields: [customerId], references: [id])
+
+  @@index([branchId])
+  @@index([saleDate])
+  @@index([customerName])
+  @@map("invoices")
+}
+
+model invoice_items {
+  id          String  @id @default(uuid()) @db.Uuid
+  invoiceId   String  @db.Uuid
+  productId   String? @db.Uuid
+  productName String
+  quantity    Float
+  price       Float
+  total       Float
+  unit        String
+  note        String?
+
+  invoice invoices  @relation(fields: [invoiceId], references: [id])
+  product products? @relation(fields: [productId], references: [id])
+
+  @@map("invoice_items")
+}
+
+model other_charges {
+  id        String @id @default(uuid()) @db.Uuid
+  invoiceId String @db.Uuid
+  name      String
+  value     Float  @default(0)
+
+  invoice invoices @relation(fields: [invoiceId], references: [id])
+
+  @@map("other_charges")
+}
+
+// Product assets (images, videos, etc.)
+// This table is used to store the relationship between a product and its assets
+// For example, a product can have multiple images
+// and this table is used to store the relationship between a product and its images
+model product_assets {
+  id         String   @id @default(uuid()) @db.Uuid
+  store_id   String   @db.Uuid
+  asset_id   String   @db.Uuid
+  product_id String?  @db.Uuid
+  createdAt  DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt  DateTime @default(now()) @db.Timestamptz(6)
+
+  product products? @relation(fields: [product_id], references: [id])
+  asset   assets    @relation(fields: [asset_id], references: [id])
+  store   stores    @relation(fields: [store_id], references: [id])
+}
+
+// Store assets (images, videos, etc.) for a store
+// This table is used to store the relationship between a store and its assets
+model store_assets {
+  id        String   @id @default(uuid()) @db.Uuid
+  store_id  String   @db.Uuid
+  asset_id  String   @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @db.Timestamptz(6)
+
+  store stores @relation(fields: [store_id], references: [id])
+  asset assets @relation(fields: [asset_id], references: [id])
+}
+
+// Assets (images, videos, etc.)
+// This table is used to store the assets (images, videos, etc.)
+model assets {
+  id          String   @id @default(uuid()) @db.Uuid
+  store_id    String   @db.Uuid
+  path        String   @db.VarChar(255)
+  name        String   @db.VarChar(255)
+  description String?  @default("") @db.VarChar(255)
+  url         String   @db.VarChar(255)
+  type        String   @db.VarChar(255)
+  meta_data   Json     @default("{}") @db.Json
+  from        String?  @default("") @db.VarChar(255)
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @default(now()) @db.Timestamptz(6)
+
+  stores stores @relation(fields: [store_id], references: [id])
+
+  product_assets product_assets[]
+  store_assets   store_assets[]
+}
+
+enum enum_branches_branch_status {
+  active
+  inactive
+}
+
+enum enum_branchs_branch_status {
+  active
+  inactive
+}
+
+enum enum_consumers_gender {
+  male
+  female
+  other
+}
+
+enum enum_gender {
+  male
+  female
+  other
+}
+
+enum enum_memberships_employee_status {
+  active
+  inactive
+}
+
+enum UserType {
+  user
+  membership
+}
+
+enum admin_type {
+  super_admin
+  admin
+}
+
+enum enum_users_permission {
+  Store_All      @map("Store.All")
+  Report_All     @map("Report.All")
+  Supplier_All   @map("Supplier.All")
+  Medicine_All   @map("Medicine.All")
+  Pharmacist_All @map("Pharmacist.All")
+  Promotion_All  @map("Promotion.All")
+  Customer_All   @map("Customer.All")
+  User_Read      @map("User.Read")
+  User_Update    @map("User.Update")
+  User_Create    @map("User.Create")
+}
+
+enum admin_permission {
+  Store_All      @map("Store.All")
+  Report_All     @map("Report.All")
+  Supplier_All   @map("Supplier.All")
+  Medicine_All   @map("Medicine.All")
+  Membership_All @map("Membership.All")
+  Promotion_All  @map("Promotion.All")
+  Customer_All   @map("Customer.All")
+  User_Read      @map("User.Read")
+  User_Update    @map("User.Update")
+  User_Create    @map("User.Create")
+}
+
+enum all_permission {
+  Store_All      @map("Store.All")
+  Report_All     @map("Report.All")
+  Supplier_All   @map("Supplier.All")
+  Medicine_All   @map("Medicine.All")
+  Membership_All @map("Membership.All")
+  Promotion_All  @map("Promotion.All")
+  Customer_All   @map("Customer.All")
+  User_Read      @map("User.Read")
+  User_Update    @map("User.Update")
+  User_Create    @map("User.Create")
+}

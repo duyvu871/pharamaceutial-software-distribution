@@ -1,21 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { paths } from '@route/path.ts';
 import { cookies } from 'next/headers';
+import { parseJson } from '@util/parse-json.ts';
+import { CookieAccessToken } from '@type/token.ts';
 // import { decrypt } from '@lib/session.ts';
 
 export const config = {
-	matcher: ['/((?!api|_next/static|_next/image|.*\\.png$).*)'],
+	matcher: ['/((?!api|_next/static|_next/image|.*\\.png$).*)'], // Match all routes except /api
 }
 
-const protectedRoutes = ['/dashboard']
-const publicRoutes = ['/login', '/signup', '/']
-const loginUrl = process.env.BASE_HOST + "/login";
+const protectedRoutes = ['/dashboard', '/admin/dashboard'];
+const publicRoutes = ['/login', '/signup', '/admin/login'];
 
 export async function middleware(req: NextRequest) {
+	let loginUrl = process.env.BASE_HOST + "/login";
+	let dashboardUrl = process.env.BASE_HOST + "/dashboard";
+	let isAdminPath = false;
 
 	const url = new URL(req.url);
 	const origin = url.origin;
 	const pathname = url.pathname;
+
+	if (pathname.startsWith('/admin')) {
+		isAdminPath = true;
+		loginUrl = process.env.BASE_HOST + "/admin/login";
+		dashboardUrl = process.env.BASE_HOST + "/admin/dashboard";
+	}
+
 	const requestHeaders = new Headers(req.headers);
 	requestHeaders.set("x-url", req.url);
 	requestHeaders.set("x-origin", origin);
@@ -33,36 +44,34 @@ export async function middleware(req: NextRequest) {
 
 
 	const cookie = cookies().get('accessToken')?.value;
+	// const refreshToken = cookies().get('refreshToken')?.value;
 	// console.log("cookie", cookie);
-	const parsedCookie = cookie ? JSON.parse(cookie) : null;
-
+	if (isProtectedRoute && !cookie) {
+		return NextResponse.redirect(loginUrl);
+	}
+	const parsedCookie = parseJson<CookieAccessToken>(cookie || '');
+	// const parsedRefreshToken = parseJson(refreshToken || '');
+	// console.log('url', new URL(paths.auth.login, req.nextUrl).href);
+	// console.log('nextUrl', req.nextUrl.href);
 	if (isProtectedRoute && !parsedCookie?.userId) {
-		return NextResponse.redirect(new URL('/login', req.nextUrl))
+		return NextResponse.redirect(loginUrl);
 	}
 
 	if (
 		isPublicRoute &&
-		parsedCookie?.userI &&
+		parsedCookie?.userId &&
 		!req.nextUrl.pathname.startsWith('/dashboard')
 	) {
-		return NextResponse.redirect(new URL('/dashboard', req.nextUrl))
+		return NextResponse.redirect(dashboardUrl);
 	}
 
-	if (!cookie) {
-		return isPublicRoute
-			? NextResponse.next(initialRequest)
-			: NextResponse.redirect(new URL(paths.auth.login, req.nextUrl));
-	}
-	const urlIsSignIn = req.nextUrl.pathname === paths.auth.login;
-	// console.log('login url', loginUrl);
+	console.log('isProtectedRoute', isProtectedRoute);
+	console.log('isPublicRoute', isPublicRoute);
+	// if (!cookie) {
+	// 	return isPublicRoute
+	// 		? NextResponse.next(initialRequest)
+	// 		: NextResponse.redirect(new URL('/login', req.nextUrl));
+	// }
 
-	if (cookie) {
-		return urlIsSignIn
-			? NextResponse.redirect(new URL(paths.auth.login, req.nextUrl))
-			: NextResponse.next(initialRequest);
-	} else {
-		return urlIsSignIn
-			? NextResponse.next(initialRequest)
-			: NextResponse.redirect(new URL(paths.auth.login, req.nextUrl));
-	}
+	return NextResponse.next(initialRequest);
 }

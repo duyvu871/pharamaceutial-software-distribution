@@ -29,4 +29,6 @@ export type AuthLoginSuccessResponse = {
 	email: string;
 	age: number;
 	phone_number: string;
+	avatar: string;
+	role: "admin" | "user" | "membership";
 }

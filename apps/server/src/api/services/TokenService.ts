@@ -5,35 +5,72 @@ import { JWTPayload } from 'types/auth';
 import dayjs from 'dayjs';
 import { getAuthPermission } from 'server/repository/permission';
 import config from 'config/app-config';
-import TokenModel, { ITokenDTO } from 'server/repository/token/schema';
+import TokenModel, { IToken, ITokenDTO } from 'server/repository/token/schema';
 import InternalServerError from 'responses/serverErrors/InternalServerError';
 import Unauthorized from 'responses/clientErrors/Unauthorized';
 import appLogger from 'utils/logger';
 import BadRequest from 'responses/clientErrors/BadRequest';
 import Token from 'server/configs/token';
+import mongoose from 'mongoose';
 
 export class TokenService {
+
+	public static async queryToken(query: mongoose.RootFilterQuery<IToken>): Promise<ITokenDTO | null> {
+		return TokenModel.findOne(query).exec();
+	}
+
+	/**
+	 * Get a token from the database.
+	 * @param token - The token string.
+	 * @returns The token data.
+	 */
+	public static async getToken(token: string): Promise<ITokenDTO | null> {
+		return TokenModel.findOne({
+			token,
+		}).exec();
+	}
+
+	public static compareToken = async (query: mongoose.RootFilterQuery<IToken>, token: string): Promise<boolean> => {
+		try {
+			const tokenFounded = await TokenModel.findOne(query).exec();
+			if (!tokenFounded) {
+				throw new Unauthorized('token_not_found', 'Token not found', 'Token not found');
+			}
+			return tokenFounded.token === token;
+		} catch (error: any) {
+			console.log(error);
+			// throw new InternalServerError('failed_to_get_token', error.message, 'Failed to get token');
+			return false;
+		}
+	}
 	/**
 	 * Save a token to the database.
 	 * @param token - The token string.
-	 * @param userId - The user ID associated with the token.
-	 * @param expiresIn - The expiration time in seconds.
-	 * @param tokenType - The type of the token.
-	 * @param isBlacklisted - Whether the token is blacklisted.
+	 * @param tokenPayload
 	 * @returns The saved token data.
 	 */
-	public static async saveToken(token: string, userId: string, expiresIn: number, tokenType: string, isBlacklisted: boolean = false): Promise<ITokenDTO> {
+	public static async saveToken(
+		token: string,
+		tokenPayload: {
+			aud: string;
+			jti: string;
+			sub: string;
+			expiresIn: number;
+			tokenType: string;
+			isBlacklisted: boolean
+		}
+	): Promise<ITokenDTO> {
 		try {
 			const tokenData: ITokenDTO = {
 				token: token,
-				aud: userId,
-				exp: dayjs().add(expiresIn, 'seconds').toDate(),
+				aud: tokenPayload.aud,
+				exp: dayjs(tokenPayload.expiresIn).toDate(),
 				iat: dayjs().toDate(),
-				jti: userId,
+				jti: tokenPayload.jti,
 				nbf: dayjs().toDate(),
-				sub: userId,
-				type: tokenType,
-				blocked: isBlacklisted,
+				sub: tokenPayload.sub,
+				type: tokenPayload.tokenType,
+				blocked:tokenPayload.isBlacklisted,
 			};
 			return await TokenModel.create(tokenData);
 		} catch (error: any) {
@@ -47,9 +84,18 @@ export class TokenService {
 	 * @returns The number of deleted tokens.
 	 */
 	public static async deleteToken(token: string): Promise<number> {
-		return (await TokenModel.deleteOne({ token }).exec()).deletedCount;
+		return (await TokenModel.deleteOne({
+			token
+		}).exec()).deletedCount;
 	}
 
+	public static async deleteTokenByUserId(userId: string, type: string, subject: string): Promise<number> {
+		return (await TokenModel.deleteMany({
+			aud: userId,
+			type,
+			sub: subject,
+		}).exec()).deletedCount;
+	}
 	/**
 	 * Verify the signature of a token.
 	 * @param accessToken - The access token string.
@@ -97,20 +143,36 @@ export class TokenService {
 		userId: string,
 		userType: "USER" | "MEMBERSHIP" | "ADMIN",
 		expiresIn: number,
-	): Promise<string> => {
+	): Promise<{token: string; expireIn: number}> => {
 		try {
+			const exp = dayjs().add(expiresIn, 'seconds').unix() * 1000;
 			const payloadData: IDecodedToken<JWTPayload> = {
 				payload: { id: userId.toString(), type: userType },
-				iat: dayjs().unix(),
-				exp: dayjs().add(expiresIn, 'seconds').unix(),
+				iat: dayjs().unix() * 1000,
+				exp: exp,
+				aud: userId,
 				jti: userId,
-				sub: userId,
-				nbf: dayjs().unix(),
+				sub: userType,
+				nbf: dayjs().unix() * 1000,
 				scopes: getAuthPermission(userType),
 			};
 			const generatedToken = this.generateToken(payloadData, config.sessionSecret);
-			await this.saveToken(generatedToken, userId, expiresIn, Token.ACCESS);
-			return generatedToken;
+			const deleted = await this.deleteTokenByUserId(userId, Token.ACCESS, userType);
+			if (deleted > 0) {
+				appLogger.info(`deleted_token ${Token.ACCESS} for user ${userId}`);
+			}
+			await this.saveToken(generatedToken, {
+				aud: userId,
+				jti: userId,
+				sub: userType,
+				expiresIn,
+				tokenType: Token.ACCESS,
+				isBlacklisted: false
+			});
+			return {
+				token: generatedToken,
+				expireIn: exp,
+			};
 		} catch (error: any) {
 			appLogger.error(`failed_to_generate_auth_token ${error.message}`);
 			throw new BadRequest('failed_to_generate_token', error.message, 'Failed to generate token');
@@ -142,20 +204,36 @@ export class TokenService {
 		userId: string,
 		userType: "USER" | "MEMBERSHIP" | "ADMIN",
 		expiresIn: number,
-	): Promise<string> => {
+	): Promise<{token: string; expireIn: number}> => {
 		try {
+			const exp = dayjs().add(expiresIn, 'seconds').unix() * 1000;
 			const payloadData: IDecodedToken<JWTPayload> = {
 				payload: { id: userId.toString(), type: userType },
-				iat: dayjs().unix(),
-				exp: dayjs().add(expiresIn, 'seconds').unix(),
+				iat: dayjs().unix() * 1000, // issued at
+				exp: exp,
+				aud: userId,
 				jti: userId,
-				sub: userId,
-				nbf: dayjs().unix(),
+				sub: userType,
+				nbf: dayjs().unix() * 1000, // not before
 				scopes: getAuthPermission(userType),
 			};
 			const refreshToken = this.generateToken(payloadData, config.refreshSecret);
-			await this.saveToken(refreshToken, userId, expiresIn, Token.REFRESH);
-			return refreshToken;
+			const deleted = await this.deleteTokenByUserId(userId, Token.REFRESH, userType);
+			if (deleted > 0) {
+				appLogger.info(`deleted_token ${Token.REFRESH} for user ${userId}`);
+			}
+			await this.saveToken(refreshToken, {
+				aud: userId,
+				jti: userId,
+				sub: userType,
+				expiresIn: exp,
+				tokenType: Token.REFRESH,
+				isBlacklisted: false
+			});
+			return {
+				token: refreshToken,
+				expireIn: exp,
+			};
 		} catch (error: any) {
 			appLogger.error(`failed_to_generate_token ${error.message}`);
 			throw new InternalServerError('failed_to_generate_token', error.message, 'Failed to generate token');

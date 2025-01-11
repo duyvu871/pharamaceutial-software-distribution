@@ -18,11 +18,21 @@ export class AuthorizationValidation {
 	});
 
 	public static refreshToken = z.object({
-		refreshToken: z.string().min(10, { message: 'Refresh token không hợp lệ' })
+		refreshToken: z.string().min(10, { message: 'Refresh token không hợp lệ' }),
+		userId: z.string().min(10, { message: 'User ID không hợp lệ' })
 	});
 
 	public static verifySession = z.object({
 		authorization: z.string().min(10, { message: 'Authorization không hợp lệ' })
+	});
+
+	public static headers = z.object({
+		authorization: z
+			.string({
+				required_error: 'Authorization header is required',
+				invalid_type_error: 'Invalid authorization header',
+			})
+			.startsWith('Bearer ', 'Authorization header must start with "Bearer "'),
 	});
 }
 
@@ -30,3 +40,4 @@ export type LoginBody = z.infer<typeof AuthorizationValidation.login>;
 export type RegisterBody = z.infer<typeof AuthorizationValidation.register>;
 export type RefreshTokenBody = z.infer<typeof AuthorizationValidation.refreshToken>;
 export type VerifySessionBody = z.infer<typeof AuthorizationValidation.verifySession>;
+export type Headers = z.infer<typeof AuthorizationValidation.headers>;

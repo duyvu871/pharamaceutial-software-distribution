@@ -6,8 +6,29 @@ const ROOTS = {
 export const paths = {
 	// AUTH
 	auth: {
-		login: `${ROOTS.HOME}/login`,
-		register: `${ROOTS.HOME}/register`,
+		login: `/login`,
+		register: `/register`,
 	},
-	settings: `${ROOTS.DASHBOARD}/settings`,
+	settings: `/settings`,
 };
+
+export const apiPaths = {
+	notification: {
+		get: '/notification',
+		read: '/notification/read',
+		activity: '/notification/activity',
+	},
+	revenue: {
+		getChart: '/revenue/chart',
+	},
+	top_sale: {
+		getChart: '/top-sale/chart',
+	},
+	stat: {
+		get: '/stat',
+	},
+	invoice: {
+		get: '/invoice',
+		getDetail: '/invoice/detail',
+	}
+}

@@ -1,0 +1,4 @@
+
+.hover-button-with-primary {
+     @apply bg-white hover:bg-emerald-400/10 transition-colors  !important;
+}

@@ -31,8 +31,18 @@ export default (err: Error | ICustomErrorResponse, req: Request, res: Response, 
         return res.status(404).send("Route not found").end();
     }
 
+    // next(err);
+    if ('message' in err) {
+        console.log('err', err.message);
+    }
+    console.log('err', err);
     next(err);
-
+    return reportCustomError({
+        statusCode: 500,
+        errorCode: 'internal_server_error',
+        errorDescription: 'Internal Server Error',
+        errorMessage: 'Internal Server Error',
+    }, res);
 }
 
 const reportCustomError = (err: ICustomErrorResponse, res: Response) => {

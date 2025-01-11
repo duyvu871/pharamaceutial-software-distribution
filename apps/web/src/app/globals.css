@@ -3,10 +3,33 @@
 @tailwind utilities;
 
 :root, *, *::before, *::after {
+    --teal-color: rgb(20 184 166);
     --main-color: rgb(13 148 136);
     --checkbox-color: var(--main-color);
+    --hover-card-color: rgb(13 148 136 / 10%);
+}
 
+/* Style for the scroll bar */
+::-webkit-scrollbar {
+  width: 6px; /* Width for vertical scrollbar */
+  height: 6px; /* Height for horizontal scrollbar */
+}
 
+/* Style for the track */
+::-webkit-scrollbar-track {
+  background: #f0f0f0; /* Light gray background */
+  border-radius: 10px; /* Rounded corners for the track */
+}
+
+/* Style for the thumb */
+::-webkit-scrollbar-thumb {
+  background: rgba(160, 160, 160, 0.29); /* Darker gray thumb */
+  border-radius: 10px; /* Rounded corners for the thumb */
+}
+
+/* Optional: Hover effect for the thumb */
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(128, 128, 128, 0.55); /* Darker gray on hover */
 }
 
 /*! tailwindcss v2.2.19 | MIT License | https://tailwindcss.com */

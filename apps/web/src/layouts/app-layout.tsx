@@ -4,8 +4,6 @@ import React from 'react';
 import MantineProviderClient from '@provider/mantine-provider';
 import ToastLayout from '@layout/toast-layout.tsx';
 import JotaiProvider from '@provider/jotai-provider';
-import AuthProvider from '@provider/auth-provider.tsx';
-
 
 type AppLayoutProps = {
 	children: React.ReactNode;
@@ -13,15 +11,17 @@ type AppLayoutProps = {
 
 const AppLayout = ({children}: AppLayoutProps) => {
 	return (
-		<AuthProvider>
+		// <AuthProvider>
 			<ToastLayout>
 				<MantineProviderClient>
 					<JotaiProvider>
-						{children}
+						{/*<ProfileProvider>*/}
+							{children}
+						{/*</ProfileProvider>*/}
 					</JotaiProvider>
 				</MantineProviderClient>
 			</ToastLayout>
-		</AuthProvider>
+		// </AuthProvider>
 	);
 };
 

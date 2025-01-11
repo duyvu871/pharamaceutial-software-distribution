@@ -1,50 +1,25 @@
+<<<<<<< HEAD
 import { DropzoneButton } from "@component/ImportCsv_Excel/DropzoneButton";
 import Image from "next/image";
+=======
+"use client"
+>>>>>>> 3cd4b395c4d91c0ab77564848256c4b782e730a0
 
-function Gradient({
-  conic,
-  className,
-  small,
-}: {
-  small?: boolean;
-  conic?: boolean;
-  className?: string;
-}): JSX.Element {
-  return (
-    <span
-      className={`absolute mix-blend-normal will-change-[filter] rounded-[100%] ${
-        small ? "blur-[32px]" : "blur-[75px]"
-      } ${conic ? "bg-glow-conic" : ""} ${className}`}
-    />
-  );
-}
-
-const LINKS = [
-  {
-    title: "Docs",
-    href: "https://turbo.build/repo/docs",
-    description: "Find in-depth information about Turborepo features and API.",
-  },
-  {
-    title: "Learn",
-    href: "https://turbo.build/repo/docs/handbook",
-    description: "Learn more about monorepos with our handbook.",
-  },
-  {
-    title: "Templates",
-    href: "https://turbo.build/repo/docs/getting-started/from-example",
-    description: "Choose from over 15 examples and deploy with a single click.",
-  },
-  {
-    title: "Deploy",
-    href: "https://vercel.com/new",
-    description:
-      "Instantly deploy your Turborepo to a shareable URL with Vercel.",
-  },
-];
+import Home from '@container/landing/page.tsx';
+import RefreshCookieAuthProvider from '@provider/refresh-cookie-provider';
+import AppLayout from '@layout/app-layout.tsx';
 
 export default function Page(): JSX.Element {
   return (
+<<<<<<< HEAD
     <DropzoneButton></DropzoneButton>
   )
+=======
+    <RefreshCookieAuthProvider>
+      <AppLayout>
+        <Home />
+      </AppLayout>
+    </RefreshCookieAuthProvider>
+  );
+>>>>>>> 3cd4b395c4d91c0ab77564848256c4b782e730a0
 }

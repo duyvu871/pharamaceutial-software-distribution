@@ -11,4 +11,4 @@ export interface SuccessResponse<DataResponse = object | [] | null > {
 	data: DataResponse;
 }
 
-export type APIResponse<DataResponse = object | [] | null> = SuccessResponse<DataResponse> & SuccessResponse;
+export type APIResponse<DataResponse = object | [] | null> = SuccessResponse<DataResponse> & ErrorResponse;
