@@ -200,7 +200,7 @@ export function NavbarFeatureDirect() {
 				},
 				{
 					title: "Tài khoản",
-					path: `/dashboard/stores/${branchId}/user/settings`,
+					path: `/dashboard/store/${branchId}/user/settings`,
 					href: pathToRegex(`/dashboard/branch/${branchId}/user/settings`),
 					icon: User,
 				},

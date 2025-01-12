@@ -92,7 +92,7 @@ export class BranchController {
 				if (!allowedExtensions.includes(imageExtension)) throw new BadRequest('invalid_file', 'Invalid file', 'Invalid file');
 
 
-				const imagePath = `storage/image/product/${storeId}/${uuidv4()}.${imageExtension}`;
+				const imagePath = `storage/image/branch/${storeId}/${uuidv4()}.${imageExtension}`;
 				const imageAbsolutePath = path.join(process.cwd(), imagePath);
 				const mkdir = await fs.promises.mkdir(path.dirname(imageAbsolutePath), { recursive: true });
 
@@ -105,13 +105,13 @@ export class BranchController {
 							name: imageOriginalName,
 							type: image.mimetype,
 							store_id: storeId,
-							url: `${config.baseUrl}/storage/image/product/${storeId}/${path.basename(imagePath)}`,
+							url: `${config.baseUrl}/storage/image/branch/${storeId}/${path.basename(imagePath)}`,
 							meta_data: {
 								mime: image.mimetype,
 								size: image.size,
 								originalName: imageOriginalName,
 								encoding: image.encoding,
-								destination: `storage/image/product/${storeId}`,
+								destination: `storage/image/branch/${storeId}`,
 							},
 							path: imagePath,
 							from: jwtPayload?.id ? `${jwtPayload.id}_${jwtPayload.type}` : null,

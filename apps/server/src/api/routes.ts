@@ -27,6 +27,7 @@ import { storeRouter } from 'server/api/routes/store.ts';
 import { ImportController } from 'controllers/ImportController.ts';
 import { ImportValidation } from 'validations/ImportValidation.ts';
 import { importRoute } from 'server/api/routes/import.ts';
+import { uploadRouter } from 'server/api/routes/upload.ts';
 
 const apiRouter = Router();
 const pageRouter = Router();
@@ -142,6 +143,7 @@ apiRouter.route('/membership/:branchId').post(
   validateBody(MembershipValidation.createMembership),
   MembershipController.createMembership);
 
+
 // Product routes
 apiRouter.route('/product/:branchId').get(
   ...authChain,
@@ -204,6 +206,7 @@ apiRouter.route('/invoice/:branchId/delete/:invoiceId').delete(
 // Store routes
 apiRouter.use(storeRouter);
 apiRouter.use(importRoute);
+apiRouter.use(uploadRouter);
 
 export default {
     apiRoutes: apiRouter,

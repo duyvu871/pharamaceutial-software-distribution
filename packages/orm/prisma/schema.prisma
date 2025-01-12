@@ -71,7 +71,7 @@ model branch_payment {
 
 model branch_details {
   id                                String    @id @default(uuid()) @db.Uuid
-  branch_id                         String    @db.Uuid
+  branch_id                         String    @db.Uuid @unique
   so_dang_ky                        String
   ten_nha_thuoc                     String
   loai_hinh                         String
@@ -150,7 +150,7 @@ model memberships {
   notes           String?                          @db.VarChar(255)
   employee_status enum_memberships_employee_status
   reset_token     String?                          @db.VarChar(255)
-  permission      String[]                         @db.VarChar(255)
+  permission      String[]                         @default(["Store.All", "Report.All", "Supplier.All", "Medicine.All", "Membership.All", "Promotion.All", "Customer.All"]) @db.VarChar(255)
   createdAt       DateTime?                        @db.Timestamptz(6)
   updatedAt       DateTime?                        @db.Timestamptz(6)
   branches        branches                         @relation(fields: [branch_id], references: [branch_id], onDelete: NoAction, onUpdate: NoAction)

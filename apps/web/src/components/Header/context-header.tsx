@@ -9,6 +9,7 @@ import { IoExitOutline } from "react-icons/io5";
 import { cn } from '@lib/tailwind-merge.ts';
 import { useDashboard } from '@hook/dashboard/use-dasboard.ts';
 import { pathToRegex } from '@util/regex.ts';
+import { useAuth } from '@hook/auth';
 
 
 type NavItem = {
@@ -25,6 +26,7 @@ function ContextHeader() {
 	const {profile: userProfile} = useProfile();
 	const pathname = usePathname();
 	const {branchId} = useDashboard();
+	const {logout} = useAuth();
 
 	const navLinkItems: NavItem[] = [
 		{
@@ -100,7 +102,10 @@ function ContextHeader() {
 							}
 							description={''}
 							leftSection={<IoExitOutline  size={20} />}
-							onClick={() => console.log('Đăng xuất')}
+							onClick={() => {
+								console.log('Đăng xuất');
+								logout();
+							}}
 						/>
 					</Stack>
 				</Stack>

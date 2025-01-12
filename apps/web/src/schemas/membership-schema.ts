@@ -15,6 +15,7 @@ const vi = {
 };
 
 export const membershipSchema = z.object({
+	id: z.string().optional(),
 	first_name: z
 		.string({
 			required_error: vi.name_is_required,
@@ -38,7 +39,7 @@ export const membershipSchema = z.object({
 			required_error: vi.password_is_required,
 			invalid_type_error: vi.please_enter_your_email_and_password,
 		})
-		.min(6, vi.password_is_too_short),
+		.min(6, vi.password_is_too_short).optional(),
 	email: z
 		.string({
 			required_error: vi.email_is_required,

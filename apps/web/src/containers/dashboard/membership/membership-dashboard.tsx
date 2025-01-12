@@ -31,6 +31,15 @@ export default function MembershipDashboard({branchId}: {branchId: string}) {
 	const [activePage, setActivePage] = useState(1);
 	const [itemsPerPage, setItemsPerPage] = useState('20');
 	const [memberships, setMemberships] = useState<PayloadMembershipSchema[]>([]);
+
+	const addNewConsumer = (membership: PayloadMembershipSchema) => {
+		setMemberships([...memberships, membership]);
+	}
+
+	const updateConsumer = (membership: PayloadMembershipSchema) => {
+		setMemberships(memberships.map(m => m.id === membership.id ? membership : m));
+	}
+
 	useLayoutEffect(() => {
 		if (branchId) {
 			getMembershipList({search: '', orderBy: 'createdAt:ASC', limit: 20, page: 1}, branchId).then(consumerList => {
@@ -64,23 +73,23 @@ export default function MembershipDashboard({branchId}: {branchId: string}) {
 					</button>
 				</div>
 				<div className="flex gap-2">
-					<EmployeeForm>
+					<EmployeeForm onSubmitted={addNewConsumer}>
 						<button className="flex items-center gap-2 bg-teal-500 text-white px-3 py-2 rounded-md hover:bg-teal-600">
 							<Plus className="w-4 h-4" />
 							<span>Thêm mới</span>
 						</button>
 					</EmployeeForm>
 
-					<button
-						className="flex items-center gap-2 bg-teal-500/90 text-white px-3 py-2 rounded-md hover:bg-teal-600 transition-colors">
-						<Upload className="w-4 h-4" />
-						<span>Tải lên</span>
-					</button>
-					<button
-						className="flex items-center gap-2 bg-teal-500/80 text-white px-3 py-2 rounded-md hover:bg-teal-600 transition-colors">
-						<FileSpreadsheet className="w-4 h-4" />
-						<span>Xuất Excel</span>
-					</button>
+					{/*<button*/}
+					{/*	className="flex items-center gap-2 bg-teal-500/90 text-white px-3 py-2 rounded-md hover:bg-teal-600 transition-colors">*/}
+					{/*	<Upload className="w-4 h-4" />*/}
+					{/*	<span>Tải lên</span>*/}
+					{/*</button>*/}
+					{/*<button*/}
+					{/*	className="flex items-center gap-2 bg-teal-500/80 text-white px-3 py-2 rounded-md hover:bg-teal-600 transition-colors">*/}
+					{/*	<FileSpreadsheet className="w-4 h-4" />*/}
+					{/*	<span>Xuất Excel</span>*/}
+					{/*</button>*/}
 					<button className="flex items-center gap-2 bg-teal-500 text-white px-3 py-2 rounded-md hover:bg-teal-600">
 						<RotateCw className="w-4 h-4" />
 						<span>Làm mới</span>
@@ -147,7 +156,13 @@ export default function MembershipDashboard({branchId}: {branchId: string}) {
 									{/*<Table.Td>{consumer.gender}</Table.Td>*/}
 									{/*<Table.Td>{consumer.address}</Table.Td>*/}
 									<Table.Td>
-										<EmployeeForm data={membership}>
+										<EmployeeForm
+											data={{
+												...membership,
+												memberId: membership.id,
+											}}
+											onSubmitted={updateConsumer}
+										>
 											{/*<span >*/}
 											<EllipsisVertical size={20}/>
 											{/*</span>*/}
