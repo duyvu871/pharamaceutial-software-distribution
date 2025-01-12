@@ -29,3 +29,18 @@ export async function getProviders(
 		return [];
 	}
 }
+
+export async function upsertProvider(
+	branchId: string,
+	data: Provider,
+	isMock?: boolean,
+)
+{
+	try {
+		const response = await axiosWithAuth.post<SuccessResponse<Provider>>(`/provider/${branchId}`, data);
+
+		return response.data.data;
+	} catch (error: any) {
+		return null;
+	}
+}

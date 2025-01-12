@@ -27,7 +27,8 @@ interface Customer {
 }
 
 export default function MembershipDashboard({branchId}: {branchId: string}) {
-	const { isAuthenticated } = useAuth();
+	const { isAuthenticated, userSessionInfo } = useAuth();
+
 	const [activePage, setActivePage] = useState(1);
 	const [itemsPerPage, setItemsPerPage] = useState('20');
 	const [memberships, setMemberships] = useState<PayloadMembershipSchema[]>([]);

@@ -14,6 +14,7 @@ import { Typography } from '@component/Typography';
 import { getStoreGroup } from '@api/group.ts';
 import { GroupStoreSchema } from '@schema/group-schema.ts';
 import { TableRender } from '@type/components/table.type';
+import ProductAutocomplete from '@component/product-search.tsx';
 
 export default function ProductDashboard({branchId, type}: {branchId: string, type?: string}) {
 	const {isAuthenticated} = useAuth();
@@ -24,6 +25,11 @@ export default function ProductDashboard({branchId, type}: {branchId: string, ty
 	const [selectedItems, setSelectedItems] = useState<string[]>([])
 	const [products, setProducts] = useState<Product[]>([])
 	const [productDetailActive, setProductDetailActive] = useState<string | null>(null)
+
+	const [searchValue, setSearchValue] = useState<string>('');
+	const [searchType, setSearchType] = useState<string>('name');
+
+	const [disableRefresh, setDisableRefresh] = useState<boolean>(false);
 
 	const toggleSelectAll = () => {
 		if (selectedItems.length === products.length) {
@@ -57,6 +63,33 @@ export default function ProductDashboard({branchId, type}: {branchId: string, ty
 			stock: product.quantity_of_stock,
 			status: product.status === 1 ? 'active' : 'inactive',
 		});
+
+	const refreshProducts = () => {
+		setDisableRefresh(true);
+		getProductList({
+			branchId,
+			page: activePage,
+			limit: parseInt(itemsPerPage),
+			perPage: parseInt(itemsPerPage),
+			productType: type,
+		}, false).then((data) => {
+			setProducts(data);
+			setDisableRefresh(false);
+		})
+	}
+
+	const searchProducts = () => {
+		getProductList({
+			branchId,
+			page: activePage,
+			limit: parseInt(itemsPerPage),
+			perPage: parseInt(itemsPerPage),
+			productType: type,
+			search: searchValue,
+		}, false).then((data) => {
+			setProducts(data);
+		})
+	}
 
 	useEffect(() => {
 		console.log('fetching products with type', type);
@@ -161,9 +194,18 @@ export default function ProductDashboard({branchId, type}: {branchId: string, ty
 									placeholder="Theo tên, mã hàng"
 									leftSection={<Search className="w-4 h-4" />}
 									className="max-w-xl w-full"
+									onChange={(e) => setSearchValue(e.currentTarget.value)}
 								/>
+								{/*<ProductAutocomplete*/}
+								{/*	value*/}
+								{/*	placeholder="Theo tên, mã hàng"*/}
+								{/*	leftSection={<Search className="w-4 h-4" />}*/}
+								{/*	className="max-w-xl w-full hidden"*/}
+								{/*/>*/}
 								<button
-									className="flex items-center gap-2 bg-teal-500 text-white px-3 py-1 rounded-md hover:bg-teal-600">
+									className="flex items-center gap-2 bg-teal-500 text-white px-3 py-1 rounded-md hover:bg-teal-600"
+									onClick={searchProducts}
+								>
 									<Search className="w-4 h-4" />
 									<span>Tìm kiếm</span>
 								</button>
@@ -182,15 +224,22 @@ export default function ProductDashboard({branchId, type}: {branchId: string, ty
 								<FileSpreadsheet className="w-4 h-4" />
 								<span>Xuất file Excel</span>
 							</button>
-							<ProductModal>
-								<button
-									className="flex items-center gap-2 bg-teal-500 text-white px-3 py-2 rounded-md hover:bg-teal-600">
-									<Plus className="w-4 h-4" />
-									<span>Thêm mới</span>
-								</button>
-							</ProductModal>
-							<button className="flex items-center gap-2 bg-teal-500 text-white px-3 py-2 rounded-md hover:bg-teal-600">
-								<RotateCw className="w-4 h-4" />
+							{/*<ProductModal>*/}
+							{/*	<button*/}
+							{/*		className="flex items-center gap-2 bg-teal-500 text-white px-3 py-2 rounded-md hover:bg-teal-600">*/}
+							{/*		<Plus className="w-4 h-4" />*/}
+							{/*		<span>Thêm mới</span>*/}
+							{/*	</button>*/}
+							{/*</ProductModal>*/}
+							<button
+								className={cn(
+									"flex items-center gap-2 bg-teal-500 text-white px-3 py-2 rounded-md hover:bg-teal-600",
+									{ 'cursor-not-allowed': disableRefresh }
+								)}
+								onClick={refreshProducts}
+								disabled={disableRefresh}
+							>
+								<RotateCw className={cn("w-4 h-4", {"rotate": disableRefresh})} />
 								<span>Làm mới</span>
 							</button>
 						</div>
