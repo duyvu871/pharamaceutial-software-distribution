@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { Branch, branchSchema } from '@schema/branch-schema.ts';
+import { phoneRegex } from '@util/validator.ts';
 
 // login schema for validation in login form
 export const loginSchema = z.object({
@@ -69,3 +70,18 @@ export const authSessionInfoSchema = z.object({
 });
 
 export type AuthSessionInfo = z.infer<typeof authSessionInfoSchema>;
+
+export const userSettingSchema = z.object({
+	email: z.string().email().optional(),
+	phone_number: z.string()
+		.min(10, { message: 'Phone number is too short' })
+		.max(11, { message: 'Phone number is too long' })
+		.regex(phoneRegex, { message: 'Phone number is invalid' }),
+	username: z.string().min(3, { message: 'Username is too short' }),
+	avatar: z.string().optional(),
+	age: z.number().positive('Age must be greater than 0').optional(),
+	address: z.string().optional(),
+	password: z.string().min(8, { message: 'Password is too short' }).optional(),
+});
+
+export type UserSettingPayloadType = z.infer<typeof userSettingSchema>;

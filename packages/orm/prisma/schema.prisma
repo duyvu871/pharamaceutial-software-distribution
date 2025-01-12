@@ -148,6 +148,9 @@ model memberships {
   phone_number    String?                          @db.VarChar(255)
   avatar          String?                          @db.VarChar(255)
   notes           String?                          @db.VarChar(255)
+  address         String?
+  age             Int?
+  last_login      DateTime?                        @db.Timestamptz(6)
   employee_status enum_memberships_employee_status
   reset_token     String?                          @db.VarChar(255)
   permission      String[]                         @default(["Store.All", "Report.All", "Supplier.All", "Medicine.All", "Membership.All", "Promotion.All", "Customer.All"]) @db.VarChar(255)

@@ -6,7 +6,7 @@ export default function NoPermission() {
 	const router = useRouter()
 
 	return (
-		<div className="min-h-screen bg-teal-50 flex flex-col items-center justify-center px-4">
+		<div className="h-full bg-teal-50 flex flex-col items-center justify-center px-4">
 			<div className="max-w-md w-full text-center">
 				<h1 className="text-6xl font-bold text-teal-600 mb-4">403</h1>
 				<h2 className="text-2xl font-semibold text-teal-800 mb-4">

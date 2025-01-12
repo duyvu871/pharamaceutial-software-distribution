@@ -13,7 +13,6 @@ import useToast from '@hook/client/use-toast-notification';
 import { Loader2 } from 'lucide-react';
 
 
-
 export default function RewardPointForm() {
 	const [branchDetail] = useAtom(currentBranchAtom);
 	const {branchId} = useDashboard()

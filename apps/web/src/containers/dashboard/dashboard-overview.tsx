@@ -84,7 +84,7 @@ function DashboardOverview() {
 								<Avatar w={100} h={100} src={userProfile?.avatar} alt={userProfile?.username} />
 							</Indicator>
 							<div className={"flex flex-col items-start"}>
-								<Label label={'Quản lý:'} position={'left'}>
+								<Label label={userSessionInfo.role === "user" ? 'Quản lý:' : "Nhân viên:"} position={'left'}>
 									<Typography weight={'semibold'} size={'content'}>{userProfile?.username}</Typography>
 								</Label>
 								<Label label={'Email:'} position={'left'}>

@@ -43,9 +43,34 @@ export class BranchController {
 		async (req: Request<any, any, any, GetBranchesQuery>, res) => {
 			try {
 				const userId = req.jwtPayload?.id;
+				const userType = req.jwtPayload?.type;
 				const branchId = req.query.branch_id;
 				if (!userId) {
 					throw new Unauthorized('UNAUTHORIZED', 'access token is required', 'access token is required');
+				}
+
+				if (userType === "MEMBERSHIP") {
+					const membership = await prisma.memberships.findUnique({
+						where: { id: userId },
+						select: { branch_id: true }
+					});
+
+					if (!membership) {
+						throw new Forbidden('forbidden_branch', 'Branch not found', 'Chi nhánh không tồn tại');
+					}
+
+					if (branchId && membership.branch_id !== branchId) {
+						throw new Forbidden('forbidden_branch', 'Branch not found', 'Chi nhánh không tồn tại');
+					}
+
+					const branch = await BranchTask.findBranch(branchId);
+
+					if (!branch) {
+						throw new Forbidden('forbidden_branch', 'Branch not found', 'Chi nhánh không tồn tại');
+					}
+
+					const response = new Success(branch).toJson;
+					return res.status(200).json(response).end();
 				}
 
 				const branch = await BranchTask.getBranch(userId, branchId);
