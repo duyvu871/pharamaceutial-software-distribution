@@ -1,7 +1,7 @@
 "use client";
 
 import React, { ReactNode } from "react";
-import { InstallPrompt, PushNotificationManager } from '@component/PWA';
+import { InstallPromptManager } from '@component/PWA';
 
 export default function RootLayoutClient({ children }: {children: ReactNode}) {
 	React.useEffect(() => {
@@ -21,6 +21,7 @@ export default function RootLayoutClient({ children }: {children: ReactNode}) {
 		<>
 			{/*<PushNotificationManager />*/}
 			{/*<InstallPrompt />*/}
+			<InstallPromptManager />
 			{children}
 		</>
 	);
