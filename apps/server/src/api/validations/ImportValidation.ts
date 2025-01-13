@@ -3,7 +3,7 @@ import { z } from 'zod';
 const productDataItemSchema = z.object({
 	name: z.string({ message: 'Tên sản phẩm là bắt buộc' }),
 	type: z.enum(
-		['thuoc', 'thuc_pham_chuc_nang', 'my_pham', 'dung_cu_y_te', 'hang_hoa_khac'],
+		['thuoc', 'thuc-pham-chuc-nang', 'my-pham', 'dung-cu-y-te', 'hang-hoa-khac'],
 		{
 			message: 'Loại sản phẩm không hợp lệ'
 		}
