@@ -53,6 +53,19 @@ export const getProductList = async (
 	}
 }
 
+export const updateProduct = async (branchId: string, productId: string, data: Partial<Product>): Promise<Product | null> => {
+	if (!branchId || !productId) {
+		return null;
+	}
+
+	try {
+		const response = await axiosWithAuth.put<SuccessResponse<Product>>(`/product/${branchId}/${productId}`, data);
+		return response.data.data;
+	} catch (error: any) {
+		return null;
+	}
+}
+
 export const uploadImage = async (file: File, branchId: string): Promise<UploadResponse | null> => {
 	if (!file) {
 		return null;

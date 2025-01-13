@@ -15,6 +15,8 @@ import {
 } from '@mantine/core'
 import ProviderAutocomplete from '@component/Autocomplete/provider-autocomplete.tsx';
 import RegionAutocomplete from '@component/Autocomplete/region-autocomplete.tsx';
+import { Provider } from '@schema/provider-schema'
+import { useEffect } from 'react'
 
 // Mock data for dropdowns - replace with your actual data
 const provinces = [
@@ -51,9 +53,10 @@ export type ProviderFormProps = {
 		opened?: boolean;
 		onClose?: () => void;
 	}
+	data?: Provider;
 }
 
-export function ProviderForm({ onSubmit, modalProps }: ProviderFormProps) {
+export function ProviderForm({ onSubmit, modalProps, data }: ProviderFormProps) {
 	const { control, handleSubmit, formState: { errors }, setValue } = useForm<FormData>({
 		resolver: zodResolver(schema),
 		defaultValues: {
@@ -86,6 +89,19 @@ export function ProviderForm({ onSubmit, modalProps }: ProviderFormProps) {
 		}
 		console.log(data)
 	}
+
+	useEffect(() => {
+		if (data) {
+			setValue('name', data.companyName)
+			setValue('phone', data.phoneNumber || '')
+			setValue('email', data.email || '')
+			setValue('address', data.address || '')
+			setValue('province', data.city || '')
+			setValue('district', data.district || '')
+			setValue('ward', data.wards || '')
+			setValue('taxId', data.taxCode || '')
+		}
+	}, [data]);
 
 	return (
 		<Box maw={800} mx="auto" p="md">
@@ -176,10 +192,11 @@ export function ProviderForm({ onSubmit, modalProps }: ProviderFormProps) {
 
 					<Button
 						type="submit"
-						color="teal"
+						color="var(--main-color)"
 						mt="md"
 					>
-						Tạo
+						{data ? 'Cập nhật' : 'Tạo mới'}
+						{/*Tạo*/}
 					</Button>
 				</Stack>
 			</form>
