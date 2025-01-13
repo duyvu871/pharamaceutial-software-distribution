@@ -5,7 +5,7 @@ import { userProfileAtom } from '@store/state/profile/user-profile.ts';
 import { useAtom } from 'jotai';
 import { getUserProfile } from '@api/user.ts';
 import { useAuth } from '@hook/auth';
-import { Avatar, Button, Card, Divider, Drawer, Indicator, Stack } from '@mantine/core';
+import { Avatar, Button, Card, Divider, Drawer, Indicator, Stack, Tooltip } from '@mantine/core';
 import { Typography } from '@component/Typography';
 import { useUID } from '@hook/common/useUID.ts';
 import { CenterBox } from '@component/CenterBox';
@@ -16,19 +16,23 @@ import dayjs from 'dayjs';
 import { useDisclosure } from '@mantine/hooks';
 import CreateBranch from '@component/Form/create-branch.tsx';
 import { cn } from '@lib/tailwind-merge.ts';
+import useToast from '@hook/client/use-toast-notification.ts';
+import { LogOut } from 'lucide-react';
 
 function DashboardOverview() {
 	const router = useRouter();
-	const { userSessionInfo, isAuthenticated } = useAuth();
+	const { userSessionInfo, isAuthenticated, logout } = useAuth();
 	const { generateUID } = useUID();
+
+	const {showErrorToast, showSuccessToast} = useToast();
 	const [userProfile, setUserProfile] = useAtom(userProfileAtom);
 	const [openDrawerState, { open: openDrawer, close: closeDrawer }] = useDisclosure(false);
-	const [isLoading, setIsLoading] = useState(true);
+	const [isLoading, setIsLoading] = useState<boolean>(true);
 
 	useEffect(() => {
 		console.log('userSessionInfo', userSessionInfo);
 		console.log('isAuthenticated', isAuthenticated);
-		let isMounted = true;
+		// let isMounted = true;
 		const fetchProfile = async () => {
 			setIsLoading(true)
 			if (!isAuthenticated || !userSessionInfo?.id) {
@@ -37,10 +41,10 @@ function DashboardOverview() {
 			}
 			try {
 				const userProfileData = await getUserProfile(userSessionInfo.id);
-				if (isMounted) {
+				// if (isMounted) {
 					setUserProfile(userProfileData);
 					setIsLoading(false);
-				}
+				// }
 			} catch (error) {
 				console.error("Error fetching user profile:", error);
 				setIsLoading(false);
@@ -49,9 +53,9 @@ function DashboardOverview() {
 
 		fetchProfile();
 
-		return () => {
-			isMounted = false;
-		};
+		// return () => {
+		// 	isMounted = false;
+		// };
 	}, [userSessionInfo?.id, isAuthenticated, setUserProfile]);
 
 
@@ -62,8 +66,16 @@ function DashboardOverview() {
 
 	return (
 		<div className={""}>
-			<div className={"w-full h-16 flex justify-center items-center "}>
+			<div className={"w-full h-16 flex justify-center items-center relative"}>
 				<Typography weight={'semibold'} size={'h5'}>Tổng quan</Typography>
+				<Tooltip label="Đăng xuất" color={"var(--main-color)"}>
+					<button
+						onClick={logout}
+						className={"absolute right-2 w-10 h-10 flex items-center justify-center text-teal-600 rounded-md transition-all hover:!bg-teal-100"}>
+						<LogOut />
+						{/*Đăng xuất*/}
+					</button>
+				</Tooltip>
 			</div>
 			<Divider my="0" />
 			{isLoading ? (
@@ -84,7 +96,7 @@ function DashboardOverview() {
 								<Avatar w={100} h={100} src={userProfile?.avatar} alt={userProfile?.username} />
 							</Indicator>
 							<div className={"flex flex-col items-start"}>
-								<Label label={userSessionInfo.role === "user" ? 'Quản lý:' : "Nhân viên:"} position={'left'}>
+								<Label label={userSessionInfo?.role === "user" ? 'Quản lý:' : "Nhân viên:"} position={'left'}>
 									<Typography weight={'semibold'} size={'content'}>{userProfile?.username}</Typography>
 								</Label>
 								<Label label={'Email:'} position={'left'}>
