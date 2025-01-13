@@ -20,11 +20,7 @@ export default function UserSettingForm() {
 	const {profile} = useProfile();
 	const {showErrorToast, showSuccessToast} = useToast();
 
-	if (!profile) {
-		return null;
-	}
-
-	const [file, setFile] = useState<File | null>(null)
+	const [file, setFile] = useState<File | null>(null);
 	const [imageURL, setImageURL] = useState<string | null>(null);
 	const [uploading, setUploading] = useState<boolean>(false);
 
@@ -52,8 +48,14 @@ export default function UserSettingForm() {
 	};
 
 	useEffect(() => {
-		form.reset(profile);
+		if (profile) {
+			form.reset(profile);
+		}
 	}, [profile]);
+
+	if (!profile) {
+		return null;
+	}
 
 	return (
 		<Stack>
