@@ -109,6 +109,7 @@ const PharmacyInfo: React.FC<{ branchId?: string }> = ({ branchId }) => {
 				<Stack h={"100%"} gap={0} className={"bg-white pt-5"}>
 					{tabs.map((tab) => (
 						<div
+							key={'tab-' + tab.key}
 							className={cn(
 								"px-5 py-3 cursor-pointer group border-r-4 ",
 								{

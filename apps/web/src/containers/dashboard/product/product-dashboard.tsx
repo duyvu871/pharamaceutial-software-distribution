@@ -252,7 +252,7 @@ export default function ProductDashboard({branchId, type}: {branchId: string, ty
 								<Table striped highlightOnHover>
 									<Table.Thead role={'rowgroup'}>
 										<Table.Tr>
-											<Table.Th className="bg-white sticky top-0 w-12">
+											<Table.Th className="bg-white sticky z-[1000] top-0 w-12">
 												<input
 													type="checkbox"
 													className="rounded border-gray-300"
@@ -260,9 +260,9 @@ export default function ProductDashboard({branchId, type}: {branchId: string, ty
 													onChange={toggleSelectAll}
 												/>
 											</Table.Th>
-											<Table.Th className="bg-white sticky top-0 whitespace-nowrap">#</Table.Th>
+											<Table.Th className="bg-white sticky top-0 z-[1000] whitespace-nowrap">#</Table.Th>
 											{tableRenderData.map((data, index) => (
-												<Table.Th key={`th-${data.title}`} className="bg-white sticky top-0 whitespace-nowrap">{data.title}</Table.Th>
+												<Table.Th key={`th-${data.title}`} className="bg-white sticky top-0 z-[1000] whitespace-nowrap">{data.title}</Table.Th>
 											))}
 										</Table.Tr>
 									</Table.Thead>

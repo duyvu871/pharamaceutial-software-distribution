@@ -8,6 +8,8 @@ import { ProfileProvider } from '@provider/profile-provider.tsx';
 import { DashboardProvider } from '@provider/dashboard-provider.tsx';
 import MainLayout from '@layout/main-layout.tsx';
 import HeaderBarLayout from '@layout/header-bar-layout.tsx';
+import FeatureComingSoon from '@container/updating/feature-coming-soon.tsx';
+
 type PageProps = {
 	params: {
 		branchId: string;

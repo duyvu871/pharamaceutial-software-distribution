@@ -42,6 +42,8 @@ export default function TabSectionBase({tabRender, targetPath, classNames, tabKe
 	const currentPath = usePathname() as string;
 	const tabsParam = searchParams?.get(tabKey || "tab") || defaultTab || tabRender[0].key;
 
+	console.log("TabSectionBase", tabsParam, currentPath, targetPath);
+
 	return (
 		<CenterBox
 			className={"flex-1 bg-zinc-100 h-full overflow-hidden"}

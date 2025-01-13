@@ -39,9 +39,12 @@ export async function middleware(req: NextRequest) {
 	}
 
 	const path = req.nextUrl.pathname;
-	const isProtectedRoute = protectedRoutes.includes(path);
-	const isPublicRoute = publicRoutes.includes(path);
+	const isProtectedRoute = protectedRoutes.some(route => path.startsWith(route))// protectedRoutes.includes(path);
+	const isPublicRoute = !isProtectedRoute//publicRoutes.includes(path);
 
+	if (isPublicRoute) {
+		return NextResponse.next(initialRequest);
+	}
 
 	const cookie = cookies().get('accessToken')?.value;
 	// const refreshToken = cookies().get('refreshToken')?.value;

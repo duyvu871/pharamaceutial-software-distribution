@@ -6,10 +6,10 @@ import AppLayout from '@layout/app-layout.tsx';
 
 export default function Page(): JSX.Element {
   return (
-    <RefreshCookieAuthProvider>
+    // <RefreshCookieAuthProvider>
       <AppLayout>
         <Home />
       </AppLayout>
-    </RefreshCookieAuthProvider>
+    // </RefreshCookieAuthProvider>
   );
 }

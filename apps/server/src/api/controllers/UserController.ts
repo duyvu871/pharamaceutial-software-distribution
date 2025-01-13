@@ -63,7 +63,7 @@ export class UserController {
 							is_active: user.is_active,
 							last_login: user.last_login?.toISOString() || null,
 							permission: user.permission,
-							branches: user.branches.map(branch => ({ id: branch.branch_id, name: branch.branch_name })), // Map dữ liệu branch
+							branches: user.branches, // Map dữ liệu branch
 						};
 					} else if (jwtPayload?.type === 'MEMBERSHIP') {
 						const membership = await prisma.memberships.findUnique({
@@ -76,12 +76,12 @@ export class UserController {
 							phone_number: membership.phone_number || null,
 							username: membership.username,
 							email: membership.email || null,
-							age: null,
-							address: null,
+							age: membership.age,
+							address: membership.address,
 							avatar: membership.avatar || null,
 							notes: membership.notes || null,
 							is_active: membership.employee_status === 'active',
-							last_login: null,
+							last_login: membership.last_login,
 							permission: membership.permission,
 							branches: membership.branches ? [membership.branches] : [], // Map dữ liệu branch
 						};
