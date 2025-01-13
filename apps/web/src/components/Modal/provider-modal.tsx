@@ -11,8 +11,8 @@ import { ProviderForm } from '@component/Form/provider-form.tsx';
 import { Provider } from '@schema/provider-schema.ts';
 
 export function ProviderModal(
-	{ children, branchId, data }:
-		{ children: React.ReactNode; branchId?: string; data?: Provider; }
+	{ children, branchId, data, onSubmit }:
+		{ children: React.ReactNode; branchId?: string; data?: Provider; onSubmit?: (data: Provider) => void }
 ) {
 	const [opened, { open, close }] = useDisclosure(false);
 
@@ -28,7 +28,7 @@ export function ProviderModal(
 				}
 				size="xl"
 			>
-				<ProviderForm data={data} />
+				<ProviderForm data={data} onSubmit={onSubmit} />
 			</Modal>
 			<div className={'cursor-pointer flex justify-center items-center'} onClick={open}>
 				{children}

@@ -28,6 +28,7 @@ import { ImportController } from 'controllers/ImportController.ts';
 import { ImportValidation } from 'validations/ImportValidation.ts';
 import { importRoute } from 'server/api/routes/import.ts';
 import { uploadRouter } from 'server/api/routes/upload.ts';
+import { ProviderValidation } from 'validations/Provider.ts';
 
 const apiRouter = Router();
 const pageRouter = Router();
@@ -175,8 +176,14 @@ apiRouter.route('/product/:branchId/upload/image').post(
 // Provider routes
 apiRouter.route('/provider/:branchId').get(
   ...authChain,
+  validateParams(BranchValidation.branchIdParam),
   validateQuery(PaginationValidation.paginationQuery),
   ProviderController.getProviders);
+apiRouter.route('/provider/:branchId').post(
+  ...authChain,
+  validateParams(BranchValidation.branchIdParam),
+  validateBody(ProviderValidation.createProvider),
+  ProviderController.createProvider);
 
 
 // Invoice routes

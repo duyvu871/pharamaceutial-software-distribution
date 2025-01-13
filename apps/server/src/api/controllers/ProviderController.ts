@@ -6,6 +6,8 @@ import prisma from 'repository/prisma.ts';
 import { Prisma } from '@repo/orm';
 import { BranchIdParam } from 'validations/Branch.ts';
 import { ProviderAttributes, ProviderSchema } from 'repository/provider/schema.ts';
+import { UserTask } from 'repository/user';
+import { StoreTask } from 'repository/store/task.ts';
 
 export class ProviderController {
 	public static getProviders = AsyncMiddleware.asyncHandler(
@@ -63,8 +65,35 @@ export class ProviderController {
 	public static createProvider = AsyncMiddleware.asyncHandler(
 		async (req: Request, res: Response) => {
 			try {
-				const provider = await prisma.providers.create({ data: req.body });
-				const response = new Success(provider).toJson;
+				const {id, ...upsertData} = req.body;
+				// removedUndefined.branch_id = req.params.branchId;
+				// removedUndefined.employee_status = 'active';
+				const branchId = req.params.branchId;
+				const storeFromBranch = await StoreTask.getStoreFromBranch(branchId);
+				const storeId = storeFromBranch?.id;
+				if (!storeId) {
+					throw new BadRequest('store_not_found', 'Store not found', 'Store not found');
+				}
+
+				let providerUpsert;
+
+				if (!id) {
+					providerUpsert = await prisma.providers.create({
+						data: {
+							...upsertData,
+							storeId
+						}
+					});
+				} else {
+					providerUpsert = await prisma.providers.update({
+						where: { id },
+						data: {
+							...upsertData,
+						}
+					});
+				}
+
+				const response = new Success(providerUpsert).toJson;
 				return res.status(201).json(response).end();
 			} catch (error: any) {
 				console.error(`Error creating provider: ${error.message}`);
@@ -77,6 +106,7 @@ export class ProviderController {
 		async (req: Request<{ id: string }>, res: Response) => {
 			try {
 				const { id } = req.params;
+
 				const updated = await prisma.providers.update({
 					where: { id: id },
 					data: req.body

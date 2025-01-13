@@ -19,3 +19,16 @@ export const getUserProfile = async (userId: any): Promise<ProfilePayloadType | 
 		return null;
 	}
 }
+
+export const updateUserProfile = async (userId: string, data: ProfilePayloadType): Promise<ProfilePayloadType> => {
+	try {
+		const response = await axiosWithAuth.post<SuccessResponse<ProfilePayloadType>>(`/user/profile`, {
+			...data,
+			id: userId
+		});
+		return response.data.data
+	} catch (error: any) {
+		console.error('Error updating user profile:', error);
+		throw new Error(error.ressponse.data.errorDescription || 'Cập nhật thông tin người dùng thất bại');
+	}
+}

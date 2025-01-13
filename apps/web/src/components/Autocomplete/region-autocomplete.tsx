@@ -9,6 +9,11 @@ import { useSearch } from '@hook/common/use-search.ts';
 type RegionAutocompleteProps = {
 	makeOptional?: boolean | { tinh?: boolean, huyen?: boolean, xa?: boolean };
 	setValue?: (value: { tinh: string, huyen: string, xa: string }) => void;
+	clearField?: {
+		tinh?: boolean;
+		huyen?: boolean;
+		xa?: boolean;
+	};
 };
 
 type RegionState = {
@@ -25,7 +30,7 @@ const searchConfig = {
 	minMatchCharLength: 0,
 }
 
-function RegionAutocomplete({ makeOptional, setValue}: RegionAutocompleteProps) {
+function RegionAutocomplete({ makeOptional, setValue, clearField}: RegionAutocompleteProps) {
 	const [tinh, setTinh] = useState<RegionState>({ value: '', ref: '', id: '', });
 	const [huyen, setHuyen] = useState<RegionState>({ value: '', ref: '', id: '', });
 	const [xa, setXa] = useState<RegionState>({ value: '', id: '', });
@@ -98,6 +103,18 @@ function RegionAutocomplete({ makeOptional, setValue}: RegionAutocompleteProps) 
 			xa: xa.value,
 		});
 	}, [tinh, huyen, xa]);
+
+	useEffect(() => {
+		if (clearField?.tinh) {
+			setTinh({ value: '', ref: '', id: '', });
+		}
+		if (clearField?.huyen) {
+			setHuyen({ value: '', ref: '', id: '', });
+		}
+		if (clearField?.xa) {
+			setXa({ value: '', id: '', });
+		}
+	}, [clearField]);
 
 	return (
 		<>
