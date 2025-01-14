@@ -14,7 +14,7 @@ import { useAuth } from '@hook/auth';
 import { getUserProfile, updateUserProfile } from '@api/user.ts';
 import { useProfile } from '@hook/dashboard/use-profile.ts';
 import { Image } from '@mantine/core';
-import UploadButton from '../../Button/upload-button.tsx';
+import UploadButton from '@component/Button/upload-button.tsx';
 import { uploadImage } from '@api/upload.ts';
 
 export default function UserSettingForm() {

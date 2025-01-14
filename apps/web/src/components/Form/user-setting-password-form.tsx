@@ -14,7 +14,7 @@ import { useAuth } from '@hook/auth';
 import { getUserProfile, resetPassword } from '@api/user.ts';
 import { useProfile } from '@hook/dashboard/use-profile.ts';
 import { Image } from '@mantine/core';
-import UploadButton from '../../Button/upload-button.tsx';
+import UploadButton from '@component/Button/upload-button.tsx';
 import { z } from 'zod';
 
 const userPasswordSchema = z.object({
