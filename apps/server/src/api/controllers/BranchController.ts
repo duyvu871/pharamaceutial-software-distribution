@@ -11,7 +11,7 @@ import {
 	CreateBranchBody,
 	GetBranchesQuery,
 	UpsertBranchIntegrationBody, UpsertBranchRewardPointBody,
-	UpsertPaymentBody,
+	UpsertPaymentBody, UpsertPharmacyDetailBody,
 } from 'validations/Branch.ts';
 import BadRequest from 'server/responses/clientErrors/BadRequest';
 import path from 'node:path';
@@ -311,6 +311,75 @@ export class BranchController {
 				return res.status(200).json(response).end();
 			} catch (error) {
 				console.error(`Error upserting branch reward point: ${error.message}`);
+				throw error;
+			}
+		}
+	)
+
+	public static upsertPharmacyDetail = AsyncMiddleware.asyncHandler(
+		async (req: Request<BranchIdParam, any, UpsertPharmacyDetailBody>, res: Response) => {
+			try {
+				const {
+					so_dang_ky,
+					ten_nha_thuoc,
+					loai_hinh,
+					tinh,
+					huyen,
+					dia_chi,
+					nguoi_dai_dien,
+					nguoi_chiu_trach_nhiem,
+					nguoi_chiu_trach_nhiem_chuyen_mon,
+					so_chung_chi_hanh_nghe,
+				} = req.body;
+				const { branchId } = req.params;
+
+				const upsertPharmacyDetail = await prisma.branch_details.upsert({
+					where: { branch_id: branchId },
+					update: {
+						so_dang_ky,
+						ten_nha_thuoc,
+						loai_hinh,
+						tinh,
+						huyen,
+						dia_chi,
+						nguoi_dai_dien,
+						nguoi_chiu_trach_nhiem,
+						nguoi_chiu_trach_nhiem_chuyen_mon,
+						so_chung_chi_hanh_nghe,
+					},
+					create: {
+						branch_id: branchId,
+						so_dang_ky,
+						ten_nha_thuoc,
+						loai_hinh,
+						tinh,
+						huyen,
+						dia_chi,
+						nguoi_dai_dien,
+						nguoi_chiu_trach_nhiem,
+						nguoi_chiu_trach_nhiem_chuyen_mon,
+						so_chung_chi_hanh_nghe,
+					}
+				});
+
+				const response = new Success(upsertPharmacyDetail).toJson;
+				return res.status(200).json(response).end();
+			} catch (error) {
+				console.error(`Error upserting pharmacy detail: ${error.message}`);
+				throw error;
+			}
+		}
+	)
+
+	public static getPharmacyDetail = AsyncMiddleware.asyncHandler(
+		async (req: Request<BranchIdParam>, res: Response) => {
+			try {
+				const { branchId } = req.params;
+				const pharmacyDetail = await prisma.branch_details.findFirst({ where: { branch_id: branchId } });
+				const response = new Success(pharmacyDetail).toJson;
+				return res.status(200).json(response).end();
+			} catch (error) {
+				console.error(`Error getting pharmacy detail: ${error.message}`);
 				throw error;
 			}
 		}

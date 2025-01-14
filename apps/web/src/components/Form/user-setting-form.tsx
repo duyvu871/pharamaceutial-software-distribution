@@ -11,7 +11,7 @@ import { currentBranchAtom } from '@store/state/overview/branch.ts';
 import { UserSettingPayloadType, userSettingSchema } from '@schema/user-schema.ts';
 import { Loader2, Upload } from 'lucide-react';
 import { useAuth } from '@hook/auth';
-import { getUserProfile } from '@api/user.ts';
+import { getUserProfile, updateUserProfile } from '@api/user.ts';
 import { useProfile } from '@hook/dashboard/use-profile.ts';
 import { Image } from '@mantine/core';
 import UploadButton from '../../Button/upload-button.tsx';
@@ -20,6 +20,7 @@ import { uploadImage } from '@api/upload.ts';
 export default function UserSettingForm() {
 	const {branchId} = useDashboard();
 	const {profile} = useProfile();
+	const {userSessionInfo} = useAuth();
 	const {showErrorToast, showSuccessToast} = useToast();
 
 	const [file, setFile] = useState<File | null>(null);
@@ -40,35 +41,6 @@ export default function UserSettingForm() {
 		}
 	});
 
-	const handleSubmit = (values: UserSettingPayloadType) => {
-		setSubmitting(true);
-		console.log(values);
-		// Xử lý submit form ở đây
-		setTimeout(() => {
-			showSuccessToast('Cập nhật thông tin người dùng thành công');
-			setSubmitting(false);
-		}, 2000);
-	};
-
-	const handleUpload = async () => {
-		if (!file) {
-			return;
-		}
-
-		setUploading(true);
-		uploadImage(file, branchId, 'avatar')
-			.then((asset) => {
-				if (asset) {
-					form.setValue('avatar', asset.url);
-					setImageURL(asset.url);
-				}
-			})
-		setTimeout(() => {
-			showSuccessToast('Cập nhật ảnh đại diện thành công');
-			setUploading(false);
-		}, 2000);
-	}
-
 	useEffect(() => {
 		if (profile) {
 			form.reset(profile);
@@ -83,8 +55,54 @@ export default function UserSettingForm() {
 		}
 	}, [file]);
 
-	if (!profile) {
-		return null;
+	if (!profile) return null;
+	if (!userSessionInfo) return null;
+
+	const handleSubmit = async (values: UserSettingPayloadType) => {
+		setSubmitting(true);
+		console.log(values);
+		updateUserProfile(profile.id, userSessionInfo.role as "membership"|"user", {
+			username: values.username || profile.username || undefined,
+			email: values.email || profile.email || undefined,
+			phone_number: values.phone_number || profile.phone_number || undefined,
+			age: values.age || profile.age || undefined,
+			address: values.address || profile.address || undefined,
+			avatar: values.avatar || profile.avatar || undefined,
+		})
+			.then(() => {
+				setTimeout(() => {
+					showSuccessToast('Cập nhật thông tin người dùng thành công');
+					setSubmitting(false);
+				}, 1000);
+			})
+			.catch((error) => {
+				showErrorToast(error.message);
+				setSubmitting(false);
+			});
+
+	};
+
+	const handleUpload = async () => {
+		if (!file) {
+			return;
+		}
+
+		setUploading(true);
+		const uploadAvatar = await uploadImage(file, branchId, 'avatar');
+		if (uploadAvatar) {
+			form.setValue('avatar', uploadAvatar.url);
+			setImageURL(uploadAvatar.url);
+			const avatarUpdate = await updateUserProfile(profile.id, userSessionInfo.role as "membership"|"user", {
+				avatar: uploadAvatar.url
+			});
+			setTimeout(() => {
+				showSuccessToast('Cập nhật ảnh đại diện thành công');
+				setUploading(false);
+			}, 1000);
+		} else {
+			showErrorToast('Cập nhật ảnh đại diện thất bại');
+			setUploading(false);
+		}
 	}
 
 	return (
@@ -104,6 +122,7 @@ export default function UserSettingForm() {
 							<TextInput
 								label="Tên người dùng"
 								placeholder="Nhập tên người dùng"
+								defaultValue={profile.username}
 								{...form.register('username')}
 								error={form.formState.errors.username?.message}
 							/>
@@ -111,6 +130,7 @@ export default function UserSettingForm() {
 							<TextInput
 								label="Email"
 								placeholder="example@email.com"
+								defaultValue={profile.email}
 								{...form.register('email')}
 								error={form.formState.errors.email?.message}
 							/>
@@ -119,6 +139,7 @@ export default function UserSettingForm() {
 								<TextInput
 									label="Số điện thoại"
 									placeholder="0123456789"
+									defaultValue={profile.phone_number}
 									{...form.register('phone_number')}
 									error={form.formState.errors.phone_number?.message}
 								/>
@@ -129,9 +150,11 @@ export default function UserSettingForm() {
 									render={({ field }) => (
 										<NumberInput
 											label="Tuổi"
+											defaultValue={profile.age}
 											placeholder="Nhập tuổi"
 											{...field}
-											onChange={(value) => field.onChange(value)}
+											onChange={(value) => field.onChange(Number(value))}
+											value={field.value || '0'}
 											error={form.formState.errors.age?.message}
 										/>
 									)}
@@ -142,6 +165,7 @@ export default function UserSettingForm() {
 							<TextInput
 								label="Địa chỉ"
 								placeholder="Nhập địa chỉ"
+								defaultValue={profile.address}
 								{...form.register('address')}
 								error={form.formState.errors.address?.message}
 							/>

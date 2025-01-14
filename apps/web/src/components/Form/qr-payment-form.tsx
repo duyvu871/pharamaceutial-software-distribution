@@ -87,7 +87,7 @@ export default function QRSupportForm() {
 
 					<Group grow>
 						<Button
-							color="teal"
+							color="var(--main-color)"
 							mt="sm"
 							maw={200}
 							onClick={handleSaveQRSupport}
@@ -103,7 +103,7 @@ export default function QRSupportForm() {
 							}
 						</Button>
 						<UploadButton
-							color="teal"
+							color="var(--main-color)"
 							mt="sm"
 							maw={200}
 							accept={'image/*'}

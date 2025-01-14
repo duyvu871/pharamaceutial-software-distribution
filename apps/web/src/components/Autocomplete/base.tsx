@@ -192,12 +192,13 @@ function AutocompleteSearch<T>({
 				<Popover.Target>
 					<TextInput
 						label={label}
-						value={searchTerm}
 						onChange={handleChange}
 						placeholder={placeholder}
 						onFocus={() => setPopoverOpened(true)}
 						onBlur={() => setTimeout(() => setPopoverOpened(false), 200)}
 						rightSection={isSearching && <Loader size="xs" />}
+						value={searchTerm}
+						defaultValue={"ok"}
 						{...inputProps}
 					/>
 				</Popover.Target>

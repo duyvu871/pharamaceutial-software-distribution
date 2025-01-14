@@ -46,6 +46,15 @@ apiRouter.route('/user/profile').get(
   ...authChain,
   validateQuery(UserValidation.profileQuery),
   UserController.getProfile);
+apiRouter.route('/user/profile').post(
+  ...authChain,
+  validateBody(UserValidation.updateProfile),
+  UserController.updateProfile);
+apiRouter.route('/user/reset-password').post(
+  ...authChain,
+  validateBody(UserValidation.resetPassword),
+  UserController.resetPassword);
+
 
 // Branch route
 apiRouter.route('/branch/create').post(
@@ -100,6 +109,17 @@ apiRouter.route('/branch/:branchId/upsert-reward-point').post(
   validateBody(BranchValidation.upsertBranchRewardPointBody),
   BranchController.upsertBranchRewardPoint
 );
+apiRouter.route('/branch/:branchId/upsert-pharmacy-detail').post(
+  ...authChain,
+  validateParams(BranchValidation.branchIdParam),
+  validateBody(BranchValidation.upsertPharmacyDetailBody),
+  BranchController.upsertPharmacyDetail
+)
+apiRouter.route('/branch/:branchId/get-pharmacy-detail').get(
+  ...authChain,
+  validateParams(BranchValidation.branchIdParam),
+  BranchController.getPharmacyDetail
+)
 
 // Autocomplete route
 apiRouter.route('/autocomplete/product').get(

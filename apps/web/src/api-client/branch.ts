@@ -99,23 +99,23 @@ export const getBranchIntegration = async (branchId: string) => {
 	}
 }
 
-export const upsertBranchDetail = async (branchId: string, data: Partial<BranchDetails>) => {
+export const upsertBranchDetail = async (branchId: string, data: Partial<BranchDetails>): Promise<BranchDetails> => {
 	try {
-		const response = await axiosWithAuth.post<SuccessResponse<BranchDetails>>(`/branch/${branchId}/upsert-detail`, {
+		const response = await axiosWithAuth.post<SuccessResponse<BranchDetails>>(`/branch/${branchId}/upsert-pharmacy-detail`, {
 			...data,
 		});
 		return response.data.data;
 	} catch (error: any) {
-		return error.response?.data;
+		throw new Error(error.response?.data.errorDescription || 'Lỗi khi lưu thông tin chi nhánh');
 	}
 }
 
-export const getBranchDetail = async (branchId: string) => {
+export const getBranchDetail = async (branchId: string): Promise<BranchDetails | null> => {
 	try {
-		const response = await axiosWithAuth.get<SuccessResponse<BranchDetails>>(`/branch/${branchId}/get-detail`);
+		const response = await axiosWithAuth.get<SuccessResponse<BranchDetails>>(`/branch/${branchId}/get-pharmacy-detail`);
 		return response.data.data;
 	} catch (error: any) {
-		return error.response?.data;
+		throw new Error(error.response?.data.errorDescription || 'Lỗi khi lấy thông tin chi nhánh');
 	}
 }
 
