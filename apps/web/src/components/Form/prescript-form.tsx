@@ -318,7 +318,7 @@ export default function PrescriptionForm({onSubmit, modalProps}: PrescriptionFor
 					/>
 					<Group justify="flex-end" pt="md" className="border-t">
 						<Button onClick={() => {
-							setPrescriptionSale(null)
+							// setPrescriptionSale(null)
 							modalProps?.onClose && modalProps.onClose()
 						}} variant="outline" type="button" color="teal">
 							Hủy bỏ

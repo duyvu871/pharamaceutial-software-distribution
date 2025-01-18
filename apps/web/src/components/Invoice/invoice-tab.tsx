@@ -425,7 +425,7 @@ function InvoiceTab() {
 									{prescriptionSale ? (
 										<p>
 											<span className="font-semibold">Bác sĩ: </span>
-											{doctorSelected?.ten_bac_si} - {doctorSelected?.doctor_id}
+											{doctorSelected[activeTab]?.ten_bac_si} - {doctorSelected[activeTab]?.doctor_id}
 										</p>
 									) : null}
 								</div>

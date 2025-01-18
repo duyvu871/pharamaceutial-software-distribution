@@ -7,6 +7,8 @@ import { ProfileProvider } from '@provider/profile-provider.tsx';
 import { DashboardProvider } from '@provider/dashboard-provider.tsx';
 import RetailDashboard from '@container/dashboard/sale/retail-dashboard.tsx';
 import FeatureComingSoon from '@container/updating/feature-coming-soon.tsx';
+import DoctorDashboard from '@container/dashboard/partner/doctor-dashboard.tsx';
+import ReportDay from '@container/dashboard/partner/reportDay';
 
 type PageProps = {
 	params: {
@@ -29,7 +31,7 @@ const Page = (
 					>
 						<MainLayout>
 							<HeaderBarLayout>
-								<FeatureComingSoon/>
+								<ReportDay />
 							</HeaderBarLayout>
 						</MainLayout>
 					</DashboardProvider>

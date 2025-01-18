@@ -21,8 +21,14 @@ import {
 import { DateInput, DatePickerInput, DateValue } from '@mantine/dates'
 import { IconCalendar, IconPlus, IconSearch } from '@tabler/icons-react'
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
-import { invoiceActiveTabAtom, prescriptionActionAtom, prescriptionDoctorAtom, prescriptionSaleAtom } from '@store/state/overview/invoice.ts';
-import {useAtomValue, useSetAtom} from "jotai"
+import {
+	invoiceActionAtom,
+	invoiceActiveTabAtom,
+	prescriptionActionAtom,
+	prescriptionDoctorAtom,
+	prescriptionSaleAtom,
+} from '@store/state/overview/invoice.ts';
+import {useAtom, useAtomValue, useSetAtom} from "jotai"
 import {
 	PrescriptionCreationSchema,
 	prescriptionCreationSchema,
@@ -66,6 +72,8 @@ export default function PrescriptionFormV1({onSubmit, modalProps}: PrescriptionF
 	})
 	// const setPrescriptionSale = useSetAtom(prescriptionSaleAtom)
 	// const setDoctor = useSetAtom(prescriptionDoctorAtom)
+	const [invoices, invoiceDispatch] = useAtom(invoiceActionAtom);
+
 	const invoiceActiveTab = useAtomValue(invoiceActiveTabAtom)
 	const prescriptionAction = useSetAtom(prescriptionActionAtom)
 	const prescriptions = useAtomValue(prescriptionSaleAtom)
@@ -95,6 +103,14 @@ export default function PrescriptionFormV1({onSubmit, modalProps}: PrescriptionF
 			type: "update",
 			data: data
 		});
+
+		invoiceDispatch({
+			type: "update",
+			id: invoiceActiveTab,
+			invoice: {
+				isPrescriptionSale: true,
+			}
+		})
 		onSubmit && onSubmit(data)
 		console.log(data);
 	}
