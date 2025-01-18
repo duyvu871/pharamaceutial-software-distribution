@@ -21,12 +21,16 @@ import { getDoctors, upsertDoctor } from '@api/doctor.ts';
 import { Label } from '@component/label';
 import { useFilterString } from '@hook/client/use-filter-string.ts';
 import { CiSearch } from "react-icons/ci";
+import { InvoiceType, PrescriptionCreationSchema, PrescriptionSchema } from '@schema/invoice-schema.ts';
 
 type DashboardContextType = {
 	activeModal: () => void;
 	updateDoctor: (doctor: DoctorCreationSchema) => Promise<void>;
 	reset: () => void;
 }
+
+type Schema = DoctorSchema & {invoice_prescriptions: (PrescriptionSchema & {invoices: InvoiceType})[]};
+type CreationSchema = DoctorCreationSchema;
 
 export const DoctorDashBoardContext = createContext<DashboardContextType>({
 	activeModal: () => {},
@@ -69,20 +73,20 @@ const DoctorDashboardToolBox = () => {
 
 export default function DoctorDashboard() {
 	const { branchId } = useDashboard();
-	const [data, setData] = useState<DoctorSchema[]>([]);
+	const [data, setData] = useState<Schema[]>([]);
 	const [total, setTotal] = useState<number>(0);
 	const [page, setPage] = useState<number>(1);
 	const [perPage, setPerPage] = useState<number>(10);
-	const search = useFilterString<DoctorSchema>('');
-	const filter = useFilterString<DoctorSchema>('');
-	const orderBy = useFilterString<DoctorSchema>('doctor_id:desc');
+	const search = useFilterString<Schema>('');
+	const filter = useFilterString<Schema>('');
+	const orderBy = useFilterString<Schema>('doctor_id:desc');
 	// const [activeAction]
 	const [visibleActionOverlay, { toggle, close: closeActionOverLay, open: openActionOverlay }] = useDisclosure(false);
 	const [visibleMainOverlay, { close: closeMainOverlay, open: openMainOverlay }] = useDisclosure(false);
 
 
 	const [opened, { open, close }] = useDisclosure(false);
-	const [doctorActiveDetail, setDoctorActiveDetail] = useState<DoctorSchema | null>(null);
+	const [doctorActiveDetail, setDoctorActiveDetail] = useState<Schema | null>(null);
 
 	const [isUpdating, setIsUpdating] = useState<boolean>(false);
 	const [detailOpen, setDetailOpen] = useState<string | null>(null);
@@ -94,7 +98,7 @@ export default function DoctorDashboard() {
 
 	const {showErrorToast, showSuccessToast, showInfoToast, showWarningToast} = useToast();
 
-	const updateOrCreateDoctor = useCallback(async (doctor: DoctorCreationSchema) => {
+	const updateOrCreateDoctor = useCallback(async (doctor: CreationSchema) => {
 		try {
 			setIsUpdating(true);
 			openActionOverlay();
@@ -144,7 +148,7 @@ export default function DoctorDashboard() {
 		className: 'text-zinc-600'
 	}
 
-	const rowAction: ActionItemRender<DoctorSchema>[] = [
+	const rowAction: ActionItemRender<Schema>[] = [
 		{
 			label: (doctor) =>
 				<Group gap={5}>
@@ -215,7 +219,7 @@ export default function DoctorDashboard() {
 		}
 	]
 
-	const ActionButton = ({data}: {data: DoctorSchema}) => {
+	const ActionButton = ({data}: {data: Schema}) => {
 		const [opened, setOpened] = useState<boolean>(false);
 
 		return (
@@ -310,7 +314,7 @@ export default function DoctorDashboard() {
 		)
 	}
 
-	const tableData: TableRender<DoctorSchema> = [
+	const tableData: TableRender<Schema> = [
 		{
 			title: "Mã bác sĩ",
 			render: (data) => data.doctor_id
@@ -411,7 +415,7 @@ export default function DoctorDashboard() {
 					maw={"70vw"}
 				>
 					<LoadingOverlay visible={visibleActionOverlay} zIndex={1000} overlayProps={{ radius: "sm", blur: 2 }} />
-					{<DoctorDetail detail={doctorActiveDetail} submit={updateOrCreateDoctor} />}
+					{<DoctorDetail<Schema> detail={doctorActiveDetail} submit={updateOrCreateDoctor} />}
 				</Modal>
 				<EnterpriseResourcePlanningTable<DoctorSchema>
 					name={"Danh sách bác sĩ"}

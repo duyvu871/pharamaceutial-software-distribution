@@ -92,7 +92,7 @@ model branch_details {
 model consumers {
   id             String                 @id @default(uuid()) @db.Uuid
   branch_id      String                 @db.Uuid
-  consumer_id    String                @db.VarChar(255)
+  consumer_id    String                 @db.VarChar(255)
   revenue        BigInt?                @default(0)
   debit          BigInt?                @default(0)
   consumer_name  String                 @db.VarChar(255)
@@ -395,31 +395,32 @@ model clinics {
 }
 
 model doctors {
-  id             String         @id @default(uuid()) @db.Uuid
+  id             String    @id @default(uuid()) @db.Uuid
   doctor_id      String
-  branch_id      String         @db.Uuid
-  specialization String?        @db.VarChar(255)
-  email          String?        @db.VarChar(255)
-  status         Int            @default(1)
-  chuyen_khoa    String         @db.VarChar(255)
-  dia_chi        String         @db.VarChar(255)
-  sdt            String         @db.VarChar(255)
-  ghi_chu        String?        @db.VarChar(255)
-  is_active      Boolean        @default(true)
-  is_deleted     Boolean        @default(false)
-  loai_so_quy    Int            @default(0)
-  noi_cong_tac   String         @db.VarChar(255)
-  ten_bac_si     String         @db.VarChar(255)
-  ten_slug       String         @db.VarChar(255)
-  trinh_do       String         @db.VarChar(255)
-  created_at     DateTime       @default(now()) @db.Timestamptz(6)
-  updated_at     DateTime       @default(now()) @db.Timestamptz(6)
-  deleted_at     DateTime?      @db.Timestamptz(6)
-  branch         branches       @relation(fields: [branch_id], references: [branch_id])
-  stores         stores?        @relation(fields: [storesId], references: [id])
-  storesId       String?        @db.Uuid
+  branch_id      String    @db.Uuid
+  specialization String?   @db.VarChar(255)
+  email          String?   @db.VarChar(255)
+  status         Int       @default(1)
+  chuyen_khoa    String    @db.VarChar(255)
+  dia_chi        String    @db.VarChar(255)
+  sdt            String    @db.VarChar(255)
+  ghi_chu        String?   @db.VarChar(255)
+  is_active      Boolean   @default(true)
+  is_deleted     Boolean   @default(false)
+  loai_so_quy    Int       @default(0)
+  noi_cong_tac   String    @db.VarChar(255)
+  ten_bac_si     String    @db.VarChar(255)
+  ten_slug       String    @db.VarChar(255)
+  trinh_do       String    @db.VarChar(255)
+  created_at     DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime  @default(now()) @db.Timestamptz(6)
+  deleted_at     DateTime? @db.Timestamptz(6)
+  branch         branches  @relation(fields: [branch_id], references: [branch_id])
+  stores         stores?   @relation(fields: [storesId], references: [id])
+  storesId       String?   @db.Uuid
 
   @@index([branch_id])
+  invoice_prescriptions invoice_prescriptions[]
 }
 
 model providers {
@@ -598,33 +599,34 @@ model point_transactions {
 }
 
 model invoices {
-  id                 String    @id @default(uuid()) @db.Uuid
-  branchId           String    @db.Uuid
-  saleDate           DateTime  @db.Date
-  saleTime           String
-  customerName       String?
-  customerId         String?   @db.Uuid
-  priceList          String?
-  isPrescriptionSale Boolean?
-  vat                Float     @default(0)
-  totalPrice         Float
-  discount           Float     @default(0)
-  amountDue          Float
-  amountPaid         Float     @default(0)
-  debit              Float     @default(0)
-  notes              String?
-  autoPrintInvoice   Boolean?
-  printBatchNumber   Boolean?
-  userType           UserType?
-  userId             String?
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
-  items        invoice_items[]
-  otherCharges other_charges[]
+  id                    String                  @id @default(uuid()) @db.Uuid
+  invoice_id            String?                 @db.VarChar(255)
+  branchId              String                  @db.Uuid
+  saleDate              DateTime                @db.Date
+  saleTime              String
+  customerName          String?
+  customerId            String?                 @db.Uuid
+  priceList             String?
+  isPrescriptionSale    Boolean?
+  vat                   Float                   @default(0)
+  totalPrice            Float
+  discount              Float                   @default(0)
+  amountDue             Float
+  amountPaid            Float                   @default(0)
+  debit                 Float                   @default(0)
+  notes                 String?
+  autoPrintInvoice      Boolean?
+  printBatchNumber      Boolean?
+  userType              UserType?
+  userId                String?
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+  items                 invoice_items[]
+  otherCharges          other_charges[]
   invoice_prescriptions invoice_prescriptions[]
 
-  branches     branches        @relation(fields: [branchId], references: [branch_id])
-  customers    consumers?      @relation(fields: [customerId], references: [id])
+  branches  branches   @relation(fields: [branchId], references: [branch_id])
+  customers consumers? @relation(fields: [customerId], references: [id])
 
   @@index([branchId])
   @@index([saleDate])
@@ -633,31 +635,33 @@ model invoices {
 }
 
 model invoice_prescriptions {
-  id          String   @id @default(uuid()) @db.Uuid
-  invoiceId   String   @db.Uuid
+  id              String    @id @default(uuid()) @db.Uuid
+  invoiceId       String    @db.Uuid
   prescription_id String
-  ma_don_thuoc String
-  ngay_ke     DateTime
-  bac_si_id   String
-  co_so_kham  String
-  chuan_doan  String?
-  benh_nhan   String
-  ngay_sinh   DateTime?
-  nam_sinh    Int?
-  tuoi        Int?
-  thang_tuoi       Int?
-  can_nang    Float?
-  dia_chi     String?
-  nguoi_giam_ho String?
-  cmnd        String?
-  dien_thoai  String?
-  the_bhyt    String?
-  gioi_tinh   Int
+  ma_don_thuoc    String
+  ngay_ke         DateTime
+  bac_si_id       String    @db.Uuid
+  co_so_kham      String
+  chuan_doan      String?
+  benh_nhan       String
+  ngay_sinh       DateTime?
+  nam_sinh        Int?
+  tuoi            Int?
+  thang_tuoi      Int?
+  can_nang        Float?
+  dia_chi         String?
+  nguoi_giam_ho   String?
+  cmnd            String?
+  dien_thoai      String?
+  the_bhyt        String?
+  gioi_tinh       Int
 
-  created_at   DateTime @default(now()) @db.Timestamptz(6)
-  updated_at   DateTime @default(now()) @db.Timestamptz(6)
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @default(now()) @db.Timestamptz(6)
 
   invoices invoices @relation(fields: [invoiceId], references: [id])
+  doctor  doctors  @relation(fields: [bac_si_id], references: [id])
+
   @@map("invoice_prescriptions")
 }
 
@@ -688,6 +692,8 @@ model other_charges {
 
   @@map("other_charges")
 }
+
+
 
 // Product assets (images, videos, etc.)
 // This table is used to store the relationship between a product and its assets

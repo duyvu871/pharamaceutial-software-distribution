@@ -5,7 +5,7 @@ import { PaginationQueryV2 } from 'validations/Pagination.ts';
 import { transformExpressParamsForPrisma } from 'server/shared/pagination-parse.ts';
 import prisma from 'repository/prisma';
 import Success from 'responses/successful/Success.ts';
-import { DoctorCreation } from 'validations/Doctor.ts';
+import { DoctorCreation, DoctorIdParam } from 'validations/Doctor.ts';
 import { toLowerCaseNonAccentVietnamese } from 'utils/non-acent-vietnam.ts';
 
 export default class DoctorController {
@@ -28,9 +28,61 @@ export default class DoctorController {
 						branch_id: branchId,
 						...queryParse.where,
 					},
+					include: {
+						invoice_prescriptions: {
+							take: 10,
+							include: {
+								invoices: {
+									include: {
+										items: true
+									}
+								}
+							}
+						},
+					}
 				});
 				const response = new Success({
 					data: doctors,
+					total,
+					page: Number(req.query.page),
+					totalPage: Math.ceil(total / Number(req.query.limit || 10)),
+				}).toJson;
+
+				res.status(200).json(response).end();
+			} catch (error) {
+				throw error;
+			}
+		}
+	)
+
+	public static getDoctorInvoicePrescriptions = AsyncMiddleware.asyncHandler(
+		async (req: Request<BranchIdParam & DoctorIdParam, any, any, PaginationQueryV2>, res: Response) => {
+			try {
+				const branchId = req.params.branchId;
+				const doctorId = req.params.doctorId;
+				const protectAttributes = ["branch_id"];
+				const queryParse = transformExpressParamsForPrisma("invoice_prescriptions", req.query, prisma);
+				const total = await prisma.invoice_prescriptions.count({
+					where: {
+						invoice: {
+							branch_id: branchId,
+							doctor_id: doctorId,
+						},
+						...queryParse.where,
+					},
+				});
+				const invoicePrescriptions = await prisma.invoice_prescriptions.findMany({
+					...queryParse,
+					where: {
+						invoice: {
+							branch_id: branchId,
+							doctor_id: doctorId,
+						},
+						...queryParse.where,
+					},
+				});
+				const response = new Success({
+					data: invoicePrescriptions,
 					total,
 					page: Number(req.query.page),
 					totalPage: Math.ceil(total / Number(req.query.limit || 10)),

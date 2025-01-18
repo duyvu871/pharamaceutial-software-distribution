@@ -66,7 +66,6 @@ export default function PrescriptionFormV1({onSubmit, modalProps}: PrescriptionF
 			dia_chi: '',
 			nguoi_giam_ho: '',
 			cmnd: '',
-			dien_thoai: '',
 			the_bhyt: '',
 		}
 	})
@@ -564,6 +563,7 @@ export default function PrescriptionFormV1({onSubmit, modalProps}: PrescriptionF
 									placeholder="Nhập số điện thoại"
 									error={error?.message}
 									{...field}
+									required
 									onChange={(e) => {
 										setValue('dien_thoai', e.target.value)
 										prescriptionAction({

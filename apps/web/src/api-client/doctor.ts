@@ -1,7 +1,7 @@
 import axiosWithAuth from '@lib/axios.ts';
 import { Pagination, SuccessResponse } from '@type/api/response.ts';
 import { DoctorCreationSchema, DoctorSchema } from '@schema/doctor-schema.ts';
-import { InvoiceWithPrescriptionType } from '@schema/invoice-schema.ts';
+import { InvoiceType, InvoiceWithPrescriptionType, PrescriptionSchema } from '@schema/invoice-schema.ts';
 
 export const getDoctors = async (filter: {
 	branchId: string;
@@ -16,7 +16,7 @@ export const getDoctors = async (filter: {
 		if (!filter.branchId) {
 			throw new Error('Branch ID is required');
 		}
-		const response = await axiosWithAuth.get<SuccessResponse<Pagination<DoctorSchema>>>(`/doctor/${filter.branchId}`, {
+		const response = await axiosWithAuth.get<SuccessResponse<Pagination<DoctorSchema & {invoice_prescriptions: (PrescriptionSchema & {invoices: InvoiceType})[]}>>>(`/doctor/${filter.branchId}`, {
 			params: {
 				page: filter.page,
 				pageSize: filter.limit,

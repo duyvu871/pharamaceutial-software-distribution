@@ -43,6 +43,25 @@ interface InvoiceCreateInput {
 		name: string;
 		value: number;
 	}[];
+	prescription?: {
+		ma_don_thuoc: string;
+		ngay_ke: Date;
+		bac_si_id: string;
+		co_so_kham: string;
+		chuan_doan?: string;
+		benh_nhan: string;
+		ngay_sinh?: Date;
+		nam_sinh?: number;
+		tuoi?: number;
+		thang_tuoi?: number;
+		can_nang?: number;
+		dia_chi?: string;
+		nguoi_giam_ho?: string;
+		cmnd?: string;
+		dien_thoai?: string;
+		the_bhyt?: string;
+		gioi_tinh: number;
+	}
 }
 export class SalesInvoiceTask {
 	public static async createInvoiceWithStockUpdate(invoiceData: InvoiceCreateInput) {
@@ -184,9 +203,16 @@ export class SalesInvoiceTask {
 					}
 				}
 
+				const count = await tx.invoices.count({
+					where: {
+						branchId: invoiceData.branchId
+					}
+				});
+
 				//  Create invoice
 				const createdInvoice = await tx.invoices.create({
 					data: {
+						invoice_id: "HD" + (count + 1).toString().padStart(6, "0"),
 						branchId: invoiceData.branchId,
 						saleDate: invoiceData.saleDate,
 						saleTime: invoiceData.saleTime,
@@ -229,6 +255,7 @@ export class SalesInvoiceTask {
 
 				console.log(`Created invoice ${createdInvoice.id}`);
 
+				// update stock for each product
 				for (const item of invoiceData.items) {
 					if(item.id) {
 						const product = await tx.products.findUniqueOrThrow({
@@ -256,6 +283,23 @@ export class SalesInvoiceTask {
 							console.log(`Updated stock for product ${item.productName} to ${newQuantity}`);
 						}
 					}
+				}
+
+				if (invoiceData.isPrescriptionSale && invoiceData.prescription) {
+					const count = await tx.invoice_prescriptions.count({
+						where: {
+							invoices: {
+								branchId: invoiceData.branchId
+							}
+						}
+					})
+					const prescription = await tx.invoice_prescriptions.create({
+							data: {
+								prescription_id: "DT" + (count + 1).toString().padStart(6, "0"),
+								invoiceId: createdInvoice.id,
+								...invoiceData.prescription,
+							}
+					});
 				}
 
 				return createdInvoice;

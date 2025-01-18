@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 export const invoiceSchema = z.object({
+	invoice_id: z.string().optional(),
 	branchId: z.string().refine(val => val.length > 0, {
 		message: "Chi nhánh là bắt buộc"
 	}).refine(val => typeof val === 'string', {

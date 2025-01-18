@@ -283,7 +283,7 @@ function InvoiceTab() {
 		}
 		if (invoices[activeTab]?.invoiceData?.amountPaid === 0) {}
 
-		const submit = await submitInvoice(invoice);
+		const submit = await submitInvoice(invoice, prescriptionSale[activeTab]);
 		console.log('submit', submit);
 		if (!submit) {
 			showErrorToast('Thanh toán thất bại');

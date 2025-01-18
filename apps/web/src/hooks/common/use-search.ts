@@ -22,11 +22,11 @@ export function useSearch<T extends Record<string, string>>
 		return fuse.search(query).map((result) => result.item);
 	}, [query, fuse]);
 
-	const queryResults = useCallback((query: string): T[] => {
+	const queryResults = useCallback((query: string) => {
 		const search = fuse.search(query);
 		// console.log(search);
 		return search.map((result) => result.item);
-	}, [fuse]);
+	}, [fuse]) as T[];
 
 	return {
 		query: queryResults,

@@ -1,6 +1,7 @@
 import { InvoiceState } from '@store/state/overview/invoice.ts';
 import axiosWithAuth from '@lib/axios.ts';
 import { SuccessResponse } from '@type/api/response.ts';
+import { PrescriptionCreationSchema } from '@schema/invoice-schema.ts';
 
 export interface InvoiceResponse {
 	id: string
@@ -50,14 +51,17 @@ export interface InvoiceResponse {
 	}
 }
 
-export const submitInvoice = async (data: InvoiceState) => {
+export const submitInvoice = async (data: InvoiceState, prescription?: PrescriptionCreationSchema) => {
 	try {
 		const invoicePayload = data.invoiceData;
 		if (!invoicePayload.branchId) {
 			console.error('Branch ID is required');
 			return false;
 		}
-		const response = await axiosWithAuth.post(`/invoice/${invoicePayload.branchId}`, invoicePayload);
+		const response = await axiosWithAuth.post(`/invoice/${invoicePayload.branchId}`, {
+			...invoicePayload,
+			...(invoicePayload.isPrescriptionSale && prescription ? { prescription } : {}),
+		});
 		return response.data.data;
 	} catch (error: any) {
 		console.error(`Error submitting invoice: ${error.message}`);

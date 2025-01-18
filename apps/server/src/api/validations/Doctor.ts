@@ -28,6 +28,11 @@ export class DoctorValidation {
 		ten_slug: z.string().optional(),
 		trinh_do: z.string(),
 	})
+
+	public static doctorIdParam = z.object({
+		doctorId: z.string(),
+	})
 }
 
 export type DoctorCreation = z.infer<typeof DoctorValidation.doctorCreation>;
+export type DoctorIdParam = z.infer<typeof DoctorValidation.doctorIdParam>;

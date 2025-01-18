@@ -86,13 +86,14 @@ function DoctorAutocomplete({makeOptional, setValue, clearField, defaultValue, v
 					close={closeModal}
 				/>
 			</div>
-			<AutocompleteSearch<ProverState>
+			<AutocompleteSearch<DoctorSchema>
 				// label="Nhà cung cấp"
 				placeholder="Nhập tên bác sĩ"
 				onSearch={async term => {
 					const searchTerm = `'${term.trim().split(' ').join(' \'')}`;
 					console.log(searchTerm);
-					return providerQuery(searchTerm);
+					const query = providerQuery(searchTerm);
+					return query;
 				}}
 				data={providerStore}
 				getItemValue={item => item.name}

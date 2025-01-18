@@ -45,6 +45,41 @@ export class InvoiceValidation {
 			}),
 			note: z.string().optional(),
 		})),
+		prescription: z.object({
+			ma_don_thuoc: z.string().optional(), // Mã đơn thuốc (bắt buộc)
+			ngay_ke: z.string({
+				message: 'Ngày kê đơn là bắt buộc'
+			}).datetime({
+				message: 'Ngày kê đơn không hợp lệ'
+			}),        // Ngày kê đơn (bắt buộc)
+			bac_si_id: z.string({
+				message: 'Bác sĩ là bắt buộc'
+			}),    // ID bác sĩ (bắt buộc)
+			co_so_kham: z.string({
+				message: 'Cơ sở khám là bắt buộc'
+			}),   // Cơ sở khám (bắt buộc)
+			chuan_doan: z.string().optional(), // Chuẩn đoán (tuỳ chọn)
+			benh_nhan: z.string({
+				message: 'Bệnh nhân là bắt buộc'
+			}),    // Bệnh nhân (bắt buộc)
+			ngay_sinh: z.date().optional(),    // Ngày sinh (tuỳ chọn)
+			nam_sinh: z.number().int().optional(), // Năm sinh (tuỳ chọn, số nguyên)
+			tuoi: z.number().int().optional(),     // Tuổi (tuỳ chọn, số nguyên)
+			thang_tuoi: z.number().int().optional(), // Tháng tuổi (tuỳ chọn, số nguyên)
+			can_nang: z.number().optional(),      // Cân nặng (tuỳ chọn, số thực)
+			dia_chi: z.string({
+				message: 'Địa chỉ là bắt buộc'
+			}),       // Địa chỉ (tuỳ chọn)
+			nguoi_giam_ho: z.string({
+				message: 'Người giám hộ là bắt buộc'
+			}), // Người giám hộ (tuỳ chọn)
+			cmnd: z.string().optional(),          // CMND (tuỳ chọn)
+			dien_thoai: z.string()
+				.regex(/((09|03|07|08|05)+([0-9]{8})\b)/g, { message: 'Số điện thoại không hợp lệ' })
+				.optional(),    // Điện thoại (tuỳ chọn)
+			the_bhyt: z.string().optional(),      // Thẻ BHYT (tuỳ chọn)
+			gioi_tinh: z.number().int()
+		})
 	})
 
 	public static updateInvoice = this.createInvoice.partial();

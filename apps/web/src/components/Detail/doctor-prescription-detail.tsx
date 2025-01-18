@@ -24,7 +24,10 @@ import { AddCustomerModal } from '@component/Modal/add-new-consumer.tsx';
 import { upsertMembership } from '@api/membership.ts';
 import { CreationMembershipSchema } from '@schema/membership-schema.ts';
 import { createConsumer, getConsumerList, getConsumerListV2 } from '@api/consumer.ts';
+import { InvoiceType, PrescriptionCreationSchema, PrescriptionSchema } from '@schema/invoice-schema.ts';
 
+import dayjs from 'dayjs';
+dayjs().locale('vi')
 
 type DashboardContextType = {
 	activeModal: () => void;
@@ -36,10 +39,10 @@ export const SchemaDashBoardContext = createContext<DashboardContextType>({
 	update: async () => {}
 });
 
-const idKey = 'consumer_id';
+const idKey = 'invoice_id';
 
-type Schema = ConsumerAttributes;
-type CreationSchema = ConsumerCreationAttributes;
+type Schema = (PrescriptionSchema & {invoices: InvoiceType});
+type CreationSchema = PrescriptionCreationSchema;
 
 const DoctorDashboardToolBox = () => {
 	const {activeModal} = useContext(SchemaDashBoardContext);
@@ -74,9 +77,9 @@ const DoctorDashboardToolBox = () => {
 	)
 }
 
-export default function ConsumerDashboardV1() {
+export default function DoctorPrescriptionDetail({prescriptions}: {prescriptions: Schema[]}) {
 	const { branchId } = useDashboard();
-	const [data, setData] = useState<Schema[]>([]);
+	const [data, setData] = useState<Schema[]>([...prescriptions]);
 	const [total, setTotal] = useState<number>(0);
 	const [page, setPage] = useState<number>(1);
 	const [perPage, setPerPage] = useState<number>(10);
@@ -186,50 +189,26 @@ export default function ConsumerDashboardV1() {
 		)
 	}
 
-	const tableData: TableRender<ConsumerAttributes> = [
+	const tableData: TableRender<Schema> = [
 		{
-			title: 'Tên khách hàng',
-			render: (consumer) => consumer.consumer_name
+			title: 'Mã hóa đơn',
+			render: (model) => model.invoices.invoice_id
 		},
 		{
-			title: 'Số điện thoại',
-			render: (consumer) => consumer.phone_number
+			title: 'Ngày kê',
+			render: (model) => dayjs(model.invoices.saleDate).format('DD/MM/YYYY HH:mm:ss')
 		},
 		{
-			title: 'Email',
-			render: (consumer) => consumer.consumer_email
+			title: 'Khách hàng',
+			render: (model) => model.invoices.consumerName,
 		},
 		{
-			title: 'Tích điểm',
-			render: (consumer) =>  (
-				<Typography weight={"semibold"} className={"text-blue-500"}>
-					{consumer.point}
-				</Typography>
-			)
+			title: 'Bệnh nhân',
+			render: (model) => model.benh_nhan
 		},
 		{
-			title: 'Tổng doanh số',
-			render: (consumer) => (
-				<Typography className={cn(`font-semibold ${Number(consumer.revenue) > 0 ? 'text-green-600' : 'text-zinc-700'}`)}>
-					{Number(consumer.revenue).toLocaleString('vi-VN')} ₫
-				</Typography>
-			)
-		},
-		{
-			title: 'Nợ',
-			render: (consumer) => (
-				<Typography className={cn(`font-semibold ${Number(consumer.debit) > 0 ? 'text-red-400' : 'text-zinc-700'}`)}>
-					{Number(consumer.debit).toLocaleString('vi-VN')} ₫
-				</Typography>
-			)
-		},
-		{
-			title: 'Giới tính',
-			render: (consumer) => consumer.gender ? genderVi[consumer.gender] : ""
-		},
-		{
-			title: 'Địa chỉ',
-			render: (consumer) => consumer.address
+			title: 'Cơ sở khám bệnh',
+			render: (consumer) => consumer.co_so_kham
 		},
 		{
 			title: "Hành động",
@@ -250,21 +229,21 @@ export default function ConsumerDashboardV1() {
 	}, [opened]);
 
 	useEffect(() => {
-		getConsumerListV2({
-			branchId,
-			page: page,
-			limit: perPage,
-			filterBy: filter,
-			searchFields: search,
-			orderBy: orderBy
-		})
-			.then((paginate) => {
-				setTotal(paginate.total);
-				setData(paginate.data);
-			})
-			.catch((error) => {
-				showErrorToast(error.message);
-			})
+		// getConsumerListV2({
+		// 	branchId,
+		// 	page: page,
+		// 	limit: perPage,
+		// 	filterBy: filter,
+		// 	searchFields: search,
+		// 	orderBy: orderBy
+		// })
+		// 	.then((paginate) => {
+		// 		setTotal(paginate.total);
+		// 		setData(paginate.data);
+		// 	})
+		// 	.catch((error) => {
+		// 		showErrorToast(error.message);
+		// 	})
 	}, [branchId, filter, search, page, perPage, orderBy]);
 
 	return (
@@ -291,7 +270,7 @@ export default function ConsumerDashboardV1() {
 				render={data}
 				filter={[]}
 				total={total}
-				toolBox={<DoctorDashboardToolBox />}
+				// toolBox={<DoctorDashboardToolBox />}
 				getItem={(page, limit) => {
 					page && setPage(page);
 					limit && setPerPage(limit);
