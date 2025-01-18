@@ -1,8 +1,9 @@
 import { atom } from 'jotai';
-import { InvoiceType, PrescriptionFormData } from '@schema/invoice-schema.ts';
+import { InvoiceType, PrescriptionCreationSchema, PrescriptionFormData } from '@schema/invoice-schema.ts';
 import { v4 as uuidV4, v1 as uuid} from 'uuid';
 import { generateTimeBasedId } from '@util/uid.ts';
 import { CurrentRewardPointSchema, RewardPointSchema } from '@schema/reward-point-schema.ts';
+import { DoctorSchema } from '@schema/doctor-schema.ts';
 
 export type InvoiceState = {
 	id: string;
@@ -82,6 +83,9 @@ export const invoiceActionAtom = atom(
 				invoiceData: defaultInvoice,
 			}
 
+			// add new prescription tab with the same id as the invoice
+			set(prescriptionActionAtom, { type: 'add', id: newTab.id});
+
 			set(invoiceAtom, {
 				...currentInvoice,
 				[newTab.id]: newTab,
@@ -92,6 +96,10 @@ export const invoiceActionAtom = atom(
 		else if (action.type === 'remove') {
 			const { id } = action;
 			const { [id]: removed, ...rest } = currentInvoice;
+
+			// remove prescription tab with the same id as the invoice
+			set(prescriptionActionAtom, { type: 'remove', id });
+
 			set(invoiceHistoryAtom, [
 				...get(invoiceHistoryAtom),
 				{
@@ -376,7 +384,112 @@ export const calculateInvoicePrice = (
 	};
 };
 
-export const prescriptionSaleAtom = atom<PrescriptionFormData | null>(null);
+const defaultPrescription: PrescriptionCreationSchema = {
+	ma_don_thuoc: '',
+	ngay_ke: new Date(),
+	bac_si_id: '',
+	co_so_kham: '',
+	chuan_doan: '',
+	benh_nhan: '',
+	nam_sinh: 0,
+	tuoi: 0,
+	thang_tuoi: 0,
+	can_nang: 0,
+	gioi_tinh: 0,
+	dia_chi: '',
+	nguoi_giam_ho: '',
+	cmnd: '',
+	dien_thoai: '',
+	the_bhyt: '',
+}
+
+const defaultDoctor: DoctorSchema = {
+	id: '',
+	ten_bac_si: '',
+	doctor_id: "",
+	noi_cong_tac: "",
+	chuyen_khoa: "",
+	trinh_do: "",
+	sdt: "",
+	email: "",
+	dia_chi: "",
+	ghi_chu: "",
+	status: 1,
+	is_active: true,
+	ten_slug: "",
+	is_deleted: false,
+	loai_so_quy: 0,
+	created_at: new Date().toLocaleDateString(),
+	updated_at: new Date().toLocaleDateString(),
+}
+
+// invoice sale prescription
+export const prescriptionSaleAtom = atom<Record<string, PrescriptionCreationSchema>>({
+	[defaultInvoiceState.id]: defaultPrescription,
+});
+// doctor prescription
+export const prescriptionDoctorAtom = atom<Record<string, DoctorSchema>>({
+	[defaultInvoiceState.id]: defaultDoctor,
+});
+
+// prescription action
+// prescription sale and doctor are in the same tab and depend on the active tab
+export const prescriptionActionAtom = atom(
+	(get) => get(prescriptionSaleAtom),
+	(
+		get,
+		set,
+		action:
+			| { type: 'add'; id?: string; }
+			| { type: 'remove'; id: string }
+			| { type: 'update'; id?: string; data: Partial<PrescriptionCreationSchema> }
+			| { type: 'update-doctor'; id?: string; data: Partial<DoctorSchema> }
+	) => {
+		const currentPrescription = get(prescriptionSaleAtom);
+		const currentDoctor = get(prescriptionDoctorAtom);
+		const currentActiveTab = get(invoiceActiveTabAtom);
+		const currentId = action.id || currentActiveTab;
+		if (action.type === 'add') {
+			const { id } = action;
+			set(prescriptionSaleAtom, {
+				...currentPrescription,
+				[currentId]: defaultPrescription,
+			});
+			set(prescriptionDoctorAtom, {
+				...currentDoctor,
+				[currentId]: defaultDoctor,
+			})
+		}
+		else if (action.type === 'remove') {
+			const { id } = action;
+			const { [id]: removed, ...rest } = currentPrescription;
+			const { [id]: removedDoctor, ...restDoctor } = currentDoctor;
+			set(prescriptionSaleAtom, rest);
+			set(prescriptionDoctorAtom, restDoctor);
+		}
+		else if (action.type === 'update') {
+			const { id, data } = action;
+			set(prescriptionSaleAtom, {
+				...currentPrescription,
+				[currentId]: {
+					...currentPrescription[currentId],
+					...data,
+				},
+			});
+		}
+		else if (action.type === 'update-doctor') {
+			const { id, data } = action;
+			set(prescriptionDoctorAtom, {
+				...currentDoctor,
+				[currentId]: {
+					...currentDoctor[currentId],
+					...data,
+				},
+			});
+		}
+	}
+);
+
 
 export const rewardPointAtom = atom<RewardPointSchema | null>(null);
 export const currentRewardPointAtom = atom<CurrentRewardPointSchema | null>(null);

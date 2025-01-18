@@ -29,6 +29,7 @@ import { ImportValidation } from 'validations/ImportValidation.ts';
 import { importRoute } from 'server/api/routes/import.ts';
 import { uploadRouter } from 'server/api/routes/upload.ts';
 import { ProviderValidation } from 'validations/Provider.ts';
+import { doctorRoute } from 'server/api/routes/doctor.ts';
 
 const apiRouter = Router();
 const pageRouter = Router();
@@ -234,6 +235,7 @@ apiRouter.route('/invoice/:branchId/delete/:invoiceId').delete(
 apiRouter.use(storeRouter);
 apiRouter.use(importRoute);
 apiRouter.use(uploadRouter);
+apiRouter.use(doctorRoute);
 
 export default {
     apiRoutes: apiRouter,

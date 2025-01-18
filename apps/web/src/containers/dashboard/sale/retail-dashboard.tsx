@@ -39,22 +39,22 @@ function RetailDashboard({branchId}: {branchId: string}) {
 						<InvoiceTab />
 					</Box>
 				</Stack>
-				<Box pos="fixed" bottom={0} left={0} className={"block"}>
-					<PrescriptModal>
-						<Button
-							variant="filled"
-							// color="teal"
-							className="!rounded-none !rounded-tr-xl !bg-teal-500 hover:!bg-teal-600 text-white"
-							radius="none"
-							size="lg"
-						>
-									<span className="flex items-center gap-2">
-										<FileText />
-										<span>Bán thuốc theo đơn</span>
-									</span>
-						</Button>
-					</PrescriptModal>
-				</Box>
+				{/*<Box pos="fixed" bottom={0} left={0} className={"block"}>*/}
+				{/*	<PrescriptModal>*/}
+				{/*		<Button*/}
+				{/*			variant="filled"*/}
+				{/*			// color="teal"*/}
+				{/*			className="!rounded-none !rounded-tr-xl !bg-teal-500 hover:!bg-teal-600 text-white"*/}
+				{/*			radius="none"*/}
+				{/*			size="lg"*/}
+				{/*		>*/}
+				{/*					<span className="flex items-center gap-2">*/}
+				{/*						<FileText />*/}
+				{/*						<span>Bán thuốc theo đơn</span>*/}
+				{/*					</span>*/}
+				{/*		</Button>*/}
+				{/*	</PrescriptModal>*/}
+				{/*</Box>*/}
 			</CenterBox>
 	)
 }

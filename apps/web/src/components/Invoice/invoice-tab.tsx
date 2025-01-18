@@ -1,9 +1,14 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { MoneyInput } from '@component/money-input.tsx';
-import { Divider, FileInput, NumberInput, ScrollArea, Table, Textarea, Image, Switch, Checkbox, Select, Combobox, useCombobox, Button, Group } from '@mantine/core';
-import { ChevronDown, FileText, Phone, Plus, Search, X } from 'lucide-react';
+import { Divider, FileInput, NumberInput, ScrollArea, Table, Textarea, Image, Switch, Checkbox, Select, Combobox, useCombobox, Button, Group, Box, Stack } from '@mantine/core';
+import { ChevronDown, ChevronUp, FileText, Phone, Plus, Search, X } from 'lucide-react';
 import { useUID } from '@hook/common/useUID.ts';
-import { invoiceActionAtom, invoiceActiveTabActionAtom, prescriptionSaleAtom } from '@store/state/overview/invoice.ts';
+import {
+	invoiceActionAtom,
+	invoiceActiveTabActionAtom,
+	prescriptionDoctorAtom,
+	prescriptionSaleAtom,
+} from '@store/state/overview/invoice.ts';
 import { useAtom, useAtomValue } from 'jotai';
 import { SearchProductType } from '@schema/autocomplete.ts';
 import { InvoiceType } from '@schema/invoice-schema.ts';
@@ -23,6 +28,8 @@ import { DateInput, DateTimePicker } from '@mantine/dates';
 import { useRewardPoint } from '@hook/dashboard/sale/use-reward-point';
 import { getConsumerRewardPoint } from '@api/consumer.ts';
 import { CurrentRewardPointSchema } from '@schema/reward-point-schema.ts';
+import { cn } from '@lib/tailwind-merge.ts';
+import PrescriptionFormV1 from '@component/Form/prescript-form-v1.tsx';
 
 type InvoiceItemProps = {
 	product: InvoiceType['items'][number];
@@ -164,10 +171,10 @@ function InvoiceTab() {
 
 	const {showErrorToast} = useToast();
 
-
 	// const [consumerPayment, setConsumerPayment] = useState<number>(0);
 	const [branchDetail] = useAtom(currentBranchAtom);
 	const prescriptionSale = useAtomValue(prescriptionSaleAtom)
+	const doctorSelected = useAtomValue(prescriptionDoctorAtom)
 
 	const [invoices, invoiceDispatch] = useAtom(invoiceActionAtom);
 	const [activeTab, activeTabDispatch] = useAtom(invoiceActiveTabActionAtom);
@@ -175,6 +182,7 @@ function InvoiceTab() {
 
 	const [autoprint, setAutoprint] = useState(false)
 	const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+	const [openPrescription, setOpenPrescription] = useState<boolean>(false);
 
 	const [vat, setVat] = useState<number>(0);
 
@@ -187,6 +195,7 @@ function InvoiceTab() {
 	const [customer, setCustomer] = useState<{name:string, id:string}>({name: '', id: ''});
 	const [qrURL, setQrURL] = useState<string | null>(null);
 	const [notes, setNotes] = useState<string>('');
+
 
 	const notesDebounce = useDebounce(notes, 500);
 
@@ -264,19 +273,6 @@ function InvoiceTab() {
 		});
 	}
 
-	// const setCustomer = (customer: {name:string, id:string}) => {
-	// 	if (!activeTab) {
-	// 		return;
-	// 	}
-	// 	invoiceDispatch({
-	// 		type: 'update',
-	// 		id: activeTab,
-	// 		invoice: {
-	// 			customerName: customer.name,
-	// 		}
-	// 	});
-	// }
-
 	const handleSubmit = async () => {
 		const invoice = invoices[activeTab];
 
@@ -322,7 +318,6 @@ function InvoiceTab() {
 				}
 			}
 		});
-		// console.log('branchId', branchId);
 	}, [branchId, userSessionInfo]);
 
 	useEffect(() => {
@@ -347,13 +342,6 @@ function InvoiceTab() {
 			})
 		}
 	}, [selectedDate]);
-
-	// useEffect(() => {
-	// 	const vatPrice = (totalPrice * vat) / 100;
-	// 	const total = totalPrice + vatPrice;
-	// 	// setTotalPrice(total);
-	// 	setAmountDue(total);
-	// }, [vat]);
 
 	useEffect(() => {
 		setSelectedDate(new Date());
@@ -399,9 +387,10 @@ function InvoiceTab() {
 
 	return (
 		<>
-			<ScrollArea pos={'relative'} id={'table'} className="flex flex-grow h-full overflow-hidden ">
-				{/* Main content area */}
-				<div className="w-full overflow-y-auto h-full">
+			<Stack h={"100%"} className={"flex-grow"}>
+				<ScrollArea pos={'relative'} id={'table'} className="flex flex-grow h-full overflow-hidden ">
+					{/* Main content area */}
+					<div className="w-full overflow-y-auto h-full relative">
 						<div className="hidden">
 							<div ref={componentRef}
 									 className="flex flex-col justify-start items-center p-5 w-full max-w-[21cm] mx-auto bg-white">
@@ -436,7 +425,7 @@ function InvoiceTab() {
 									{prescriptionSale ? (
 										<p>
 											<span className="font-semibold">Bác sĩ: </span>
-											{prescriptionSale.doctor}
+											{doctorSelected?.ten_bac_si} - {doctorSelected?.doctor_id}
 										</p>
 									) : null}
 								</div>
@@ -501,57 +490,60 @@ function InvoiceTab() {
 								</div>
 							</div>
 						</div>
-					<div className="w-full overflow-y-auto overflow-x-auto h-full p-4 bg-white rounded-md shadow">
-						<Table withTableBorder stickyHeader striped highlightOnHover verticalSpacing="md">
-							<Table.Thead>
-								<Table.Tr>
-									<Table.Th>STT</Table.Th>
-									<Table.Th>Tên sản phẩm</Table.Th>
-									<Table.Th>Đơn vị</Table.Th>
-									<Table.Th>Số lượng</Table.Th>
-									<Table.Th>Đơn giá</Table.Th>
-									<Table.Th>Thành tiền</Table.Th>
-									<Table.Th>Ghi Chú/Liều dùng</Table.Th>
-								</Table.Tr>
-							</Table.Thead>
-							<Table.Tbody>
-								{cartItems.map((product, index) => (
-									<InvoiceItem
-										key={product.id}
-										product={product}
-										index={index}
-										updateItemState={updateItemState}
-										removeItem={removeItem}
-									/>
-								))}
-							</Table.Tbody>
-						</Table>
+						<div className="w-full overflow-y-auto overflow-x-auto h-full p-4 bg-white rounded-md shadow">
+							<Table withTableBorder stickyHeader striped highlightOnHover verticalSpacing="md">
+								<Table.Thead>
+									<Table.Tr>
+										<Table.Th>STT</Table.Th>
+										<Table.Th>Tên sản phẩm</Table.Th>
+										<Table.Th>Đơn vị</Table.Th>
+										<Table.Th>Số lượng</Table.Th>
+										<Table.Th>Đơn giá</Table.Th>
+										<Table.Th>Thành tiền</Table.Th>
+										<Table.Th>Ghi Chú/Liều dùng</Table.Th>
+									</Table.Tr>
+								</Table.Thead>
+								<Table.Tbody>
+									{cartItems.map((product, index) => (
+										<InvoiceItem
+											key={product.id}
+											product={product}
+											index={index}
+											updateItemState={updateItemState}
+											removeItem={removeItem}
+										/>
+									))}
+								</Table.Tbody>
+							</Table>
+						</div>
 					</div>
+				</ScrollArea>
+				<div className={cn("h-[50%] bg-white relative transition-all", {
+					"h-[0px]": !openPrescription
+				})}>
+					<Box pos="absolute" top={0} left={0} className={"block translate-y-[-100%]"}>
+						<Button
+							variant="filled"
+							className="!rounded-none !rounded-tr-xl !bg-teal-500 hover:!bg-teal-600 text-white"
+							radius="none"
+							size="lg"
+							onClick={() => setOpenPrescription(!openPrescription)}
+						>
+							<span className="flex items-center gap-2">
+								<FileText />
+								<span>Bán thuốc theo đơn (F4)</span>
+								{openPrescription ? <ChevronDown /> : <ChevronUp />}
+							</span>
+						</Button>
+					</Box>
+					<PrescriptionFormV1 />
 				</div>
-			</ScrollArea>
+			</Stack>
+
 			<Divider size="xs" orientation="vertical" />
 			<ScrollArea id={'toolbox'} className="max-w-md w-full h-full bg-white p-4">
 				<div className="space-y-4 w-full">
-					{/*<div className="flex justify-between items-center">*/}
-					{/*	<input*/}
-					{/*		type="text"*/}
-					{/*		placeholder="ntphuchungduong"*/}
-					{/*		className="flex-1 p-2 border rounded"*/}
-					{/*	/>*/}
-					{/*	<input*/}
-					{/*		type="date"*/}
-					{/*		value={selectedDate?.toISOString().split('T')[0]}*/}
-					{/*		onChange={(e) => setSelectedDate(new Date(e.target.value))}*/}
-					{/*		className="w-32 p-2 border rounded"*/}
-					{/*	/>*/}
-					{/*	<span>12:55 CH</span>*/}
-					{/*</div>*/}
 					<div className="flex justify-between items-center">
-						{/*	<input*/}
-						{/*		type="text"*/}
-						{/*		placeholder="ntphuchungduong"*/}
-						{/*		className="flex-1 p-2 border rounded"*/}
-						{/*	/>*/}
 						<Typography weight={"semibold"}>Ngày bán hàng</Typography>
 						<DateTimePicker
 							value={selectedDate}
@@ -563,22 +555,6 @@ function InvoiceTab() {
 						{/*	<span>12:55 CH</span>*/}
 					</div>
 					<div className="relative">
-						{/*<input*/}
-						{/*	type="text"*/}
-						{/*	placeholder="Tìm khách hàng (F4)"*/}
-						{/*	className="w-full pl-10 pr-10 py-2 border rounded"*/}
-						{/*/>*/}
-						{/*<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />*/}
-						{/*<ConsumerAutocomplete setValue={({name, id}) => {*/}
-						{/*	// setCustomer({name, id});*/}
-						{/*	invoiceDispatch({*/}
-						{/*		type: 'update',*/}
-						{/*		id: activeTab || '',*/}
-						{/*		invoice: {*/}
-						{/*			customerName: name,*/}
-						{/*		}*/}
-						{/*	})*/}
-						{/*}} />*/}
 						<ConsumerSearchModal setSelectedConsumer={({ name, id }) => {
 							invoiceDispatch({
 								type: 'update',
@@ -596,12 +572,6 @@ function InvoiceTab() {
 							</button>
 						</AddCustomerModal>
 					</div>
-
-					{/*<button*/}
-					{/*	className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded flex justify-between items-center">*/}
-					{/*	Bảng giá chung*/}
-					{/*	<ChevronDown className="h-5 w-5" />*/}
-					{/*</button>*/}
 
 					<Group wrap={"nowrap"} justify={"space-between"}>
 						<label className="flex items-center space-x-2">
@@ -751,19 +721,6 @@ function InvoiceTab() {
 						</label>
 					</div>
 
-					{/*<div className={''}>*/}
-					{/*	<FileInput*/}
-					{/*		onChange={(file) => {*/}
-					{/*			const reader = new FileReader();*/}
-					{/*			reader.onload = (e) => {*/}
-					{/*				// qrURLRef.current = e.target?.result as string;*/}
-					{/*				setQrURL(e.target?.result as string);*/}
-					{/*			}*/}
-					{/*			if (file) reader.readAsDataURL(file);*/}
-					{/*		}}*/}
-					{/*		description={'Chọn file qr'}*/}
-					{/*	/>*/}
-					{/*</div>*/}
 					<button onClick={() => handleSubmit()}
 									className="w-full py-3 bg-teal-500 text-white rounded text-lg hover:bg-teal-600">
 						Thanh toán (F7)

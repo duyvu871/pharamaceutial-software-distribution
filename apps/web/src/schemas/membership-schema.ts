@@ -16,6 +16,7 @@ const vi = {
 
 export const membershipSchema = z.object({
 	id: z.string().optional(),
+	consumer_id: z.string().optional(),
 	first_name: z
 		.string({
 			required_error: vi.name_is_required,
@@ -62,6 +63,7 @@ export type CreationMembershipSchema = z.infer<typeof membershipSchema>
 
 export const payloadMembershipSchema = z.object({
 	id: z.string(),
+	consumer_id: z.string().optional(),
 	first_name: z.string({
 		required_error: vi.name_is_required,
 		invalid_type_error: vi.name_must_be_a_string

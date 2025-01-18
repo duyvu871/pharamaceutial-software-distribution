@@ -1,7 +1,8 @@
 import { ConsumerAttributes, ConsumerCreationAttributes } from '@schema/consumer-schema.ts';
 import axiosWithAuth from '@lib/axios.ts';
-import { SuccessResponse } from '@type/api/response.ts';
+import { Pagination, SuccessResponse } from '@type/api/response.ts';
 import { RewardPointResponse } from '@schema/reward-point-schema.ts';
+import { DoctorSchema } from '@schema/doctor-schema.ts';
 
 export const getConsumer = async (id: string): Promise<ConsumerAttributes> => {
 		try {
@@ -33,6 +34,35 @@ export const getConsumerList = async (
 		// throw error;
 		console.error(`Error fetching consumers: ${error.message}`);
 		return [];
+	}
+}
+
+export const getConsumerListV2 = async (filter: {
+	branchId: string;
+	page: number;
+	limit: number;
+	search?: string; // search by fts
+	searchFields?: string; // name:abc, name:def
+	orderBy?: string; // created_at:desc, created_at:asc
+	filterBy?: string; // status:1, status:0
+}) => {
+	try {
+		if (!filter.branchId) {
+			throw new Error('Branch ID is required');
+		}
+		const response = await axiosWithAuth.get<SuccessResponse<Pagination<ConsumerAttributes>>>(`/consumer/${filter.branchId}/get-consumer`, {
+			params: {
+				page: filter.page,
+				pageSize: filter.limit,
+				search: filter.search,
+				searchFields: filter.searchFields,
+				orderBy: filter.orderBy,
+				filterBy: filter.filterBy,
+			},
+		});
+		return response.data.data;
+	} catch (error) {
+		throw error;
 	}
 }
 

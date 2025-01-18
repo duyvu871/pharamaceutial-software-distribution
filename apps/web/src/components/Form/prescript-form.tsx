@@ -23,26 +23,6 @@ import { prescriptionSaleAtom } from '@store/state/overview/invoice.ts';
 import {useSetAtom} from "jotai"
 import { PrescriptionFormData, prescriptionSchema } from '@schema/invoice-schema.ts';
 
-// const prescriptionSchema = z.object({
-// 	prescriptionId: z.string(),
-// 	prescriptionDate: z.date({ required_error: 'Ngày kê đơn là bắt buộc' }),
-// 	doctor: z.string().min(1, { message: 'Bác sĩ kê đơn là bắt buộc' }),
-// 	facility: z.string().min(1, { message: 'Cơ sở khám bệnh là bắt buộc' }),
-// 	diagnosis: z.string(),
-// 	patientName: z.string().min(1, { message: 'Tên bệnh nhân là bắt buộc' }),
-// 	birthDate: z.date({ required_error: 'Ngày sinh là bắt buộc' }),
-// 	age: z.number().min(0),
-// 	ageMonths: z.number().min(0),
-// 	weight: z.number().positive({ message: 'Cân nặng phải lớn hơn 0' }),
-// 	gender: z.string().min(1, { message: 'Giới tính là bắt buộc' }),
-// 	address: z.string().min(1, { message: 'Địa chỉ là bắt buộc' }),
-// 	insuranceCard: z.string(),
-// 	phone: z.string(),
-// 	guardianInfo: z.string(),
-// })
-
-// type PrescriptionFormData = z.infer<typeof prescriptionSchema>
-
 export type PrescriptionFormProps = {
 	onSubmit?: (data: PrescriptionFormData) => void;
 	modalProps?: {
@@ -57,7 +37,7 @@ export default function PrescriptionForm({onSubmit, modalProps}: PrescriptionFor
 	})
 	const setPrescriptionSale = useSetAtom(prescriptionSaleAtom)
 	const submit = (data: PrescriptionFormData) => {
-		setPrescriptionSale(data)
+		// setPrescriptionSale(data)
 		onSubmit && onSubmit(data)
 	}
 
