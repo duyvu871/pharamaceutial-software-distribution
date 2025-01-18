@@ -1,3 +1,3 @@
 #!/bin/bash -ex
 
-pg_restore -U postgres -d quan_ly_nha_thuoc -h localhost -p 5432 -c -v ./backups/big_backup.sql
+pg_restore -U postgres -d postgres -h localhost -p 5432 -c -v ./backups/big_backup.sql
