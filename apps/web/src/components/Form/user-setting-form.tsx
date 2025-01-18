@@ -11,13 +11,16 @@ import { currentBranchAtom } from '@store/state/overview/branch.ts';
 import { UserSettingPayloadType, userSettingSchema } from '@schema/user-schema.ts';
 import { Loader2, Upload } from 'lucide-react';
 import { useAuth } from '@hook/auth';
-import { getUserProfile } from '@api/user.ts';
+import { getUserProfile, updateUserProfile } from '@api/user.ts';
 import { useProfile } from '@hook/dashboard/use-profile.ts';
 import { Image } from '@mantine/core';
-import UploadButton from '../../Button/upload-button.tsx';
+import UploadButton from '@component/Button/upload-button.tsx';
+import { uploadImage } from '@api/upload.ts';
 
 export default function UserSettingForm() {
+	const {branchId} = useDashboard();
 	const {profile} = useProfile();
+	const {userSessionInfo} = useAuth();
 	const {showErrorToast, showSuccessToast} = useToast();
 
 	const [file, setFile] = useState<File | null>(null);
@@ -38,23 +41,68 @@ export default function UserSettingForm() {
 		}
 	});
 
-	const handleSubmit = (values: UserSettingPayloadType) => {
-		setSubmitting(true);
-		console.log(values);
-		// Xử lý submit form ở đây
-		setTimeout(() => {
-			setSubmitting(false);
-		}, 2000);
-	};
-
 	useEffect(() => {
 		if (profile) {
 			form.reset(profile);
+			setImageURL(profile.avatar);
 		}
 	}, [profile]);
 
-	if (!profile) {
-		return null;
+	useEffect(() => {
+		if (file) {
+			const url = URL.createObjectURL(file);
+			setImageURL(url);
+		}
+	}, [file]);
+
+	if (!profile) return null;
+	if (!userSessionInfo) return null;
+
+	const handleSubmit = async (values: UserSettingPayloadType) => {
+		setSubmitting(true);
+		console.log(values);
+		updateUserProfile(profile.id, userSessionInfo.role as "membership"|"user", {
+			username: values.username || profile.username || undefined,
+			email: values.email || profile.email || undefined,
+			phone_number: values.phone_number || profile.phone_number || undefined,
+			age: values.age || profile.age || undefined,
+			address: values.address || profile.address || undefined,
+			avatar: values.avatar || profile.avatar || undefined,
+		})
+			.then(() => {
+				setTimeout(() => {
+					showSuccessToast('Cập nhật thông tin người dùng thành công');
+					setSubmitting(false);
+				}, 1000);
+			})
+			.catch((error) => {
+				showErrorToast(error.message);
+				setSubmitting(false);
+			});
+
+	};
+
+	const handleUpload = async () => {
+		if (!file) {
+			return;
+		}
+
+		setUploading(true);
+		const uploadAvatar = await uploadImage(file, branchId, 'avatar');
+		if (uploadAvatar) {
+			form.setValue('avatar', uploadAvatar.url);
+			setImageURL(uploadAvatar.url);
+			const avatarUpdate = await updateUserProfile(profile.id, userSessionInfo.role as "membership"|"user", {
+				avatar: uploadAvatar.url
+			});
+			setTimeout(() => {
+				showSuccessToast('Cập nhật ảnh đại diện thành công');
+				setUploading(false);
+			}, 1000);
+		} else {
+			showErrorToast('Cập nhật ảnh đại diện thất bại');
+			setUploading(false);
+		}
 	}
 
 	return (
@@ -72,50 +120,52 @@ export default function UserSettingForm() {
 					<Group grow align={"start"}>
 						<Stack gap="sm" maw={500}>
 							<TextInput
-								label="Email"
-								placeholder="example@email.com"
-								{...form.register('email')}
-								error={form.formState.errors.email?.message}
-							/>
-
-							<TextInput
-								label="Số điện thoại"
-								placeholder="0123456789"
-								{...form.register('phone_number')}
-								error={form.formState.errors.phone_number?.message}
-							/>
-
-							<TextInput
 								label="Tên người dùng"
 								placeholder="Nhập tên người dùng"
+								defaultValue={profile.username}
 								{...form.register('username')}
 								error={form.formState.errors.username?.message}
 							/>
 
-							{/*<TextInput*/}
-							{/*	label="Ảnh đại diện (URL)"*/}
-							{/*	placeholder="https://example.com/avatar.jpg"*/}
-							{/*	{...form.register('avatar')}*/}
-							{/*	error={form.formState.errors.avatar?.message}*/}
-							{/*/>*/}
-
-							<Controller
-								name="age"
-								control={form.control}
-								render={({ field }) => (
-									<NumberInput
-										label="Tuổi"
-										placeholder="Nhập tuổi"
-										{...field}
-										onChange={(value) => field.onChange(value)}
-										error={form.formState.errors.age?.message}
-									/>
-								)}
+							<TextInput
+								label="Email"
+								placeholder="example@email.com"
+								defaultValue={profile.email}
+								{...form.register('email')}
+								error={form.formState.errors.email?.message}
 							/>
+
+							<Group grow wrap={"nowrap"}>
+								<TextInput
+									label="Số điện thoại"
+									placeholder="0123456789"
+									defaultValue={profile.phone_number}
+									{...form.register('phone_number')}
+									error={form.formState.errors.phone_number?.message}
+								/>
+
+								<Controller
+									name="age"
+									control={form.control}
+									render={({ field }) => (
+										<NumberInput
+											label="Tuổi"
+											defaultValue={profile.age}
+											placeholder="Nhập tuổi"
+											{...field}
+											onChange={(value) => field.onChange(Number(value))}
+											value={field.value || '0'}
+											error={form.formState.errors.age?.message}
+										/>
+									)}
+								/>
+
+							</Group>
 
 							<TextInput
 								label="Địa chỉ"
 								placeholder="Nhập địa chỉ"
+								defaultValue={profile.address}
 								{...form.register('address')}
 								error={form.formState.errors.address?.message}
 							/>
@@ -128,28 +178,31 @@ export default function UserSettingForm() {
 							{/*/>*/}
 						</Stack>
 						<Stack gap="md" maw={500} justify={"start"} align={"center"}>
-							<Box>
-								<div
-									className={'w-[200px] h-[200px] flex justify-center items-center aspect-square relative group rounded-full overflow-hidden border border-gray-200'}>
-									{imageURL && (
-										<Image
-											src={imageURL}
-											onLoad={() => (file && imageURL) && URL.revokeObjectURL(imageURL)}
-
-											height={200}
-											width={200}
-											style={{objectFit: 'cover'}}
-											className="rounded-full"
-											alt="avatar hồ sơ"
-										/>
-									)}
-								</div>
-							</Box>
+							<Typography size="content" weight={"semibold"} color="black">
+								Ảnh đại diện
+							</Typography>
+							{/*<Label label={"Ảnh đại diện"} position={"top"} classNames={{wrapper: "w-fit"}}>*/}
+								<Box>
+									<div
+										className={'w-[200px] h-[200px] flex justify-center items-center aspect-square relative group rounded-full overflow-hidden border border-gray-200'}>
+										{imageURL && (
+											<Image
+												src={imageURL}
+												onLoad={() => (file && imageURL) && URL.revokeObjectURL(imageURL)}
+												height={200}
+												width={200}
+												style={{objectFit: 'cover'}}
+												className="rounded-full"
+												alt="avatar hồ sơ"
+											/>
+										)}
+									</div>
+								</Box>
+							{/*</Label>*/}
 
 							<Group grow>
-
 								<UploadButton
-									color="teal"
+									color="var(--main-color)"
 									mt="sm"
 									maw={200}
 									accept={'image/*'}
@@ -162,13 +215,28 @@ export default function UserSettingForm() {
 										<Upload className="w-4 h-4" />	Tải lên
 									</Box>
 								</UploadButton>
+								{file && (
+									<Button
+										color="var(--main-color)"
+										mt="sm"
+										maw={200}
+										onClick={handleUpload}
+									>
+										{uploading ? (
+											<>
+												<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+												Đang lưu...
+											</>
+										) : 'Lưu'}
+									</Button>
+								)}
 							</Group>
 						</Stack>
 					</Group>
 
 					<Button
 						type="submit"
-						color="teal"
+						color="var(--main-color)"
 						maw={200}
 						disabled={submitting}
 					>

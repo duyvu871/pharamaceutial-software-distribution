@@ -130,8 +130,17 @@ export class ConsumerController {
 					branch_id: req.params.branchId,
 				} as unknown as ConsumerAttributes;
 
+				const count = await prisma.consumers.count({
+					where: {
+						branch_id: req.params.branchId
+					}
+				});
+
 				const consumer = await prisma.consumers.create({
-					data: consumerObj
+					data: {
+						...consumerObj,
+						consumer_id: "KH" + (count + 1).toString().padStart(6, "0")
+					}
 				});
 
 				const points = await prisma.points.create({

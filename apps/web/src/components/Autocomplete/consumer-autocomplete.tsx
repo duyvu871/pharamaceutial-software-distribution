@@ -66,7 +66,7 @@ function ConsumerAutocomplete({makeOptional, setValue}: ConsumerAutocompleteProp
 				classNames: {
 					label: 'text-sm font-medium text-gray-700',
 					input: 'mt-1',
-				}
+				},
 			}}
 		/>
 	);

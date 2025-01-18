@@ -9,6 +9,21 @@ import { useSearch } from '@hook/common/use-search.ts';
 type RegionAutocompleteProps = {
 	makeOptional?: boolean | { tinh?: boolean, huyen?: boolean, xa?: boolean };
 	setValue?: (value: { tinh: string, huyen: string, xa: string }) => void;
+	clearField?: {
+		tinh?: boolean;
+		huyen?: boolean;
+		xa?: boolean;
+	};
+	fieldValue?: {
+		tinh?: string;
+		huyen?: string;
+		xa?: string;
+	},
+	fieldShow?: {
+		tinh?: boolean;
+		huyen?: boolean;
+		xa?: boolean;
+	}
 };
 
 type RegionState = {
@@ -25,7 +40,13 @@ const searchConfig = {
 	minMatchCharLength: 0,
 }
 
-function RegionAutocomplete({ makeOptional, setValue}: RegionAutocompleteProps) {
+function RegionAutocomplete({ makeOptional, setValue, clearField, fieldValue, fieldShow}: RegionAutocompleteProps) {
+	const fieldShowDefault = {
+		tinh: true,
+		huyen: true,
+		xa: true,
+		...fieldShow,
+	}
 	const [tinh, setTinh] = useState<RegionState>({ value: '', ref: '', id: '', });
 	const [huyen, setHuyen] = useState<RegionState>({ value: '', ref: '', id: '', });
 	const [xa, setXa] = useState<RegionState>({ value: '', id: '', });
@@ -99,65 +120,86 @@ function RegionAutocomplete({ makeOptional, setValue}: RegionAutocompleteProps) 
 		});
 	}, [tinh, huyen, xa]);
 
+	useEffect(() => {
+		if (clearField?.tinh) {
+			setTinh({ value: '', ref: '', id: '', });
+		}
+		if (clearField?.huyen) {
+			setHuyen({ value: '', ref: '', id: '', });
+		}
+		if (clearField?.xa) {
+			setXa({ value: '', id: '', });
+		}
+	}, [clearField]);
+
 	return (
 		<>
-			<AutocompleteSearch<SearchRegionResponseType['result'][number]>
-				label="Tỉnh/Thành phố"
-				placeholder="Chọn Tỉnh/Thành phố"
-				onSearch={async term => {
-					const searchTerm = `'${term.trim().split(' ').join(' \'')}`;
-					console.log(searchTerm);
-					return tinhQuery(searchTerm);
-				}}
-				data={tinhStore}
-				getItemValue={item => item.value}
-				onSelect={item => setTinh(item)}
-				renderItem={item => item.value}
-				inputProps={{
-					classNames: {
-						label: 'text-sm font-medium text-gray-700',
-						input: 'mt-1',
-					}
-				}}
-			/>
-			<AutocompleteSearch<SearchRegionResponseType['result'][number]>
-				label="Quận/Huyện"
-				placeholder="Chọn Quận/Huyện"
-				onSearch={async term => {
-					const searchTerm = `'${term.trim().split(' ').join(' \'')}`;
-					console.log(searchTerm);
-					return huyenQuery(searchTerm);
-				}}
-				data={huyenStore}
-				getItemValue={item => item.value}
-				onSelect={item => setHuyen(item)}
-				renderItem={item => item.value}
-				inputProps={{
-					classNames: {
-						label: 'text-sm font-medium text-gray-700',
-						input: 'mt-1',
-					}
-				}}
-			/>
-			<AutocompleteSearch<SearchRegionResponseType['result'][number]>
-				label="Phường/Xã"
-				placeholder="Chọn Phường/Xã"
-				onSearch={async term => {
-					const searchTerm = `'${term.trim().split(' ').join(' \'')}`;
-					console.log(searchTerm);
-					return xaQuery(searchTerm);
-				}}
-				data={xaStore}
-				getItemValue={item => item.value}
-				onSelect={item => setXa(item)}
-				renderItem={item => item.value}
-				inputProps={{
-					classNames: {
-						label: 'text-sm font-medium text-gray-700',
-						input: 'mt-1',
-					}
-				}}
-			/>
+			{fieldShowDefault?.tinh && (
+				<AutocompleteSearch<SearchRegionResponseType['result'][number]>
+					label="Tỉnh/Thành phố"
+					placeholder="Chọn Tỉnh/Thành phố"
+					onSearch={async term => {
+						const searchTerm = `'${term.trim().split(' ').join(' \'')}`;
+						console.log(searchTerm);
+						return tinhQuery(searchTerm);
+					}}
+					data={tinhStore}
+					getItemValue={item => item.value}
+					onSelect={item => setTinh(item)}
+					renderItem={item => item.value}
+					inputProps={{
+						classNames: {
+							label: 'text-sm font-medium text-gray-700',
+							input: 'mt-1',
+						},
+						...(fieldValue?.tinh && { value: fieldValue?.tinh }),
+					}}
+				/>
+			)}
+			{(fieldShowDefault?.huyen) && (
+				<AutocompleteSearch<SearchRegionResponseType['result'][number]>
+					label="Quận/Huyện"
+					placeholder="Chọn Quận/Huyện"
+					onSearch={async term => {
+						const searchTerm = `'${term.trim().split(' ').join(' \'')}`;
+						console.log(searchTerm);
+						return huyenQuery(searchTerm);
+					}}
+					data={huyenStore}
+					getItemValue={item => item.value}
+					onSelect={item => setHuyen(item)}
+					renderItem={item => item.value}
+					inputProps={{
+						classNames: {
+							label: 'text-sm font-medium text-gray-700',
+							input: 'mt-1',
+						},
+						...(fieldValue?.huyen && { value: fieldValue?.huyen }),
+					}}
+				/>
+			)}
+			{(fieldShowDefault?.xa) && (
+				<AutocompleteSearch<SearchRegionResponseType['result'][number]>
+					label="Phường/Xã"
+					placeholder="Chọn Phường/Xã"
+					onSearch={async term => {
+						const searchTerm = `'${term.trim().split(' ').join(' \'')}`;
+						console.log(searchTerm);
+						return xaQuery(searchTerm);
+					}}
+					data={xaStore}
+					getItemValue={item => item.value}
+					onSelect={item => setXa(item)}
+					renderItem={item => item.value}
+					inputProps={{
+						classNames: {
+							label: 'text-sm font-medium text-gray-700',
+							input: 'mt-1',
+						},
+						...(fieldValue?.xa && { value: fieldValue?.xa }),
+					}}
+				/>
+			)}
 		</>
 	);
 }

@@ -1,6 +1,8 @@
 import { z } from 'zod';
 
 export const ConsumerZodSchema = z.object({
+	id: z.string().optional(),
+	consumer_id: z.string().optional(),
 	consumer_name: z.string({
 		required_error: 'Tên khách hàng không được để trống',
 		invalid_type_error: 'Tên khách hàng phải là chuỗi'
@@ -45,6 +47,7 @@ export const ConsumerZodSchema = z.object({
 export interface ConsumerAttributes {
 	id: string
 	branch_id: string
+	consumer_id: string
 	revenue: string
 	debit: string
 	consumer_name: string

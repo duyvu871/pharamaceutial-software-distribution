@@ -12,3 +12,10 @@ export interface SuccessResponse<DataResponse = object | [] | null > {
 }
 
 export type APIResponse<DataResponse = object | [] | null> = SuccessResponse<DataResponse> & ErrorResponse;
+
+export type Pagination<Result> = {
+	data: Result[];
+	page: number;
+	total: number;
+	totalPage: number;
+}

@@ -79,6 +79,21 @@ export class BranchValidation {
 		pointValue: z.number().min(1, 'Giá trị điểm phải lớn hơn 0'),
 		applyPoints: z.boolean(),
 	});
+
+	public static upsertPharmacyDetailBody = z.object({
+		so_dang_ky: z.string().nonempty("Số đăng ký không được để trống."),
+		ten_nha_thuoc: z.string().nonempty("Tên nhà thuốc không được để trống."),
+		loai_hinh: z.string().nonempty("Loại hình không được để trống."),
+		tinh: z.string().nonempty("Tỉnh không được để trống."),
+		huyen: z.string().nonempty("Huyện không được để trống."),
+		dia_chi: z.string().nonempty("Địa chỉ không được để trống."),
+		nguoi_dai_dien: z.string().nonempty("Người đại diện không được để trống."),
+		nguoi_chiu_trach_nhiem: z.string().nonempty("Người chịu trách nhiệm không được để trống."),
+		nguoi_chiu_trach_nhiem_chuyen_mon: z.string().nonempty("Người chịu trách nhiệm chuyên môn không được để trống."),
+		so_chung_chi_hanh_nghe: z.string().nonempty("Số chứng chỉ hành nghề không được để trống."),
+	});
+
+
 }
 
 export type CreateBranchBody = z.infer<typeof BranchValidation.createBranchBody>;
@@ -87,3 +102,4 @@ export type BranchIdParam = z.infer<typeof BranchValidation.branchIdParam>;
 export type UpsertBranchIntegrationBody = z.infer<typeof BranchValidation.upsertBranchIntegrationBody>;
 export type UpsertPaymentBody = z.infer<typeof BranchValidation.upsertPaymentBody>;
 export type UpsertBranchRewardPointBody = z.infer<typeof BranchValidation.upsertBranchRewardPointBody>;
+export type UpsertPharmacyDetailBody = z.infer<typeof BranchValidation.upsertPharmacyDetailBody>;

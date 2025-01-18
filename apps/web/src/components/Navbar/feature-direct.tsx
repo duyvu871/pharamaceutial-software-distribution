@@ -315,7 +315,7 @@ export function NavbarFeatureDirect() {
 			href: pathToRegex('/dashboard/staff'),
 		},
 		{
-			title: "Bán buôn",
+			title: "Nguồn hàng nhập",
 			icon: ShoppingBasket,
 			path: `/dashboard/sales/${branchId}/wholesale`,
 			href: pathToRegex(`/dashboard/sales/${branchId}/wholesale`),

@@ -7,7 +7,7 @@ import { FormEventHandler, MouseEventHandler, useEffect, useState } from 'react'
 import { Loader2, Upload } from 'lucide-react';
 import { FileWithPath } from '@mantine/dropzone';
 import { Image } from '@mantine/core';
-import UploadButton from '../../Button/upload-button.tsx';
+import UploadButton from '@component/Button/upload-button.tsx';
 import { uploadStoreQRCode } from '@api/upload.ts';
 import { useDashboard } from '@hook/dashboard/use-dasboard.ts';
 import useToast from '@hook/client/use-toast-notification.ts';
@@ -87,7 +87,7 @@ export default function QRSupportForm() {
 
 					<Group grow>
 						<Button
-							color="teal"
+							color="var(--main-color)"
 							mt="sm"
 							maw={200}
 							onClick={handleSaveQRSupport}
@@ -103,7 +103,7 @@ export default function QRSupportForm() {
 							}
 						</Button>
 						<UploadButton
-							color="teal"
+							color="var(--main-color)"
 							mt="sm"
 							maw={200}
 							accept={'image/*'}

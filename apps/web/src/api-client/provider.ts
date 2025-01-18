@@ -1,6 +1,6 @@
 import { SuccessResponse } from '@type/api/response.ts';
 import axiosWithAuth from '@lib/axios.ts';
-import { Provider } from '@schema/provider-schema.ts';
+import { CreateProviderType, Provider } from '@schema/provider-schema.ts';
 
 export async function getProviders(
 	filter: {
@@ -32,7 +32,7 @@ export async function getProviders(
 
 export async function upsertProvider(
 	branchId: string,
-	data: Provider,
+	data: CreateProviderType & { id: string|null },
 	isMock?: boolean,
 )
 {
@@ -41,6 +41,7 @@ export async function upsertProvider(
 
 		return response.data.data;
 	} catch (error: any) {
-		return null;
+		console.log('error: ', error);
+		throw new Error(error.response.data.errorDescription);
 	}
 }

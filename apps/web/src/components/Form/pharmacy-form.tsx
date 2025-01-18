@@ -1,14 +1,16 @@
 import { Button, Stack, TextInput, Select, Grid, Group } from '@mantine/core';
-import { useForm, zodResolver } from '@mantine/form';
+// import { useForm, zodResolver } from '@mantine/form';
 import { Typography } from '@component/Typography';
 import { z } from 'zod';
 import RegionAutocomplete from '@component/Autocomplete/region-autocomplete.tsx';
 import { useEffect, useState } from 'react';
 import { BranchDetails, branchDetailsSchema } from '@schema/branch-schema.ts';
-import { updateBranchDetail } from '@api/branch.ts';
+import { getBranchDetail, updateBranchDetail, upsertBranchDetail } from '@api/branch.ts';
 import { useDashboard } from '@hook/dashboard/use-dasboard.ts';
 import { Loader2 } from 'lucide-react';
 import useToast from '@hook/client/use-toast-notification.ts';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 export default function PharmacyForm() {
 	const {branchId} = useDashboard();
@@ -16,12 +18,15 @@ export default function PharmacyForm() {
 	const { showErrorToast, showSuccessToast } = useToast();
 
 	const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
+	const [region, setRegion] = useState<{ tinh: string, huyen: string }>({ tinh: '', huyen: '' });
+
 	const form = useForm<BranchDetails>({
-		validate: zodResolver(branchDetailsSchema),
-		initialValues: {
+		resolver: zodResolver(branchDetailsSchema),
+		defaultValues: {
 			so_dang_ky: '',
 			ten_nha_thuoc: '',
-			loai_hinh: '',
+			loai_hinh: 'Bán lẻ',
 			tinh: '',
 			huyen: '',
 			dia_chi: '',
@@ -36,20 +41,40 @@ export default function PharmacyForm() {
 		console.log(values);
 		// Handle form submission
 		setIsSubmitting(true);
-		updateBranchDetail(branchId, values).then((response) => {
-			if (response) {
-				console.log(response);
-			}
-			setIsSubmitting(false);
-		});
+		upsertBranchDetail(branchId, values)
+			.then((response) => {
+				if (response) {
+					console.log(response);
+					setIsSubmitting(false);
+					showSuccessToast('Cập nhật thông tin nhà thuốc thành công');
+				}
+			})
+			.catch((error) => {
+				console.log(error);
+				setIsSubmitting(false);
+				showErrorToast(error.message || "Có lỗi xảy ra khi cập nhật thông tin nhà thuốc");
+			});
 	};
 
 	useEffect(() => {
-		console.log("PharmacyForm mounted");
+		getBranchDetail(branchId)
+			.then((response) => {
+				if (response) {
+					form.reset(response);
+					setRegion({
+						tinh: response.tinh,
+						huyen: response.huyen,
+					});
+				}
+			})
+			.catch((error) => {
+				console.log(error);
+				showErrorToast(error.message || "Có lỗi xảy ra khi lấy thông tin nhà thuốc");
+			});
 	}, []);
 
 	return (
-		<Stack maw={"70vw"}>
+		<Stack w={"100%"} maw={"50vw"}>
 			<Typography
 				size="h3"
 				weight="semibold"
@@ -58,7 +83,7 @@ export default function PharmacyForm() {
 				Thông tin nhà thuốc
 			</Typography>
 
-			<form onSubmit={form.onSubmit(handleSubmit)} className="p-5 pt-3">
+			<form onSubmit={form.handleSubmit(handleSubmit, (e) => console.log(e))} className="p-5 pt-3">
 				<Stack gap="md">
 					<Grid>
 						<Grid.Col span={6}>
@@ -66,7 +91,7 @@ export default function PharmacyForm() {
 								required
 								label="Số đăng ký"
 								placeholder="Nhập số đăng ký"
-								{...form.getInputProps('so_dang_ky')}
+								{...form.register('so_dang_ky')}
 							/>
 						</Grid.Col>
 						<Grid.Col span={6}>
@@ -74,7 +99,7 @@ export default function PharmacyForm() {
 								required
 								label="Tên nhà thuốc"
 								placeholder="Nhập tên nhà thuốc"
-								{...form.getInputProps('ten_nha_thuoc')}
+								{...form.register('ten_nha_thuoc')}
 							/>
 						</Grid.Col>
 					</Grid>
@@ -89,7 +114,9 @@ export default function PharmacyForm() {
 									{ value: 'Bán lẻ', label: 'Bán lẻ' },
 									{ value: 'Bán buôn', label: 'Bán buôn' },
 								]}
-								{...form.getInputProps('loai_hinh')}
+								onChange={(value) => form.setValue('loai_hinh', value || 'Bán lẻ')}
+								defaultValue={form.getValues('loai_hinh')}
+								error={form.formState.errors.loai_hinh?.message}
 							/>
 						</Grid.Col>
 						<Grid.Col span={6}>
@@ -97,7 +124,7 @@ export default function PharmacyForm() {
 								required
 								label="Số chứng chỉ hành nghề"
 								placeholder="Nhập số chứng chỉ hành nghề"
-								{...form.getInputProps('so_chung_chi_hanh_nghe')}
+								{...form.register('so_chung_chi_hanh_nghe')}
 							/>
 						</Grid.Col>
 					</Grid>
@@ -105,10 +132,22 @@ export default function PharmacyForm() {
 					<Grid>
 						<Grid.Col span={12}>
 							<Group wrap={"nowrap"}>
-								<RegionAutocomplete makeOptional={true} setValue={(region) => {
-									form.setFieldValue('tinh', region.tinh);
-									form.setFieldValue('huyen', region.huyen);
-								}}/>
+								<RegionAutocomplete
+									makeOptional={true}
+									// fieldValue={{
+									// 	tinh: region.tinh,//form.getValues('tinh'),
+									// 	huyen: region.huyen//form.getValues('huyen'),
+									// }}
+									setValue={(region) => {
+										form.setValue('tinh', region.tinh);
+										form.setValue('huyen', region.huyen);
+									}}
+									fieldShow={{
+										tinh: true,
+										huyen: true,
+										xa: false,
+									}}
+								/>
 							</Group>
 						</Grid.Col>
 					</Grid>
@@ -117,7 +156,7 @@ export default function PharmacyForm() {
 						required
 						label="Địa chỉ"
 						placeholder="Nhập địa chỉ chi tiết"
-						{...form.getInputProps('dia_chi')}
+						{...form.register('dia_chi')}
 					/>
 
 					<Grid>
@@ -126,33 +165,36 @@ export default function PharmacyForm() {
 								required
 								label="Người đại diện"
 								placeholder="Nhập tên người đại diện"
-								{...form.getInputProps('nguoi_dai_dien')}
+								{...form.register('nguoi_dai_dien')}
 							/>
 						</Grid.Col>
 					</Grid>
 
 					<Grid>
-						<Grid.Col span={6}>
+						<Grid.Col span={12}>
 							<TextInput
 								required
 								label="Người chịu trách nhiệm"
 								placeholder="Nhập tên người chịu trách nhiệm"
-								{...form.getInputProps('nguoi_chiu_trach_nhiem')}
+								{...form.register('nguoi_chiu_trach_nhiem')}
 							/>
 						</Grid.Col>
-						<Grid.Col span={6}>
+					</Grid>
+
+					<Grid>
+						<Grid.Col span={12}>
 							<TextInput
 								required
 								label="Người chịu trách nhiệm chuyên môn"
 								placeholder="Nhập tên người chịu trách nhiệm chuyên môn"
-								{...form.getInputProps('nguoi_chiu_trach_nhiem_chuyen_mon')}
+								{...form.register('nguoi_chiu_trach_nhiem_chuyen_mon')}
 							/>
 						</Grid.Col>
 					</Grid>
 
 					<Button
 						type="submit"
-						color="teal"
+						color="var(--main-color)"
 						mt="sm"
 						maw={200}
 						disabled={isSubmitting}

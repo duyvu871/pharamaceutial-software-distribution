@@ -19,15 +19,15 @@ export type Provider = {
 export const CreateProviderSchema = z.object({
 	companyName: z.string({ required_error: "Tên công ty là bắt buộc" }).min(1, { message: "Tên công ty không được để trống" }),
 	phoneNumber: z.string({ required_error: "Số điện thoại là bắt buộc" }).min(1, { message: "Số điện thoại không được để trống" }),
-	email: z.string().email("Email không hợp lệ").optional().nullable(),
-	taxCode: z.string().optional().nullable(),
-	address: z.string().optional().nullable(),
-	city: z.string({ required_error: "Thành phố là bắt buộc" }).min(1, { message: "Thành phố không được để trống" }),
-	district: z.string({ required_error: "Quận/huyện là bắt buộc" }).min(1, { message: "Quận/huyện không được để trống" }),
-	wards: z.string({ required_error: "Xã/phường là bắt buộc" }).min(1, { message: "Xã/phường không được để trống" }),
-	note: z.string().optional().nullable(),
-	storeId: z.string().uuid({ message: "ID cửa hàng không hợp lệ" }),
-});
+	email: z.string().email("Email không hợp lệ").optional(),
+	taxCode: z.string().optional(),
+	address: z.string().optional(),
+	city: z.string().optional(),
+	district: z.string().optional(),
+	wards: z.string().optional(),
+	note: z.string().optional(),
+	// storeId: z.string().uuid({ message: "ID cửa hàng không hợp lệ" }),
+}); // Sử dụng .partial() để làm cho tất cả các trường đều không bắt buộc
 
 export type CreateProviderType = z.infer<typeof CreateProviderSchema>;
 
@@ -41,7 +41,8 @@ export const UpdateProviderSchema = z.object({
 	district: z.string().min(1, { message: "Quận/huyện không được để trống" }).optional(),
 	wards: z.string().min(1, { message: "Xã/phường không được để trống" }).optional(),
 	note: z.string().optional().nullable(),
-	storeId: z.string().uuid({ message: "ID cửa hàng không hợp lệ" }).optional(),
+	// storeId: z.string().uuid({ message: "ID cửa hàng không hợp lệ" }).optional(),
 }).partial(); // Sử dụng .partial() để làm cho tất cả các trường đều không bắt buộc
 
 export type UpdateProviderType = z.infer<typeof UpdateProviderSchema>;
+

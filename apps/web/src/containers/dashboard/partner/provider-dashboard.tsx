@@ -16,6 +16,7 @@ import { Typography } from '@component/Typography';
 import { ProviderModal } from '@component/Modal/provider-modal.tsx';
 import { Provider } from '@schema/provider-schema.ts';
 import { getProviders } from '@api/provider.ts';
+import { ProviderForm } from '@component/Form/provider-form.tsx';
 
 interface Customer {
 	id: string
@@ -47,6 +48,14 @@ export default function ProviderDashboard({branchId}: {branchId: string}) {
 		})
 	}
 
+	const addNewConsumer = (data: Provider) => {
+		setConsumers((prev) => [data, ...prev]);
+	}
+
+	const updateConsumer = (data: Provider) => {
+		setConsumers((prev) => prev.map(consumer => consumer.id === data.id ? data : consumer));
+	}
+
 	if (!isAuthenticated) {
 		return <></>;
 	}
@@ -75,7 +84,7 @@ export default function ProviderDashboard({branchId}: {branchId: string}) {
 		{
 			title: '',
 			render: (provider) => (
-				<ProviderModal data={provider}>
+				<ProviderModal data={provider} onSubmit={updateConsumer}>
 					{/*<span >*/}
 					<EllipsisVertical size={20}/>
 					{/*</span>*/}
@@ -102,7 +111,7 @@ export default function ProviderDashboard({branchId}: {branchId: string}) {
 							</button>
 						</div>
 						<div className="flex gap-2">
-							<ProviderModal>
+							<ProviderModal onSubmit={addNewConsumer}>
 								<button className="flex items-center gap-2 bg-teal-500 text-white px-3 py-2 rounded-md hover:bg-teal-600">
 									<Plus className="w-4 h-4" />
 									<span>Thêm mới</span>
@@ -128,7 +137,6 @@ export default function ProviderDashboard({branchId}: {branchId: string}) {
 							</button>
 						</div>
 					</div>
-
 					{/* Table */}
 					<div className="overflow-y-auto bg-white rounded-md shadow relative">
 						<Table striped highlightOnHover className={"!rounded-md"}>

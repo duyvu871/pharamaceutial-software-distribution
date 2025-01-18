@@ -20,14 +20,15 @@ model branches {
   enabled_points Boolean                     @default(true)
   users          users                       @relation(fields: [owner_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  consumers           consumers[]
-  memberships         memberships[]
-  stores              stores[]
-  invoices            invoices[]
-  branch_details      branch_details[]
-  subscriptions       subscriptions[]
+  consumers          consumers[]
+  memberships        memberships[]
+  stores             stores[]
+  invoices           invoices[]
+  branch_details     branch_details[]
+  subscriptions      subscriptions[]
   branch_integration branch_integration[]
-  branch_payment      branch_payment[]
+  branch_payment     branch_payment[]
+  doctors            doctors[]
 
   @@index([branch_name])
   @@index([owner_id])
@@ -35,7 +36,7 @@ model branches {
 
 model branch_integration {
   id        String @id @default(uuid()) @db.Uuid
-  branch_id String @db.Uuid @unique
+  branch_id String @unique @db.Uuid
   type      String @db.VarChar(255)
   status    Int    @default(1)
 
@@ -54,7 +55,7 @@ model branch_integration {
 
 model branch_payment {
   id                     String    @id @default(uuid()) @db.Uuid
-  branch_id              String    @db.Uuid @unique
+  branch_id              String    @unique @db.Uuid
   type                   String    @db.VarChar(255)
   status                 Int       @default(1)
   payment_bank           String
@@ -71,7 +72,7 @@ model branch_payment {
 
 model branch_details {
   id                                String    @id @default(uuid()) @db.Uuid
-  branch_id                         String    @db.Uuid @unique
+  branch_id                         String    @unique @db.Uuid
   so_dang_ky                        String
   ten_nha_thuoc                     String
   loai_hinh                         String
@@ -91,6 +92,7 @@ model branch_details {
 model consumers {
   id             String                 @id @default(uuid()) @db.Uuid
   branch_id      String                 @db.Uuid
+  consumer_id    String                @db.VarChar(255)
   revenue        BigInt?                @default(0)
   debit          BigInt?                @default(0)
   consumer_name  String                 @db.VarChar(255)
@@ -113,6 +115,7 @@ model consumers {
   points         points[]
 
   @@index([branch_id])
+  @@index([consumer_id])
   @@index([consumer_name])
   @@index([consumer_email])
   @@index([phone_number])
@@ -207,42 +210,42 @@ model product_units {
 }
 
 model products {
-  id                     String                   @id @default(uuid()) @db.Uuid
-  product_id             String                   @unique
-  store_id               String                   @db.Uuid
-  group_id               String?                  @db.Uuid
-  store_group_id         String?                  @db.Uuid
-  productUnit            String                   @db.Uuid
-  product_type           String                   @db.VarChar(255)
-  medicine_id            String?                  @db.VarChar(255)
-  barcode                String?                  @db.VarChar(255)
-  product_no             String                   @db.VarChar(255)
-  register_no            String?                  @db.VarChar(255)
-  product_name           String                   @db.VarChar(255)
-  lot_no                 String?                  @db.VarChar(255)
-  shortcut               String?                  @db.VarChar(255)
-  original_price         Float
-  sell_price             Float
-  weight                 Float?
-  quantity_of_stock      Int
-  using_id               Int
-  base_unit              String                   @db.VarChar(255)
-  status                 Int                      @default(1)
-  import_date            DateTime?                @default(now()) @db.Timestamptz(6)
-  expire_date            DateTime?                @default(now()) @db.Timestamptz(6)
-  created_at             DateTime                 @default(now()) @db.Timestamptz(6)
-  updated_at             DateTime                 @default(now()) @db.Timestamptz(6)
-  min_quantity           Int
-  max_quantity           Int
-  description            String?                  @db.VarChar(255)
-  usage                  String?                  @db.VarChar(255)
-  ingredient             String?                  @db.VarChar(255)
-  packing                String?                  @db.VarChar(255)
-  active_ingredient      String?                  @db.VarChar(255)
-  content                String?                  @db.VarChar(255)
-  note                   String?                  @db.VarChar(255)
-  manufacturer           String?                  @db.VarChar(255)
-  made_in                String?                  @db.VarChar(255)
+  id                String    @id @default(uuid()) @db.Uuid
+  product_id        String    @unique
+  store_id          String    @db.Uuid
+  group_id          String?   @db.Uuid
+  store_group_id    String?   @db.Uuid
+  productUnit       String    @db.Uuid
+  product_type      String    @db.VarChar(255)
+  medicine_id       String?   @db.VarChar(255)
+  barcode           String?   @db.VarChar(255)
+  product_no        String    @db.VarChar(255)
+  register_no       String?   @db.VarChar(255)
+  product_name      String    @db.VarChar(255)
+  lot_no            String?   @db.VarChar(255)
+  shortcut          String?   @db.VarChar(255)
+  original_price    Float
+  sell_price        Float
+  weight            Float?
+  quantity_of_stock Int
+  using_id          Int
+  base_unit         String    @db.VarChar(255)
+  status            Int       @default(1)
+  import_date       DateTime? @default(now()) @db.Timestamptz(6)
+  expire_date       DateTime? @default(now()) @db.Timestamptz(6)
+  created_at        DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime  @default(now()) @db.Timestamptz(6)
+  min_quantity      Int
+  max_quantity      Int
+  description       String?   @db.VarChar(255)
+  usage             String?   @db.VarChar(255)
+  ingredient        String?   @db.VarChar(255)
+  packing           String?   @db.VarChar(255)
+  active_ingredient String?   @db.VarChar(255)
+  content           String?   @db.VarChar(255)
+  note              String?   @db.VarChar(255)
+  manufacturer      String?   @db.VarChar(255)
+  made_in           String?   @db.VarChar(255)
 
   deleted_at             DateTime?                @db.Timestamptz(6)
   deleted_by             String?                  @db.Uuid
@@ -271,7 +274,7 @@ model products {
 model import_invoices {
   id                     String                   @id @default(uuid()) @db.Uuid
   store_id               String                   @db.Uuid
-  provider_id            String?                   @db.Uuid
+  provider_id            String?                  @db.Uuid
   invoice_no             String                   @db.VarChar(255)
   name                   String
   total_amount           Float
@@ -284,7 +287,7 @@ model import_invoices {
   createdAt              DateTime                 @default(now()) @db.Timestamptz(6)
   updatedAt              DateTime                 @updatedAt @db.Timestamptz(6)
   stores                 stores                   @relation(fields: [store_id], references: [id])
-  providers              providers?                @relation(fields: [provider_id], references: [id])
+  providers              providers?               @relation(fields: [provider_id], references: [id])
   import_invoice_product import_invoice_product[]
 
   @@index([store_id])
@@ -341,7 +344,7 @@ model stores {
 
 model store_reward_point {
   id           String    @id @default(uuid()) @db.Uuid
-  store_id     String    @db.Uuid @unique
+  store_id     String    @unique @db.Uuid
   convert_to   String    @default("VND") @db.VarChar(255)
   convert_rate Int       @default(100000)
   point_value  Int       @default(5000)
@@ -392,19 +395,31 @@ model clinics {
 }
 
 model doctors {
-  id             String    @id @default(uuid()) @db.Uuid
-  store_id       String    @db.Uuid
-  doctor_name    String    @db.VarChar(255)
-  specialization String?   @db.VarChar(255)
-  phone          String?   @db.VarChar(255)
-  email          String?   @db.VarChar(255)
-  created_at     DateTime  @default(now()) @db.Timestamptz(6)
-  updated_at     DateTime  @default(now()) @db.Timestamptz(6)
-  status         Int       @default(1)
-  deleted_at     DateTime? @db.Timestamptz(6)
-  store          stores    @relation(fields: [store_id], references: [id])
+  id             String         @id @default(uuid()) @db.Uuid
+  doctor_id      String
+  branch_id      String         @db.Uuid
+  specialization String?        @db.VarChar(255)
+  email          String?        @db.VarChar(255)
+  status         Int            @default(1)
+  chuyen_khoa    String         @db.VarChar(255)
+  dia_chi        String         @db.VarChar(255)
+  sdt            String         @db.VarChar(255)
+  ghi_chu        String?        @db.VarChar(255)
+  is_active      Boolean        @default(true)
+  is_deleted     Boolean        @default(false)
+  loai_so_quy    Int            @default(0)
+  noi_cong_tac   String         @db.VarChar(255)
+  ten_bac_si     String         @db.VarChar(255)
+  ten_slug       String         @db.VarChar(255)
+  trinh_do       String         @db.VarChar(255)
+  created_at     DateTime       @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime       @default(now()) @db.Timestamptz(6)
+  deleted_at     DateTime?      @db.Timestamptz(6)
+  branch         branches       @relation(fields: [branch_id], references: [branch_id])
+  stores         stores?        @relation(fields: [storesId], references: [id])
+  storesId       String?        @db.Uuid
 
-  @@index([store_id])
+  @@index([branch_id])
 }
 
 model providers {
@@ -573,7 +588,7 @@ model points {
 
 model point_transactions {
   id        String   @id @default(uuid()) @db.Uuid // Primary key
-  pointId   String   @db.Uuid @unique // Liên kết đến bảng points
+  pointId   String   @unique @db.Uuid // Liên kết đến bảng points
   type      String   @db.VarChar(255) // Loại giao dịch (e.g., "add", "redeem")
   amount    Int // Số điểm giao dịch (có thể âm hoặc dương)
   note      String?  @db.Text // Ghi chú
@@ -604,9 +619,10 @@ model invoices {
   userId             String?
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
-
   items        invoice_items[]
   otherCharges other_charges[]
+  invoice_prescriptions invoice_prescriptions[]
+
   branches     branches        @relation(fields: [branchId], references: [branch_id])
   customers    consumers?      @relation(fields: [customerId], references: [id])
 
@@ -614,6 +630,35 @@ model invoices {
   @@index([saleDate])
   @@index([customerName])
   @@map("invoices")
+}
+
+model invoice_prescriptions {
+  id          String   @id @default(uuid()) @db.Uuid
+  invoiceId   String   @db.Uuid
+  prescription_id String
+  ma_don_thuoc String
+  ngay_ke     DateTime
+  bac_si_id   String
+  co_so_kham  String
+  chuan_doan  String?
+  benh_nhan   String
+  ngay_sinh   DateTime?
+  nam_sinh    Int?
+  tuoi        Int?
+  thang_tuoi       Int?
+  can_nang    Float?
+  dia_chi     String?
+  nguoi_giam_ho String?
+  cmnd        String?
+  dien_thoai  String?
+  the_bhyt    String?
+  gioi_tinh   Int
+
+  created_at   DateTime @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime @default(now()) @db.Timestamptz(6)
+
+  invoices invoices @relation(fields: [invoiceId], references: [id])
+  @@map("invoice_prescriptions")
 }
 
 model invoice_items {

@@ -1,11 +1,12 @@
 import AsyncMiddleware from 'utils/asyncHandler';
 import { UserTask } from 'server/repository/user';
 import type { Request } from 'express';
-import { ProfileQuery } from 'validations/User';
+import { ProfileQuery, ResetPassword, UpdateProfile } from 'validations/User';
 import Success from 'responses/successful/Success';
 import { BranchAttributes } from 'server/repository/branch/schema';
 import { UserAttributes } from 'repository/user/schema.ts';
 import prisma from 'repository/prisma.ts';
+import BadRequest from 'responses/clientErrors/BadRequest.ts';
 
 export class UserController {
 	public static getProfile = AsyncMiddleware.asyncHandler(
@@ -93,4 +94,92 @@ export class UserController {
 			}
 		}
 	);
+
+	public static updateProfile = AsyncMiddleware.asyncHandler(
+		async (req: Request<any, any, UpdateProfile, any>, res) => {
+			const { id, role, profileUpdate } = req.body;
+			const authType = req.jwtPayload?.type;
+
+			let responseData;
+			try {
+				if ((authType === 'MEMBERSHIP' || authType === 'USER') && role === 'membership') {
+					const membershipUpdate = await prisma.memberships.update({
+						where: { id },
+						data: {
+							phone_number: profileUpdate.phone_number,
+							username: profileUpdate.username,
+							email: profileUpdate.email,
+							age: profileUpdate.age,
+							address: profileUpdate.address,
+							avatar: profileUpdate.avatar,
+							notes: profileUpdate.notes,
+						},
+					});
+					responseData = membershipUpdate
+				} else if (authType === 'USER' && role === 'user') {
+					const userUpdate = await prisma.users.update({
+						where: { id },
+						data: {
+							phone_number: profileUpdate.phone_number,
+							username: profileUpdate.username,
+							email: profileUpdate.email,
+							age: profileUpdate.age,
+							address: profileUpdate.address,
+							avatar: profileUpdate.avatar,
+							notes: profileUpdate.notes,
+						},
+					});
+					responseData = userUpdate
+				}
+				if (!responseData) {
+					throw new BadRequest("update_profile_failed", "Cập nhật thông tin thất bại", "Cập nh��t thông tin thất bại");
+				}
+				const response = new Success(responseData).toJson;
+				return res.status(200).json(response).end();
+			} catch (error) {
+				throw error;
+			}
+		}
+	)
+
+	public static resetPassword = AsyncMiddleware.asyncHandler(
+		async (req: Request<any, any, ResetPassword, any>, res) => {
+			const { id, role, password } = req.body;
+			const authType = req.jwtPayload?.type;
+
+			let responseData;
+			try {
+				if ((authType === 'MEMBERSHIP' || authType === 'USER') && role === 'membership') {
+					const hashPassword = await UserTask.generateHash(password);
+					const membershipUpdate = await prisma.memberships.update({
+						where: { id },
+						data: {
+							password: hashPassword
+						},
+					});
+					responseData = {
+						message: 'Password updated successfully'
+					}
+				} else if (authType === 'USER' && role === 'user') {
+					const hashPassword = await UserTask.generateHash(password);
+					const userUpdate = await prisma.users.update({
+						where: { id },
+						data: {
+							password: hashPassword
+						},
+					});
+					responseData = {
+						message: 'Password updated successfully'
+					}
+				}
+				if (!responseData) {
+					throw new BadRequest("reset_pwd_failed", "Cập nhật mật khẩu thất bại", "Cập nhật mật khẩu thất bại");
+				}
+				const response = new Success(responseData).toJson;
+				return res.status(200).json(response).end();
+			} catch (error) {
+				throw error;
+			}
+		}
+	)
 }

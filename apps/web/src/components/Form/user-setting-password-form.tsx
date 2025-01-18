@@ -11,14 +11,14 @@ import { currentBranchAtom } from '@store/state/overview/branch.ts';
 import { UserSettingPayloadType, userSettingSchema } from '@schema/user-schema.ts';
 import { Loader2, Upload } from 'lucide-react';
 import { useAuth } from '@hook/auth';
-import { getUserProfile } from '@api/user.ts';
+import { getUserProfile, resetPassword } from '@api/user.ts';
 import { useProfile } from '@hook/dashboard/use-profile.ts';
 import { Image } from '@mantine/core';
-import UploadButton from '../../Button/upload-button.tsx';
+import UploadButton from '@component/Button/upload-button.tsx';
 import { z } from 'zod';
 
 const userPasswordSchema = z.object({
-	old_password: z.string().min(6, 'Mật khẩu cũ phải có ít nhất 6 ký tự'),
+	// old_password: z.string().min(6, 'Mật khẩu cũ phải có ít nhất 6 ký tự'),
 	new_password: z.string().min(6, 'Mật khẩu mới phải có ít nhất 6 ký tự'),
 	confirm_password: z.string().min(6, 'Mật khẩu xác nhận phải có ít nhất 6 ký tự'),
 })
@@ -31,24 +31,40 @@ type UserPasswordPayload = z.infer<typeof userPasswordSchema>;
 
 export default function UserSettingPasswordForm() {
 	const {profile} = useProfile();
+	const {userSessionInfo} = useAuth();
 	const {showErrorToast, showSuccessToast} = useToast();
 
-	if (!profile) {
-		return null;
-	}
+	if (!profile) return null;
+	if (!userSessionInfo) return null;
 
 	const [submitting, setSubmitting] = useState<boolean>(false);
 	const form = useForm<UserPasswordPayload>({
 		resolver: zodResolver(userPasswordSchema),
 		defaultValues: {
-			old_password: '',
+			// old_password: '',
 			new_password: '',
 			confirm_password: '',
 		}
 	});
 
 	const handleSubmit = (values: UserPasswordPayload) => {
-
+		console.log(values);
+		setSubmitting(true);
+		resetPassword(profile.id, userSessionInfo.role, {
+			password: values.new_password,
+			confirmedPassword: values.confirm_password,
+		})
+			.then(() => {
+				setTimeout(() => {
+					showSuccessToast('Thay đổi mật khẩu thành công');
+					form.reset();
+					setSubmitting(false);
+				}, 1000)
+			})
+			.catch((error) => {
+				showErrorToast(error.message);
+				setSubmitting(false);
+			})
 	};
 
 	return (
@@ -64,17 +80,17 @@ export default function UserSettingPasswordForm() {
 			<form onSubmit={form.handleSubmit(handleSubmit)} className="p-5 pt-3">
 				<Stack gap="xl" maw={1000}>
 					<Stack gap="sm" maw={500}>
-						<TextInput
-							label="Mật khẩu cũ"
-							placeholder="Nhập mật khẩu cũ"
-							{...form.register('old_password')}
-						/>
-						<TextInput
+						{/*<TextInput*/}
+						{/*	label="Mật khẩu cũ"*/}
+						{/*	placeholder="Nhập mật khẩu cũ"*/}
+						{/*	{...form.register('old_password')}*/}
+						{/*/>*/}
+						<PasswordInput
 							label="Mật khẩu mới"
 							placeholder="Nhập mật khẩu mới"
 							{...form.register('new_password')}
 						/>
-						<TextInput
+						<PasswordInput
 							label="Xác nhận mật khẩu"
 							placeholder="Nhập lại mật khẩu mới"
 							{...form.register('confirm_password')}

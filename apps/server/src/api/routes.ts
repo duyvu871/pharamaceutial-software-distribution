@@ -33,6 +33,8 @@ import { ImportValidation } from 'validations/ImportValidation.ts';
 import { importRoute } from 'server/api/routes/import.ts';
 
 import { uploadRouter } from 'server/api/routes/upload.ts';
+import { ProviderValidation } from 'validations/Provider.ts';
+import { doctorRoute } from 'server/api/routes/doctor.ts';
 
 const apiRouter = Router();
 const pageRouter = Router();
@@ -52,6 +54,15 @@ apiRouter.route('/user/profile').get(
   ...authChain,
   validateQuery(UserValidation.profileQuery),
   UserController.getProfile);
+apiRouter.route('/user/profile').post(
+  ...authChain,
+  validateBody(UserValidation.updateProfile),
+  UserController.updateProfile);
+apiRouter.route('/user/reset-password').post(
+  ...authChain,
+  validateBody(UserValidation.resetPassword),
+  UserController.resetPassword);
+
 
 // Branch route
 apiRouter.route('/branch/create').post(
@@ -106,6 +117,17 @@ apiRouter.route('/branch/:branchId/upsert-reward-point').post(
   validateBody(BranchValidation.upsertBranchRewardPointBody),
   BranchController.upsertBranchRewardPoint
 );
+apiRouter.route('/branch/:branchId/upsert-pharmacy-detail').post(
+  ...authChain,
+  validateParams(BranchValidation.branchIdParam),
+  validateBody(BranchValidation.upsertPharmacyDetailBody),
+  BranchController.upsertPharmacyDetail
+)
+apiRouter.route('/branch/:branchId/get-pharmacy-detail').get(
+  ...authChain,
+  validateParams(BranchValidation.branchIdParam),
+  BranchController.getPharmacyDetail
+)
 
 // Autocomplete route
 apiRouter.route('/autocomplete/product').get(
@@ -182,8 +204,14 @@ apiRouter.route('/product/:branchId/upload/image').post(
 // Provider routes
 apiRouter.route('/provider/:branchId').get(
   ...authChain,
+  validateParams(BranchValidation.branchIdParam),
   validateQuery(PaginationValidation.paginationQuery),
   ProviderController.getProviders);
+apiRouter.route('/provider/:branchId').post(
+  ...authChain,
+  validateParams(BranchValidation.branchIdParam),
+  validateBody(ProviderValidation.createProvider),
+  ProviderController.createProvider);
 
 
 // Invoice routes
@@ -214,6 +242,7 @@ apiRouter.route('/invoice/:branchId/delete/:invoiceId').delete(
 apiRouter.use(storeRouter);
 apiRouter.use(importRoute);
 apiRouter.use(uploadRouter);
+apiRouter.use(doctorRoute);
 
 export default {
     apiRoutes: apiRouter,

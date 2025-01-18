@@ -3,6 +3,7 @@ import { Popover, TextInput, List, Loader, Divider, TextInputProps, ScrollArea }
 import { useDebounce } from "@uidotdev/usehooks";
 import { cva, type VariantProps } from "class-variance-authority";
 import { tv } from '@lib/tailwind-variants.ts';
+import { cn } from '@lib/tailwind-merge.ts';
 
 /**
  * Defines the available sizes for the autocomplete component.
@@ -94,7 +95,16 @@ interface AutocompleteSearchProps<T> extends VariantProps<typeof autocompleteVar
 	size?: AutocompleteSize;
 	/** The theme of the autocomplete component, can be `light` or `dark`. */
 	theme?: AutocompleteTheme;
-
+	/** Function to create a new item if it does not exist in the list. */
+	createNewItem?: (term: string) => T;
+	/** Component to render for creating a new item. */
+	createNewItemComponent?: React.ReactNode;
+	/** Class names for the popover components. */
+	popoverClassNames?: {
+		dropdown?: string;
+	};
+	/** Default value for the input field. */
+	defaultValue?: string;
 }
 
 /**
@@ -118,9 +128,12 @@ function AutocompleteSearch<T>({
 																 recent = false,
 																 recentKey = "recentSearches",
 																 recentLabel = "Recent searches",
+																 createNewItemComponent,
+																 popoverClassNames,
+																 defaultValue,
 																 inputProps,
 															 }: AutocompleteSearchProps<T>): React.ReactNode {
-	const [searchTerm, setSearchTerm] = useState<string>("");
+	const [searchTerm, setSearchTerm] = useState<string>(defaultValue || "");
 	const [results, setResults] = useState<T[]>([]);
 	const [recentResults, setRecentResults] = useState<T[]>([]);
 	const [isSearching, setIsSearching] = useState<boolean>(false);
@@ -180,6 +193,12 @@ function AutocompleteSearch<T>({
 		}
 	}, [recent, recentKey]);
 
+	useEffect(() => {
+		if (defaultValue !== undefined && defaultValue !== null) {
+			setSearchTerm(defaultValue);
+		}
+	}, [defaultValue]);
+
 	return (
 		<div className={autocompleteVariants({ size, theme })}>
 			<Popover
@@ -192,16 +211,18 @@ function AutocompleteSearch<T>({
 				<Popover.Target>
 					<TextInput
 						label={label}
-						value={searchTerm}
 						onChange={handleChange}
 						placeholder={placeholder}
 						onFocus={() => setPopoverOpened(true)}
 						onBlur={() => setTimeout(() => setPopoverOpened(false), 200)}
 						rightSection={isSearching && <Loader size="xs" />}
+						value={searchTerm}
+						defaultValue={""}
 						{...inputProps}
 					/>
 				</Popover.Target>
-				<Popover.Dropdown p={0} className={`w-full min-w-[300px] !max-w-3xl !max-h-[300px] ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
+				<Popover.Dropdown p={0} className={cn(`w-full min-w-[300px] !max-w-3xl !max-h-[300px] ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`, popoverClassNames?.dropdown || "")}>
+					{createNewItemComponent}
 					<ScrollArea.Autosize mah={250} mih={100} mx="auto">
 						<List className="w-full" p={10}>
 							{results.map((item, index) => (
@@ -220,6 +241,14 @@ function AutocompleteSearch<T>({
 										key={`result-${index}`}
 										onClick={() => selectItem(item)}
 										className={listItemVariants({ theme })}
+										styles={{
+											itemLabel: {
+												width: '100%',
+											},
+											itemWrapper: {
+												width: '100%',
+											},
+										}}
 									>
 										{renderItem(item)}
 									</List.Item>
@@ -227,7 +256,7 @@ function AutocompleteSearch<T>({
 							}
 							{!isSearching && results.length === 0 && searchTerm && (
 								<div className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-									No results found
+									Không tìm thấy kết quả
 								</div>
 							)}
 						</List>
