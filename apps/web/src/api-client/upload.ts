@@ -1,15 +1,13 @@
 import axiosWithAuth from '@lib/axios.ts';
 import { APIResponse, ErrorResponse, SuccessResponse } from '@type/api/response.ts';
-import { UploadResponse } from '@type/api/upload.ts';
+import { Asset, UploadResponse } from '@type/api/upload.ts';
 import { AxiosError } from 'axios';
 
 export const uploadImage = async (
 	file: File,
 	branchId: string,
-	metadata: {
-
-	}
-): Promise<UploadResponse | null> => {
+	type: string,
+): Promise<Asset | null> => {
 	if (!file) {
 		return null;
 	}
@@ -20,11 +18,17 @@ export const uploadImage = async (
 	formData.append('image', file);
 
 	try {
-		const response = await axiosWithAuth.post<SuccessResponse<UploadResponse>>(`/upload/${branchId}/image`, formData, {
-			headers: {
-				'Content-Type': 'multipart/form-data',
-			},
-		});
+		const response = await axiosWithAuth.post<SuccessResponse<Asset>>(`/upload-image/${branchId}`,
+			formData,
+			{
+				headers: {
+					'Content-Type': 'multipart/form-data',
+				},
+				params: {
+					type,
+				}
+			}
+		);
 		return response.data.data;
 	} catch (error) {
 		console.error('Error uploading image:', error);

@@ -4,6 +4,7 @@ import { dateString } from 'validations/common.ts';
 
 export class MembershipValidation {
 	public static createMembership = z.object({
+		id: MembershipZodSchema.shape.id.optional(),
 		username: MembershipZodSchema.shape.username,
 		password: MembershipZodSchema.shape.password,
 		email: MembershipZodSchema.shape.email,

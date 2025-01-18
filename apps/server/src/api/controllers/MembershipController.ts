@@ -9,6 +9,7 @@ import { BranchIdParam } from 'validations/Branch.ts';
 import { CreateMembership } from 'validations/Membership.ts';
 import prisma from 'repository/prisma.ts';
 import { Prisma } from '@repo/orm';
+import { UserTask } from 'repository/user';
 
 export class MembershipController {
 	public static getMemberships = AsyncMiddleware.asyncHandler(
@@ -52,16 +53,38 @@ export class MembershipController {
 	public static createMembership = AsyncMiddleware.asyncHandler(
 		async (req: Request<BranchIdParam, any, CreateMembership>, res: Response) => {
 			try {
-				const removedUndefined = Object.fromEntries(
-					Object.entries(req.body).filter(([_, value]) => value !== undefined),
-				) as unknown as MembershipAttributes;
-				// const removedUndefined = req.body;
-				removedUndefined.branch_id = req.params.branchId;
-				removedUndefined.employee_status = 'active';
-				const membership = await prisma.memberships.create({
-					data: removedUndefined as unknown as Prisma.membershipsCreateInput
-				});
-				const response = new Success(membership).toJson;
+				// const removedUndefined = Object.fromEntries(
+				// 	Object.entries(req.body).filter(([_, value]) => value !== undefined),
+				// ) as unknown as MembershipAttributes;
+				const {id, ...upsertData} = req.body;
+				// removedUndefined.branch_id = req.params.branchId;
+				// removedUndefined.employee_status = 'active';
+				const branchId = req.params.branchId;
+
+				let membershipUpsert;
+
+				if (!id) {
+					const hashPassword = await UserTask.generateHash(upsertData.password);
+					membershipUpsert = await prisma.memberships.create({
+						data: {
+							...upsertData,
+							password: hashPassword,
+							branch_id: branchId,
+							employee_status: 'active'
+						}
+					});
+				} else {
+					const password = upsertData.password ? await UserTask.generateHash(upsertData.password) : undefined;
+					membershipUpsert = await prisma.memberships.update({
+						where: { id },
+						data: {
+							...upsertData,
+							password
+						}
+					});
+				}
+
+				const response = new Success(membershipUpsert).toJson;
 				return res.status(201).json(response).end();
 			} catch (error: any) {
 				console.error(`Error creating membership: ${error.message}`);
@@ -91,4 +114,5 @@ export class MembershipController {
 			}
 		}
 	);
+
 }

@@ -8,10 +8,11 @@ import ProductForm from '@component/Form/product-form.tsx';
 import ProductFormV2 from '@component/Form/product-form-v2.tsx';
 import PrescriptionForm from '@component/Form/prescript-form.tsx';
 import { ProviderForm } from '@component/Form/provider-form.tsx';
+import { Provider } from '@schema/provider-schema.ts';
 
 export function ProviderModal(
 	{ children, branchId, data }:
-		{ children: React.ReactNode; branchId?: string; data?: any; }
+		{ children: React.ReactNode; branchId?: string; data?: Provider; }
 ) {
 	const [opened, { open, close }] = useDisclosure(false);
 
@@ -27,7 +28,7 @@ export function ProviderModal(
 				}
 				size="xl"
 			>
-				<ProviderForm />
+				<ProviderForm data={data} />
 			</Modal>
 			<div className={'cursor-pointer flex justify-center items-center'} onClick={open}>
 				{children}

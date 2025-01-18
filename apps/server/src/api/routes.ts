@@ -1,13 +1,7 @@
-<<<<<<< HEAD
-import { Router } from "express";
-import { validateBody, validateHeader, validateQuery } from 'middlewares/ValidateRequest';
-import { AuthorizationValidation } from 'validations/Authorization';
-import { AuthController } from 'controllers/AuthController';
 import { SearchProductValidation } from "./validations/SearchProduct";
 import { SearchProduct } from "./controllers/SearchController";
 import { CsvPostgraValidation } from "./controllers/csv_add_postgra";
 import { handleSingleFileUpload, validateFile } from "./middlewares/validateFile";
-=======
 import { Router, Request, Response } from "express";
 import { validateBody, validateHeader, validateParams, validateQuery } from 'middlewares/ValidateRequest';
 import { AuthorizationValidation } from 'validations/Authorization';
@@ -37,7 +31,8 @@ import { storeRouter } from 'server/api/routes/store.ts';
 import { ImportController } from 'controllers/ImportController.ts';
 import { ImportValidation } from 'validations/ImportValidation.ts';
 import { importRoute } from 'server/api/routes/import.ts';
->>>>>>> 3cd4b395c4d91c0ab77564848256c4b782e730a0
+
+import { uploadRouter } from 'server/api/routes/upload.ts';
 
 const apiRouter = Router();
 const pageRouter = Router();
@@ -155,6 +150,7 @@ apiRouter.route('/membership/:branchId').post(
   validateBody(MembershipValidation.createMembership),
   MembershipController.createMembership);
 
+
 // Product routes
 apiRouter.route('/product/:branchId').get(
   ...authChain,
@@ -217,6 +213,7 @@ apiRouter.route('/invoice/:branchId/delete/:invoiceId').delete(
 // Store routes
 apiRouter.use(storeRouter);
 apiRouter.use(importRoute);
+apiRouter.use(uploadRouter);
 
 export default {
     apiRoutes: apiRouter,

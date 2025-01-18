@@ -68,7 +68,7 @@ const ListItems =({item, onClick}: {item: Product, onClick: () => void}) => {
 }
 
 const ProductAutocomplete = forwardRef<HTMLInputElement, ProductAutocompleteProps>(
-	({onSelectProduct, onChange, onBlur, onFocus, queryBy, onDataReady,  ...inputProps}, ref) => {
+	({onSelectProduct, onChange, onBlur, onFocus, queryBy, onDataReady, showSearchList,  ...inputProps}, ref) => {
 		const {branchId} = useDashboard();
 
 		const [searchTerm, setSearchTerm] = useState<string>("");
@@ -153,6 +153,19 @@ const ProductAutocomplete = forwardRef<HTMLInputElement, ProductAutocompleteProp
 
 		return (
 			// <div className="w-96 relative"> {/* relative for Popover positioning */}
+			showSearchList
+				?
+				<TextInput
+					value={searchTerm}
+					onChange={handleChange}
+					placeholder="Tìm sản phẩm"
+					onFocus={handleFocus} // Open on focus
+					onBlur={handleBlur} // Close on blur with delay
+					rightSection={isSearching && <Loader size="xs" />}
+					{...inputProps}
+					ref={ref}
+				/>
+				:
 				<Popover
 					opened={popoverOpened}
 					onClose={() => setPopoverOpened(false)}

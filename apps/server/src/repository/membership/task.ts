@@ -7,6 +7,7 @@ import logger, { appLogger } from 'utils/logger';
 import prisma from 'repository/prisma';
 import { MembershipAttributes } from 'repository/membership/schema.ts';
 import { UserTask } from 'repository/user';
+import dayjs from 'dayjs';
 
 // membership available tasks with it permission
 export class MembershipTask {
@@ -23,6 +24,15 @@ export class MembershipTask {
 			if (!await UserTask.verifyPassword(password, member.password)) {
 				throw new Forbidden('wrong_password', 'Wrong password', 'Wrong password');
 			}
+
+			await prisma.memberships.update({
+				where: { id: member.id },
+				data: {
+					last_login: dayjs().toDate()
+				}
+			});
+
+			await prisma
 			return extractProperties(member, ['id', 'username', 'email', 'phone_number', 'avatar', 'notes', 'employee_status', 'branch_id']);
 		} catch (error: any) {
 			appLogger.log('error', `MembershipTask.login - ${error.message}`);

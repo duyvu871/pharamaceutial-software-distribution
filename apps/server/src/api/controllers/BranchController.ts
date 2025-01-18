@@ -43,9 +43,34 @@ export class BranchController {
 		async (req: Request<any, any, any, GetBranchesQuery>, res) => {
 			try {
 				const userId = req.jwtPayload?.id;
+				const userType = req.jwtPayload?.type;
 				const branchId = req.query.branch_id;
 				if (!userId) {
 					throw new Unauthorized('UNAUTHORIZED', 'access token is required', 'access token is required');
+				}
+
+				if (userType === "MEMBERSHIP") {
+					const membership = await prisma.memberships.findUnique({
+						where: { id: userId },
+						select: { branch_id: true }
+					});
+
+					if (!membership) {
+						throw new Forbidden('forbidden_branch', 'Branch not found', 'Chi nhánh không tồn tại');
+					}
+
+					if (branchId && membership.branch_id !== branchId) {
+						throw new Forbidden('forbidden_branch', 'Branch not found', 'Chi nhánh không tồn tại');
+					}
+
+					const branch = await BranchTask.findBranch(branchId);
+
+					if (!branch) {
+						throw new Forbidden('forbidden_branch', 'Branch not found', 'Chi nhánh không tồn tại');
+					}
+
+					const response = new Success(branch).toJson;
+					return res.status(200).json(response).end();
 				}
 
 				const branch = await BranchTask.getBranch(userId, branchId);
@@ -92,7 +117,7 @@ export class BranchController {
 				if (!allowedExtensions.includes(imageExtension)) throw new BadRequest('invalid_file', 'Invalid file', 'Invalid file');
 
 
-				const imagePath = `storage/image/product/${storeId}/${uuidv4()}.${imageExtension}`;
+				const imagePath = `storage/image/branch/${storeId}/${uuidv4()}.${imageExtension}`;
 				const imageAbsolutePath = path.join(process.cwd(), imagePath);
 				const mkdir = await fs.promises.mkdir(path.dirname(imageAbsolutePath), { recursive: true });
 
@@ -105,13 +130,13 @@ export class BranchController {
 							name: imageOriginalName,
 							type: image.mimetype,
 							store_id: storeId,
-							url: `${config.baseUrl}/storage/image/product/${storeId}/${path.basename(imagePath)}`,
+							url: `${config.baseUrl}/storage/image/branch/${storeId}/${path.basename(imagePath)}`,
 							meta_data: {
 								mime: image.mimetype,
 								size: image.size,
 								originalName: imageOriginalName,
 								encoding: image.encoding,
-								destination: `storage/image/product/${storeId}`,
+								destination: `storage/image/branch/${storeId}`,
 							},
 							path: imagePath,
 							from: jwtPayload?.id ? `${jwtPayload.id}_${jwtPayload.type}` : null,

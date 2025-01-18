@@ -10,6 +10,7 @@ import { DashboardProvider } from '@provider/dashboard-provider.tsx';
 import RetailDashboard from '@container/dashboard/sale/retail-dashboard.tsx';
 import CustomerDashboard from '@container/dashboard/partner/consumer-dashboard.tsx';
 import MembershipDashboard from '@container/dashboard/membership/membership-dashboard.tsx';
+import BlockAccessRoleBaseLayout from '@layout/block-access-role-base-layout.tsx';
 
 type PageProps = {
 	params: {
@@ -32,7 +33,9 @@ const Page = (
 					>
 						<MainLayout>
 							<HeaderBarLayout>
-								<MembershipDashboard branchId={params.branchId} />
+								<BlockAccessRoleBaseLayout roles={['admin', 'user']}>
+									<MembershipDashboard branchId={params.branchId} />
+								</BlockAccessRoleBaseLayout>
 							</HeaderBarLayout>
 						</MainLayout>
 					</DashboardProvider>

@@ -1,7 +1,7 @@
 import { ConsumerAttributes } from '@schema/consumer-schema.ts';
 import axiosWithAuth from '@lib/axios.ts';
 import { SuccessResponse } from '@type/api/response.ts';
-import { PayloadMembershipSchema } from '@schema/membership-schema.ts';
+import { CreationMembershipSchema, PayloadMembershipSchema } from '@schema/membership-schema.ts';
 
 export const getMembership = async (id: string): Promise<PayloadMembershipSchema> => {
 	try {
@@ -28,5 +28,16 @@ export const getMembershipList = async (
 		// throw error;
 		console.error(`Error fetching membership: ${error.message}`);
 		return [];
+	}
+}
+
+export const upsertMembership = async (branchId: string,  membership: CreationMembershipSchema): Promise<PayloadMembershipSchema> => {
+	try {
+		const response = await axiosWithAuth.post<
+			SuccessResponse<PayloadMembershipSchema>
+		>(`/membership/${branchId}`, membership);
+		return response.data.data;
+	} catch (error: any) {
+		throw new Error(error.response.data.message);
 	}
 }

@@ -10,7 +10,7 @@ import { SuccessResponse } from '@type/api/response.ts';
 const {userSessionInfo} = useAuth();
 export const getUserProfile = async (userId: any): Promise<ProfilePayloadType | null> => {
 	try {
-		const response = await axiosWithAuth<SuccessResponse<ProfilePayloadType>>(`${API_URL}/user/profile`, {
+		const response = await axiosWithAuth<SuccessResponse<ProfilePayloadType>>(`/user/profile`, {
 			params: {
 				id: userId
 			}

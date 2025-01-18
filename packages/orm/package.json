@@ -7,6 +7,7 @@
     "typecheck": "tsc --noEmit",
     "clean": "rimraf dist",
     "clear:force": "rimraf *.js --force",
+    "postinstall": "prisma generate",
     "db:generate": "prisma generate",
     "db:push": "prisma db push --skip-generate",
     "db:push:generate": "prisma db push",
