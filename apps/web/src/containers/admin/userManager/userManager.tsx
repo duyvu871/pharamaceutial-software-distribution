@@ -130,13 +130,14 @@ const UserManager = () => {
         />
       </Group>
 
-      {currentElement && (
-        <EditModal
-          opened={opened}
-          onClose={closeEditModal}
-          currentElement={currentElement}
-        />
-      )}
+      {/*{currentElement && (*/}
+      {/*  // <EditModal*/}
+      {/*  //   opened={opened}*/}
+      {/*  //   onClose={closeEditModal}*/}
+      {/*  //   // currentElement={currentElement}*/}
+      {/*  // />*/}
+      {/*  // />*/}
+      {/*)}*/}
     </Box>
   );
 };
