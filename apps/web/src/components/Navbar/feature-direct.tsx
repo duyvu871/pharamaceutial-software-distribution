@@ -254,7 +254,7 @@ export function NavbarFeatureDirect() {
 		// 	],
 		// },
 		{
-			title: 'Sổ sách nhà thuốc',
+			title: 'Báo cáo',
 			icon: BookOpen,
 			path: '/dashboard/reports',
 			href: pathToRegex('/dashboard/reports'),

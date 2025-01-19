@@ -33,7 +33,6 @@ const defaultProductData: ProductFormData = {
 	packaging: '',
 	activeIngredient: '',
 	content: '',
-	lotNumber: '',
 	expiryDate: new Date(),
 	quantity: 0,
 	importDate: new Date(),
