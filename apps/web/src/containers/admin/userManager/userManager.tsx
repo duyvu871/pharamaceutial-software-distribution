@@ -1,32 +1,38 @@
 import React, { useEffect, useState } from 'react';
 import { Table, TextInput, Button, Group, Pagination, Box, ScrollArea, Text, Switch, Flex } from '@mantine/core';
-// import { getAdminData } from '@/app/api/v1/PageAdmin';
-// import { Stores } from '@/app/schema/stat';
-import UserModal from './ModalCreatUser';
 import { IconDotsVertical } from '@tabler/icons-react';
 import EditModal from './EditModal';
-import { Stores } from '@schema/test/stat.ts';
-import { getAdminData } from '@api/admin/get-admin.ts'; // Import Modal chỉnh sửa
+import { Prisma } from '@prisma/client'; // Import Prisma types
+import UserModal from './ModalCreatUser';
+
+// Define a type alias for the user model
+type User = Prisma.usersGetPayload<{}>;
 
 const UserManager = () => {
-  const [elements, setElements] = useState<Stores[] | undefined>(undefined);
+  const [elements, setElements] = useState<User[] | undefined>(undefined);
   const [currentPage, setCurrentPage] = useState(1);
-  const [opened, setOpened] = useState(false); // Trạng thái mở Modal
-  const [currentElement, setCurrentElement] = useState<Stores | null>(null); // Lưu dòng dữ liệu hiện tại
+  const [opened, setOpened] = useState(false);
+  const [currentElement, setCurrentElement] = useState<User | null>(null);
   const rowsPerPage = 5;
 
   useEffect(() => {
     const fetchData = async () => {
-      console.log("Fetching data...");
       try {
-        const data = await getAdminData({ type: 'sub' }, true);
-        if (data?.user) {
-          setElements(data.user as Stores[]);
+        const response = await fetch("/api/v1/admin/get-users");
+        if (!response.ok) {
+          throw new Error(`Failed to fetch users: ${response.status} ${response.statusText}`);
+        }
+        const data = await response.json();
+        if (data) {
+          setElements(data as User[]);
+        } else {
+          console.error("Data is null or undefined");
         }
       } catch (error) {
         console.error("Error fetching data: ", error);
       }
     };
+
     fetchData();
   }, []);
 
@@ -34,20 +40,17 @@ const UserManager = () => {
   const currentData = elements ? elements.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage) : [];
 
   const rows = currentData.map((element) => {
-    if (element && element.username) {
+    if(element) {
       return (
-        <Table.Tr key={element.username}>
-          <Table.Td>{element.managerId}</Table.Td>
-          <Table.Td>{element.name}</Table.Td>
-          <Table.Td>{element.phone}</Table.Td>
-          <Table.Td w="300px">{element.address}</Table.Td>
-          <Table.Td>{element.firstName}</Table.Td>
-          <Table.Td>{element.firstName}</Table.Td>
-          <Table.Td> Đại lý cấp {element.level}</Table.Td>
+        <Table.Tr key={element.id}>
+          <Table.Td>{element.username}</Table.Td>
+          <Table.Td>{element.email}</Table.Td>
+          <Table.Td>{element.phone_number}</Table.Td>
+          <Table.Td>{element.address}</Table.Td>
           <Table.Td>
             <Switch
               size="md"
-              checked={element.active}
+              checked={element.is_active}
               onLabel="ON"
               offLabel="OFF"
             />
@@ -56,38 +59,39 @@ const UserManager = () => {
             <Button
               variant="subtle"
               size="xs"
-              onClick={() => openEditModal(element)} // Mở modal khi click vào dấu 3 chấm
+              onClick={() => openEditModal(element)}
             >
               <IconDotsVertical />
             </Button>
           </Table.Td>
         </Table.Tr>
-      );
-    } else {
+      )
+    }
+    else {
       return null;
     }
   });
 
-  const openEditModal = (element: Stores) => {
+  const openEditModal = (element: User) => {
     setCurrentElement(element);
-    setOpened(true); // Mở modal khi chọn dòng dữ liệu
+    setOpened(true);
   };
 
   const closeEditModal = () => {
-    setOpened(false); // Đóng modal  
+    setOpened(false);
   };
 
   return (
     <Box>
       <Flex justify="space-between" align="center" p="lg">
         <Text fw={700} fz="xl" c="black">
-          Danh Sách Cửa Hàng
+          Danh Sách Người Dùng
         </Text>
         <UserModal />
       </Flex>
 
       <Group mb="lg" p="lg" align="center" bg="#fff">
-        {["Tài Khoản", "Họ và Tên", "Địa chỉ", "Email"].map((placeholder) => (
+        {["Tài Khoản", "Email", "Số Điện Thoại", "Địa chỉ"].map((placeholder) => (
           <TextInput
             key={placeholder}
             placeholder={placeholder}
@@ -102,18 +106,14 @@ const UserManager = () => {
         <Button>Tìm kiếm</Button>
       </Group>
 
-      {/* Bảng */}
       <ScrollArea>
         <Table c="black">
           <Table.Thead>
             <Table.Tr>
-              <Table.Th>Mã Cửa Hàng</Table.Th>
-              <Table.Th>Tên Cửa Hàng</Table.Th>
-              <Table.Th>Số Điện Thoại</Table.Th>
+              <Table.Th>Tên tài khoản</Table.Th>
+              <Table.Th>Email</Table.Th>
+              <Table.Th>Số điện thoại</Table.Th>
               <Table.Th>Địa Chỉ</Table.Th>
-              <Table.Th>Chủ Cửa Hàng</Table.Th>
-              <Table.Th>Chủ Đại Lý</Table.Th>
-              <Table.Th>Cấp đại lý</Table.Th>
               <Table.Th>Trạng thái</Table.Th>
               <Table.Th>Tùy Chọn</Table.Th>
             </Table.Tr>
@@ -122,7 +122,6 @@ const UserManager = () => {
         </Table>
       </ScrollArea>
 
-      {/* Phân trang */}
       <Group mt="lg">
         <Pagination
           total={totalPages}
@@ -131,7 +130,6 @@ const UserManager = () => {
         />
       </Group>
 
-      {/* Modal Chỉnh Sửa */}
       {currentElement && (
         <EditModal
           opened={opened}

@@ -10,7 +10,19 @@ export default function StoreModal() {
   
     const handleSubmit = (values: unknown) => {
       console.log('Dữ liệu nhận được:', values);
-      // ô thêm creat db hay gì ở đây á 
+      // ô thêm creat db hay gì ở đây á
+      fetch("/api/v1/admin/create-store", {
+        method: "POST",
+        body: JSON.stringify(values),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log("Dữ liệu sau khi tạo mới: ", data);
+          alert("Tạo mới thành công");
+        })
     };
   
     return (

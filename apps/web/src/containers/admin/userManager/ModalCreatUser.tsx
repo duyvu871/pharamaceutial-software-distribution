@@ -10,7 +10,19 @@ export default function UserModal() {
   
     const handleSubmit = (values: unknown) => {
       console.log('Dữ liệu nhận được:', values);
-      // ô thêm creat db hay gì ở đây á 
+      console.log("Dữ liệu sau khi tạo mới: ", values);
+      fetch("/api/v1/admin/create-user", {
+        method: "POST",
+        body: JSON.stringify(values),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log("Dữ liệu sau khi tạo mới: ", data);
+          alert("Tạo mới thành công");
+        })
     };
   
     return (
