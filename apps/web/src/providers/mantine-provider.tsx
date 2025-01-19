@@ -2,6 +2,9 @@
 import React from 'react';
 import { createTheme, Loader, MantineProvider } from '@mantine/core';
 import RingLoader from '@ui/asset-ui/loader/ring-loader';
+import dayjs from "dayjs";
+import 'dayjs/locale/vi';
+dayjs().locale('vi')
 
 const theme = createTheme({
 	components: {

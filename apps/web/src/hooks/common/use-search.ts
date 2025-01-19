@@ -6,8 +6,16 @@ type UseSearchOptions<T> = IFuseOptions<T> & {
 	threshold?: number;
 };
 
+export type UseSearchResult<T> = {
+	query: (query: string) => T[];
+	store: T[];
+	setQuery: (query: string) => void;
+	results: T[];
+	setData: (data: T[]) => void;
+}
+
 export function useSearch<T extends Record<string, string>>
-(options: UseSearchOptions<T>) {
+(options: UseSearchOptions<T>): UseSearchResult<T> {
 	const [query, setQuery] = useState<string>("");
 	const [data, setData] = useState([] as T[]);
 	const fuse = useMemo(() => {
@@ -26,7 +34,7 @@ export function useSearch<T extends Record<string, string>>
 		const search = fuse.search(query);
 		// console.log(search);
 		return search.map((result) => result.item);
-	}, [fuse]) as T[];
+	}, [fuse]) as (query: string) => T[];
 
 	return {
 		query: queryResults,

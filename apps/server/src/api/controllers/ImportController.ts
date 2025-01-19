@@ -10,6 +10,9 @@ import { benchmarkAsync, withBenchmark } from 'server/shared/benchmark.ts';
 import { InvoiceAttribute } from 'repository/transaction/import-invoice/schema.ts';
 import BadRequest from 'responses/clientErrors/BadRequest.ts';
 import {import_invoices, import_invoice_product} from "@prisma/client"
+import { PaginationQueryV2 } from 'validations/Pagination.ts';
+import { transformExpressParamsForPrisma } from 'server/shared/pagination-parse.ts';
+import { ProductIdParam } from 'validations/Product.ts';
 
 export class ImportController {
 	public static importProduct = AsyncMiddleware.asyncHandler(
@@ -108,6 +111,68 @@ export class ImportController {
 				response.message('Lấy danh sách nhập hàng thành công');
 
 				return res.status(200).send(response.toJson).end();
+			} catch (error) {
+				console.log('error: ', error);
+				throw error;
+			}
+		}
+	)
+
+	public static getImportByProduct = AsyncMiddleware.asyncHandler(
+		async (req: Request<BranchIdParam & ProductIdParam, any, any, PaginationQueryV2>, res: Response) => {
+			try {
+				const branchId = req.params.branchId;
+				const productId = req.params.productId;
+				const protectAttributes = ["branch_id"];
+
+				const product = await prisma.products.findFirst({
+					select: {
+						id: true
+					},
+					where: {
+						id: productId,
+						stores: {
+							branch_id: branchId
+						}
+					}
+				});
+
+				if (!product) {
+					throw new Forbidden('product_not_found', 'Sản phẩm không tồn tại', 'Sản phẩm không tồn tại');
+				}
+
+				const queryParse = transformExpressParamsForPrisma("import_invoice_product", req.query, prisma);
+
+				console.log(queryParse);
+				const total = await prisma.import_invoice_product.count({
+					where: {
+						...queryParse.where,
+						product_id: productId,
+					},
+				});
+				const doctors = await prisma.import_invoice_product.findMany({
+					...queryParse,
+					where: {
+						...queryParse.where,
+						product_id: productId,
+					},
+					include: {
+						product: {
+							select: {
+								product_name: true,
+								id: true,
+							}
+						}
+					}
+				});
+				const response = new Success({
+					data: doctors,
+					total,
+					page: Number(req.query.page),
+					totalPage: Math.ceil(total / Number(req.query.limit || 10)),
+				}).toJson;
+
+				res.status(200).json(response).end();
 			} catch (error) {
 				console.log('error: ', error);
 				throw error;

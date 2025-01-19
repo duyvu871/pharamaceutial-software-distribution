@@ -25,7 +25,7 @@ const productDataItemSchema = z.object({
 	packaging: z.string(),
 	activeIngredient: z.string(),
 	content: z.string(),
-	lotNumber: z.string(),
+	// lotNumber: z.string().optional(),
 	expiryDate: z.string().datetime(),
 	quantity: z.number().int().min(0),
 	importDate: z.string().datetime(),

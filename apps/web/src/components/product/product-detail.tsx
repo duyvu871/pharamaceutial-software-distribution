@@ -1,42 +1,70 @@
 'use client'
 
-import { useState } from 'react'
-import { Tabs, TextInput } from '@mantine/core'
+import { useContext, useState } from 'react'
+import { LoadingOverlay, Tabs, TextInput } from '@mantine/core'
 import { Copy, Edit, Printer, Lock, Trash2, RotateCw, Maximize, Plus, Minus } from 'lucide-react'
 import Image from 'next/image'
 import { MoneyInput } from '@component/money-input.tsx';
+import { CreationProductSchema, Product } from '@schema/product-schema';
+import MedicineForm from '@component/Detail/product-detail.tsx';
+import { cn } from '@lib/tailwind-merge.ts';
+import { DashBoardContext } from '@container/dashboard/product/product-dashboard-v1.tsx';
+import { InventoryLedgerDetail } from '@component/Detail/inventory-ledger-detail.tsx';
+import { useDisclosure } from '@mantine/hooks'
+import useToast from '@hook/client/use-toast-notification.ts';
+import { updateProduct } from '@api/product.ts';
+import { useDashboard } from '@hook/dashboard/use-dasboard.ts';
+import { timeout } from '@util/delay.ts';
 
 interface ProductDetailProps {
-	product: {
-		id: string
-		name: string
-		code: string
-		group: string
-		type: string
-		minStock: number
-		maxStock: number
-		sellPrice: number
-		costPrice: number
-		avgCostPrice: number
-		manufacturer: string
-		origin: string
-		location: string
-		description: string
-		image: string
-	}
+	product: Product
+	type: string
 }
 
-export default function ProductDetail({ product }: ProductDetailProps) {
+
+
+export default function ProductDetail({ product, type }: ProductDetailProps) {
+	const {branchId} = useDashboard();
+
 	const [activeTab, setActiveTab] = useState('info')
 	const [imageZoom, setImageZoom] = useState(1)
+
+	const [openUpdateForm, setOpenUpdateForm] = useState<boolean>(false);
+	const [visibleActionOverlay, { toggle, close: closeActionOverLay, open: openActionOverlay }] = useDisclosure(false);
+
+	const {showErrorToast, showSuccessToast, showInfoToast, showWarningToast} = useToast();
+
 
 	const handleZoomIn = () => setImageZoom(prev => Math.min(prev + 0.2, 2))
 	const handleZoomOut = () => setImageZoom(prev => Math.max(prev - 0.2, 0.5))
 	const handleResetZoom = () => setImageZoom(1)
 
+	const update = async (data: CreationProductSchema) => {
+		try {
+			if (!branchId) {
+				throw new Error("Branch id is required");
+			}
+			if (!data.id) {
+				throw new Error("Product id is required");
+			}
+			openActionOverlay();
+			const create = await updateProduct(branchId, data.id, data);
+			if (create) {
+				showSuccessToast('Cập nhật thông tin sản phẩm thành công, làm mới để xem thay đổi');
+			}
+
+		} catch (error) {
+			showErrorToast('Cập nhật thất bại')
+		} finally {
+			timeout(1000).then(() => {
+				closeActionOverLay();
+			});
+		}
+	}
+
 	return (
 		<div className="w-full mx-auto p-6 bg-white">
-			<h1 className="text-2xl font-medium text-teal-600 mb-6">{product.name}</h1>
+			<h1 className="text-2xl font-medium text-teal-600 mb-6">{product.product_name}</h1>
 
 			<Tabs value={activeTab} onChange={(value) => setActiveTab(value || 'info')}>
 				<Tabs.List className="border-b border-gray-200 mb-6">
@@ -56,40 +84,40 @@ export default function ProductDetail({ product }: ProductDetailProps) {
 					>
 						Thẻ kho
 					</Tabs.Tab>
-					<Tabs.Tab
-						value="inventory"
-						className={`pb-4 relative ${
-							activeTab === 'inventory' ? 'text-teal-500 font-medium' : 'text-gray-500'
-						}`}
-					>
-						Tồn kho
-					</Tabs.Tab>
-					<Tabs.Tab
-						value="batch"
-						className={`pb-4 relative ${
-							activeTab === 'batch' ? 'text-teal-500 font-medium' : 'text-gray-500'
-						}`}
-					>
-						Tồn kho theo Lô
-					</Tabs.Tab>
-					<Tabs.Tab
-						value="history"
-						className={`pb-4 relative ${
-							activeTab === 'history' ? 'text-teal-500 font-medium' : 'text-gray-500'
-						}`}
-					>
-						Lịch sử cập nhật
-					</Tabs.Tab>
+					{/*<Tabs.Tab*/}
+					{/*	value="inventory"*/}
+					{/*	className={`pb-4 relative ${*/}
+					{/*		activeTab === 'inventory' ? 'text-teal-500 font-medium' : 'text-gray-500'*/}
+					{/*	}`}*/}
+					{/*>*/}
+					{/*	Tồn kho*/}
+					{/*</Tabs.Tab>*/}
+					{/*<Tabs.Tab*/}
+					{/*	value="batch"*/}
+					{/*	className={`pb-4 relative ${*/}
+					{/*		activeTab === 'batch' ? 'text-teal-500 font-medium' : 'text-gray-500'*/}
+					{/*	}`}*/}
+					{/*>*/}
+					{/*	Tồn kho theo Lô*/}
+					{/*</Tabs.Tab>*/}
+					{/*<Tabs.Tab*/}
+					{/*	value="history"*/}
+					{/*	className={`pb-4 relative ${*/}
+					{/*		activeTab === 'history' ? 'text-teal-500 font-medium' : 'text-gray-500'*/}
+					{/*	}`}*/}
+					{/*>*/}
+					{/*	Lịch sử cập nhật*/}
+					{/*</Tabs.Tab>*/}
 				</Tabs.List>
 
 				<Tabs.Panel value="info">
-					<div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-8">
+					<div className="grid grid-cols-1 md:grid-cols-[1fr_3fr] gap-8">
 						{/* Product Image */}
 						<div className="relative">
 							<div className="relative w-full aspect-square h-[300px] border border-gray-200 rounded-lg overflow-hidden">
 								<Image
-									src={product.image}
-									alt={product.name}
+									src={product.default_image || '/images/placeholder.png'}
+									alt={product.product_name}
 									fill
 									className="object-contain"
 									unoptimized
@@ -129,7 +157,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
 							<div className="grid grid-cols-2 gap-4">
 								<div>
 									<label className="text-sm text-gray-500">Mã hàng:</label>
-									<div className="font-medium">{product.code}</div>
+									<div className="font-medium">{product.product_id}</div>
 								</div>
 								<div>
 									<label className="text-sm text-gray-500">Hãng sản xuất:</label>
@@ -137,24 +165,24 @@ export default function ProductDetail({ product }: ProductDetailProps) {
 								</div>
 								<div>
 									<label className="text-sm text-gray-500">Nhóm hàng:</label>
-									<div className="font-medium">{product.group}</div>
+									<div className="font-medium">{product?.store_group?.group_name || ""}</div>
 								</div>
 								<div>
 									<label className="text-sm text-gray-500">Nước sản xuất:</label>
-									<div className="font-medium">{product.origin}</div>
+									<div className="font-medium">{product.made_in}</div>
 								</div>
 								<div>
 									<label className="text-sm text-gray-500">Loại hàng:</label>
-									<div className="font-medium">{product.type}</div>
+									<div className="font-medium">{product.product_type || ""}</div>
 								</div>
-								<div>
-									<label className="text-sm text-gray-500">Vị trí:</label>
-									<div className="font-medium">{product.location}</div>
-								</div>
-								<div>
-									<label className="text-sm text-gray-500">Định mức tồn:</label>
-									<div className="font-medium">{product.minStock} {'>'} {product.maxStock}</div>
-								</div>
+								{/*<div>*/}
+								{/*	<label className="text-sm text-gray-500">Vị trí:</label>*/}
+								{/*	<div className="font-medium">{product.}</div>*/}
+								{/*</div>*/}
+								{/*<div>*/}
+								{/*	<label className="text-sm text-gray-500">Định mức tồn:</label>*/}
+								{/*	<div className="font-medium">{product} {'>'} {product.maxStock}</div>*/}
+								{/*</div>*/}
 								<div>
 									<label className="text-sm text-gray-500">Mô tả:</label>
 									<div className="font-medium">{product.description}</div>
@@ -162,7 +190,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
 								<div>
 									<label className="text-sm text-gray-500">Giá bán:</label>
 									<MoneyInput
-										value={product.sellPrice}
+										value={product.sell_price}
 										onChange={() => {
 										}}
 										className="font-medium" />
@@ -170,28 +198,26 @@ export default function ProductDetail({ product }: ProductDetailProps) {
 								<div>
 									<label className="text-sm text-gray-500">Giá vốn:</label>
 									<MoneyInput
-										value={product.costPrice}
+										value={product.original_price}
 										onChange={() => {
 										}}
 										className="font-medium" />
 								</div>
-								<div>
-									<label className="text-sm text-gray-500">Giá vốn bình quân:</label>
-									<MoneyInput
-										value={product.avgCostPrice}
-										onChange={() => {
-										}}
-										className="font-medium" />
-								</div>
+								{/*<div>*/}
+								{/*	<label className="text-sm text-gray-500">Giá vốn bình quân:</label>*/}
+								{/*	<MoneyInput*/}
+								{/*		value={product.avgCostPrice}*/}
+								{/*		onChange={() => {*/}
+								{/*		}}*/}
+								{/*		className="font-medium" />*/}
+								{/*</div>*/}
 							</div>
 						</div>
 					</div>
 				</Tabs.Panel>
 
 				<Tabs.Panel value="stock-card">
-					<div className="text-center text-gray-500 py-8">
-						Thẻ kho sẽ được hiển thị ở đây
-					</div>
+					<InventoryLedgerDetail product={product} />
 				</Tabs.Panel>
 
 				<Tabs.Panel value="inventory">
@@ -213,13 +239,26 @@ export default function ProductDetail({ product }: ProductDetailProps) {
 				</Tabs.Panel>
 			</Tabs>
 
+			<div className={cn("transition-all overflow-hidden relative", {
+				"h-[0]": !openUpdateForm,
+				"h-auto": openUpdateForm
+			})}>
+				<LoadingOverlay visible={visibleActionOverlay} zIndex={1000} overlayProps={{ radius: "sm", blur: 2 }} />
+				<MedicineForm type={type} detail={product} onSubmit={update} />
+			</div>
+
 			{/* Action Buttons */}
 			<div className="flex gap-2 mt-8">
 				<button className="flex items-center gap-2 px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200">
 					<Printer className="w-4 h-4" />
 					<span>In tem</span>
 				</button>
-				<button className="flex items-center gap-2 px-4 py-2 text-white bg-teal-500 rounded-md hover:bg-teal-600">
+				<button
+					onClick={() => setOpenUpdateForm(prev => !prev)}
+					className={cn(
+						"flex items-center gap-2 px-4 py-2 text-white bg-teal-500 rounded-md hover:bg-teal-600",
+						{ "bg-teal-600": openUpdateForm }
+					)}>
 					<Edit className="w-4 h-4" />
 					<span>Cập nhật</span>
 				</button>

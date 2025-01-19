@@ -142,6 +142,7 @@ export default function InvoiceHistory({branchId}: {branchId: string}) {
 											/>
 										</Table.Th>
 										<Table.Th className="whitespace-nowrap">#</Table.Th>
+										<Table.Th className="whitespace-nowrap">Mã đơn</Table.Th>
 										<Table.Th className="whitespace-nowrap">Ngày bán</Table.Th>
 										<Table.Th className="whitespace-nowrap">Tên khách hàng</Table.Th>
 										<Table.Th className="whitespace-nowrap">Tổng tiền</Table.Th>
@@ -165,6 +166,9 @@ export default function InvoiceHistory({branchId}: {branchId: string}) {
 														/>
 													</Table.Td>
 													<Table.Td onClick={() => toggleDetail(transformedInvoice)}>{index + 1}</Table.Td>
+													<Table.Td onClick={() => toggleDetail(transformedInvoice)}>{
+														invoice.invoice_id
+													}</Table.Td>
 													<Table.Td onClick={() => toggleDetail(transformedInvoice)} className={'whitespace-nowrap'}>
 														{transformedInvoice.saleDate}
 													</Table.Td>

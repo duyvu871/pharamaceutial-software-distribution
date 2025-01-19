@@ -1,3 +1,5 @@
+"use client";
+
 import RefreshCookieAuthProvider from '@provider/refresh-cookie-provider';
 import React from 'react';
 import AppLayout from '@layout/app-layout.tsx';
@@ -7,6 +9,8 @@ import { ProfileProvider } from '@provider/profile-provider.tsx';
 import { DashboardProvider } from '@provider/dashboard-provider.tsx';
 import RetailDashboard from '@container/dashboard/sale/retail-dashboard.tsx';
 import FeatureComingSoon from '@container/updating/feature-coming-soon.tsx';
+import InvoiceHistory from '@container/dashboard/transactions/invoice/invoice-history.tsx';
+import PrescriptionHistory from '@container/dashboard/transactions/prescription/prescription-history.tsx';
 
 type PageProps = {
 	params: {
@@ -29,7 +33,7 @@ const Page = (
 					>
 						<MainLayout>
 							<HeaderBarLayout>
-								<FeatureComingSoon/>
+								<PrescriptionHistory />
 							</HeaderBarLayout>
 						</MainLayout>
 					</DashboardProvider>

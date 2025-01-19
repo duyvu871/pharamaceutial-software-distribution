@@ -30,6 +30,7 @@ import { getConsumerRewardPoint } from '@api/consumer.ts';
 import { CurrentRewardPointSchema } from '@schema/reward-point-schema.ts';
 import { cn } from '@lib/tailwind-merge.ts';
 import PrescriptionFormV1 from '@component/Form/prescript-form-v1.tsx';
+import { timeout } from '@util/delay.ts';
 
 type InvoiceItemProps = {
 	product: InvoiceType['items'][number];
@@ -186,6 +187,8 @@ function InvoiceTab() {
 
 	const [vat, setVat] = useState<number>(0);
 
+	const [invoiceId, setInvoiceId] = useState<string>('');
+
 	const [totalPrice, setTotalPrice] = useState<number>(0);
 	const [amountDue, setAmountDue] = useState<number>(0);
 	const [discount, setDiscountState] = useState<number>(0);
@@ -285,11 +288,15 @@ function InvoiceTab() {
 
 		const submit = await submitInvoice(invoice, prescriptionSale[activeTab]);
 		console.log('submit', submit);
+		setInvoiceId(submit?.invoice_id || '');
 		if (!submit) {
 			showErrorToast('Thanh toán thất bại');
 			return;
 		}
-		reactToPrintFn();
+		await timeout(1000)
+			.then(() => {
+				reactToPrintFn();
+			});
 	}
 
 	useEffect(() => {
@@ -406,7 +413,7 @@ function InvoiceTab() {
 										</span>
 									</div>
 									<h2 className="text-3xl font-bold mt-4">HÓA ĐƠN BÁN HÀNG</h2>
-									<p className="text-xl"><span className={'font-medium'}>Số HĐ:</span> {invoices[activeTab].id}</p>
+									<p className="text-xl"><span className={'font-medium'}>Số HĐ:</span> {invoiceId}</p>
 									<p className="text-xl"><span className={'font-medium'}>Ngày:</span> {new Date().toLocaleString()}</p>
 								</div>
 

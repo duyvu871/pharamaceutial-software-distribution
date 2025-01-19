@@ -79,7 +79,7 @@ export class InvoiceValidation {
 				.optional(),    // Điện thoại (tuỳ chọn)
 			the_bhyt: z.string().optional(),      // Thẻ BHYT (tuỳ chọn)
 			gioi_tinh: z.number().int()
-		})
+		}).optional(),
 	})
 
 	public static updateInvoice = this.createInvoice.partial();

@@ -86,7 +86,7 @@ function DoctorAutocomplete({makeOptional, setValue, clearField, defaultValue, v
 					close={closeModal}
 				/>
 			</div>
-			<AutocompleteSearch<DoctorSchema>
+			<AutocompleteSearch<ProverState>
 				// label="Nhà cung cấp"
 				placeholder="Nhập tên bác sĩ"
 				onSearch={async term => {

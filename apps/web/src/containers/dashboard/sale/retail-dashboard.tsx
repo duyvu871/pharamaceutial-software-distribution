@@ -1,6 +1,6 @@
 'use client'
 // import { ActionIcon, AppShell, Box, Button, Checkbox, Flex, Paper, TextInput, Text, Switch, Textarea } from '@mantine/core';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Search, Plus, Settings, User, FileText, ChevronDown, Phone, X, List } from 'lucide-react'
 import { AppShell, Autocomplete, Box,
 	Button,
@@ -22,6 +22,48 @@ function RetailDashboard({branchId}: {branchId: string}) {
 	if (!isAuthenticated) {
 		return <></>;
 	}
+
+	const [scannedCode, setScannedCode] = useState('');
+	const [isScanning, setIsScanning] = useState(false);
+
+	// useEffect(() => {
+	// 	let buffer = ''; // Bộ đệm để lưu mã vạch
+	// 	let timeoutId: NodeJS.Timeout; // Timeout để xác định khi nào máy quét hoàn tất gửi mã
+	//
+	// 	const handleKeydown = (e: any) => {
+	// 		// Nếu máy quét gửi mã, nó sẽ gửi một chuỗi nhanh
+	// 		if (!isScanning) setIsScanning(true);
+	//
+	// 		clearTimeout(timeoutId); // Hủy timeout nếu đang xử lý chuỗi mã
+	// 		buffer += e.key; // Thêm ký tự vào buffer
+	//
+	// 		timeoutId = setTimeout(() => {
+	// 			// Máy quét hoàn tất gửi mã, buffer chứa mã hoàn chỉnh
+	// 			setScannedCode(buffer); // Lưu mã vào state
+	// 			buffer = ''; // Xóa buffer
+	// 			setIsScanning(false); // Đặt trạng thái về bình thường
+	// 		}, 200); // Máy quét thường gửi mã rất nhanh, hoàn tất trong 200ms
+	// 	};
+	//
+	// 	window.addEventListener('keydown', handleKeydown);
+	// 	return () => {
+	// 		window.removeEventListener('keydown', handleKeydown);
+	// 	};
+	// }, [isScanning]);
+	//
+	// useEffect(() => {
+	// 	if (scannedCode) {
+	// 		console.log('Scanned Code:', scannedCode);
+	// 		handleSearch(scannedCode); // Gọi hàm tìm kiếm
+	// 	}
+	// }, [scannedCode]);
+	//
+	// const handleSearch = (code: any) => {
+	// 	// Hàm xử lý tìm kiếm mã hàng hóa
+	// 	alert(`Tìm kiếm mã hàng hóa: ${code}`);
+	// 	console.log(`Tìm kiếm mã hàng hóa: ${code}`);
+	// 	// Gửi mã tới server hoặc thực hiện tìm kiếm trong dữ liệu
+	// };
 
 	return (
 			<CenterBox

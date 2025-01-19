@@ -1,33 +1,26 @@
-"use client"
+"use client";
+
 
 import EnterpriseResourcePlanningTable from '@component/EnterpriseResourcePlanningTableLayout/table.tsx';
-import { DoctorCreationSchema, DoctorSchema } from '@schema/doctor-schema.ts';
 import { ActionItemRender, TableRender } from '@type/components/table.type';
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import StateStatus from '@component/Status/state-status.tsx';
-import DoctorDetail from '@component/Detail/doctor-detail.tsx';
 import { useDashboard } from '@hook/dashboard/use-dasboard.ts';
 import { Typography } from '@component/Typography';
 import { Button, Combobox, Group, InputBase, LoadingOverlay, Modal, Popover, Stack } from '@mantine/core';
 import { Check, ChevronDown, FilePenLine,
 	FileSpreadsheet, LockKeyholeOpen, OctagonX, Plus, RotateCw, Settings, Trash2, Upload } from 'lucide-react';
 import useToast from '@hook/client/use-toast-notification.ts';
-import { timeout } from '@util/delay.ts';
-import { useDisclosure } from '@mantine/hooks';
-import { TableDetailModal } from '@component/EnterpriseResourcePlanningTableLayout/table-detail-modal.tsx';
-import { cn } from '@ui/tailwind-merge.ts';
-import { ProviderModal } from '@component/Modal/provider-modal.tsx';
-import { getDoctors, upsertDoctor } from '@api/doctor.ts';
-import { ConsumerAttributes, ConsumerCreationAttributes } from '@schema/consumer-schema.ts';
-import { genderVi } from '@global/locale.ts';
-import { AddCustomerModal } from '@component/Modal/add-new-consumer.tsx';
-import { upsertMembership } from '@api/membership.ts';
-import { CreationMembershipSchema } from '@schema/membership-schema.ts';
-import { createConsumer, getConsumerList, getConsumerListV2 } from '@api/consumer.ts';
-import { InvoiceType, PrescriptionCreationSchema, PrescriptionSchema } from '@schema/invoice-schema.ts';
 
+import { useDisclosure } from '@mantine/hooks';
+import { cn } from '@ui/tailwind-merge.ts';
+import { ImportInvoiceProductSchema } from '@schema/import-schema.ts';
+import { Product } from '@schema/product-schema.ts';
+import { getImportByProduct } from '@api/import.ts';
 import dayjs from 'dayjs';
-dayjs().locale('vi')
+
+export type InventoryLedgerDetailProps = {
+	product: Product
+}
 
 type DashboardContextType = {
 	activeModal: () => void;
@@ -39,12 +32,12 @@ export const SchemaDashBoardContext = createContext<DashboardContextType>({
 	update: async () => {}
 });
 
-const idKey = 'prescription_id';
+const idKey = 'id';
 
-type Schema = (PrescriptionSchema & {invoices: InvoiceType});
-type CreationSchema = PrescriptionCreationSchema;
+type Schema = ImportInvoiceProductSchema;
+type CreationSchema = ImportInvoiceProductSchema;
 
-const DoctorDashboardToolBox = () => {
+const DashboardToolBox = () => {
 	const {activeModal} = useContext(SchemaDashBoardContext);
 	return (
 		<>
@@ -77,9 +70,9 @@ const DoctorDashboardToolBox = () => {
 	)
 }
 
-export default function DoctorPrescriptionDetail({prescriptions}: {prescriptions: Schema[]}) {
+export function InventoryLedgerDetail({product}: InventoryLedgerDetailProps) {
 	const { branchId } = useDashboard();
-	const [data, setData] = useState<Schema[]>([...prescriptions]);
+	const [data, setData] = useState<Schema[]>([]);
 	const [total, setTotal] = useState<number>(0);
 	const [page, setPage] = useState<number>(1);
 	const [perPage, setPerPage] = useState<number>(10);
@@ -94,36 +87,9 @@ export default function DoctorPrescriptionDetail({prescriptions}: {prescriptions
 	const [isUpdating, setIsUpdating] = useState<boolean>(false);
 	const [detailOpen, setDetailOpen] = useState<string | null>(null);
 
-	const toggleDetail = (id: string) =>
-		setDetailOpen(
-			detailOpen === id ? null : id
-		)
-
-
 	const {showErrorToast, showSuccessToast, showInfoToast, showWarningToast} = useToast();
 
-	const updateOrCreate = useCallback(async (data: CreationSchema) => {
-		try {
-
-			setIsUpdating(true);
-			openActionOverlay();
-			// const update = await createConsumer(branchId, data);
-			// if (data.id) {
-			// 	setData(prev => prev.map(item => (item[idKey] === data[idKey]) ? {...item,...data} : item));
-			// } else {
-			// 	setData(prev => [update, ...prev]);
-			// 	setTotal(total => total + 1);
-			// }
-			// console.log(update);
-			// showSuccessToast(`Cập nhật khách hàng ${update[idKey]} thành công`);
-
-			closeActionOverLay();
-		} catch (error: any) {
-			showErrorToast(error.message);
-		} finally {
-			setIsUpdating(false);
-		}
-	}, [showErrorToast, openActionOverlay, closeActionOverLay]);
+	const updateOrCreate = useCallback(async (data: CreationSchema) => {}, []);
 
 	const iconProps = {
 		size: 15,
@@ -191,34 +157,29 @@ export default function DoctorPrescriptionDetail({prescriptions}: {prescriptions
 
 	const tableData: TableRender<Schema> = [
 		{
-			title: 'Mã hóa đơn',
-			render: (model) => model.invoices.invoice_id
+			title: "Sản phẩm",
+			render: (data) => data.product?.product_name || ""
 		},
 		{
-			title: 'Ngày kê',
-			render: (model) => dayjs(model.invoices.saleDate).format('DD/MM/YYYY HH:mm:ss')
+			title: "Ngày nhập",
+			render: (data) => dayjs(data.import_date).format("DD/MM/YYYY")
 		},
 		{
-			title: 'Khách hàng',
-			render: (model) => model.invoices.customerName,
+			title: "Số lượng",
+			render: (data) => data.quantity
 		},
 		{
-			title: 'Bệnh nhân',
-			render: (model) => model.benh_nhan
+			title: "Đơn giá",
+			render: (data) => data.price.toLocaleString() + "đ"
 		},
 		{
-			title: 'Cơ sở khám bệnh',
-			render: (consumer) => consumer.co_so_kham
+			title: "Thành tiền",
+			render: (data) => data.total.toLocaleString() + "đ"
 		},
-		{
-			title: "Hành động",
-			render: (data) => <ActionButton data={data} />
-		}
-	]
-
-
-	const filterComponent = [
-
+		// {
+		// 	title: "Hành động",
+		// 	render: (data) => <ActionButton data={data} />
+		// }
 	]
 
 	useEffect(() => {
@@ -229,21 +190,24 @@ export default function DoctorPrescriptionDetail({prescriptions}: {prescriptions
 	}, [opened]);
 
 	useEffect(() => {
-		// getConsumerListV2({
-		// 	branchId,
-		// 	page: page,
-		// 	limit: perPage,
-		// 	filterBy: filter,
-		// 	searchFields: search,
-		// 	orderBy: orderBy
-		// })
-		// 	.then((paginate) => {
-		// 		setTotal(paginate.total);
-		// 		setData(paginate.data);
-		// 	})
-		// 	.catch((error) => {
-		// 		showErrorToast(error.message);
-		// 	})
+		getImportByProduct(
+			product.id,
+			{
+				branchId,
+				page: page,
+				limit: perPage,
+				filterBy: filter,
+				searchFields: search,
+				orderBy: orderBy
+			}
+		)
+			.then((paginate) => {
+				setTotal(paginate.total);
+				setData(paginate.data);
+			})
+			.catch((error) => {
+				showErrorToast(error.message);
+			})
 	}, [branchId, filter, search, page, perPage, orderBy]);
 
 	return (
@@ -264,13 +228,13 @@ export default function DoctorPrescriptionDetail({prescriptions}: {prescriptions
 				{/*{<DoctorDetail detail={modelActiveDetail} submit={updateOrCreate} />}*/}
 			</Modal>
 			<EnterpriseResourcePlanningTable<Schema>
-				name={"Danh sách khách hàng"}
+				name={"Danh sách thẻ kho"}
 				data={tableData}
 				keyName={idKey}
 				render={data}
 				filter={[]}
 				total={total}
-				// toolBox={<DoctorDashboardToolBox />}
+				// toolBox={<DashboardToolBox />}
 				getItem={(page, limit) => {
 					page && setPage(page);
 					limit && setPerPage(limit);

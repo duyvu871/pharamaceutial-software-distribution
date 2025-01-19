@@ -129,9 +129,9 @@ function TableRecordEditor<ItemType extends Record<string, any>>(props: TableRec
 									))}
 								</Table.Tr>
 								{/* Thông tin chi tiết nếu có */}
-								{props.detail && (
+								{(props.detail && (props.openDetail) === row[props.keyName]) && (
 									<Table.Tr className={' overflow-hidden'}>
-										<Table.Td p={0} colSpan={10}>
+										<Table.Td p={0} colSpan={props.columns.length + 1}>
 											<Box
 												h={(props.openDetail) === row[props.keyName] ? '' : 0}
 												className={'transition-all overflow-hidden'}

@@ -34,7 +34,10 @@ export default function DoctorDetail<Schema extends DoctorSchema>({detail, submi
 			{
 				detail && (
 					<Tabs.Panel value="prescription-history">
-						<DoctorPrescriptionDetail prescriptions={detail.invoice_prescriptions} />
+						<DoctorPrescriptionDetail prescriptions={
+							// @ts-ignore
+							detail.invoice_prescriptions
+						} />
 					</Tabs.Panel>
 				)
 			}

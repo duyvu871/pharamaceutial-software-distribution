@@ -41,13 +41,19 @@ function ProviderAutocomplete({makeOptional, setValue}: ProviderAutocompleteProp
 
 	const prevProviderRef = useRef<ProverState | null>(null);
 
-	useEffect(() => {
+	const updateProvider = ({ brachId, page, perPage, limit, search }: {
+		brachId: string;
+		page: number;
+		perPage: number;
+		limit: number;
+		search: string;
+	}) => {
 		getProviders({
-			branchId: branchId,
-			page: 1,
-			perPage: 10,
-			limit: 10,
-
+			branchId: brachId,
+			page: page,
+			perPage: perPage,
+			limit: limit,
+			search: search
 		}).then((data) => {
 			setProviderData(data.map((item) => ({
 				name: item.companyName,
@@ -55,6 +61,10 @@ function ProviderAutocomplete({makeOptional, setValue}: ProviderAutocompleteProp
 			})))
 			setProviders(data);
 		})
+	}
+
+	useEffect(() => {
+		updateProvider({ brachId: branchId, page: 1, perPage: 10, limit: 20, search: '' })
 	}, [branchId]);
 
 	useEffect(() => {
@@ -68,10 +78,13 @@ function ProviderAutocomplete({makeOptional, setValue}: ProviderAutocompleteProp
 	return (
 		<AutocompleteSearch<ProverState>
 			// label="Nhà cung cấp"
-
+			onFocus={() => {
+				updateProvider({ brachId: branchId, page: 1, perPage: 10, limit: 20, search: '' })
+			}}
 			placeholder="Nhập tên nhà cung cấp"
 			onSearch={async term => {
 				const searchTerm = `'${term.trim().split(' ').join(' \'')}`;
+				// updateProvider({ brachId: branchId, page: 1, perPage: 10, limit: 10, search: term });
 				// console.log(searchTerm);
 				return providerQuery(searchTerm);
 			}}

@@ -30,6 +30,7 @@ import { importRoute } from 'server/api/routes/import.ts';
 import { uploadRouter } from 'server/api/routes/upload.ts';
 import { ProviderValidation } from 'validations/Provider.ts';
 import { doctorRoute } from 'server/api/routes/doctor.ts';
+import { financialLedger } from 'server/api/routes/financial-ledger.ts';
 
 const apiRouter = Router();
 const pageRouter = Router();
@@ -172,11 +173,26 @@ apiRouter.route('/product/:branchId').get(
   validateParams(BranchValidation.branchIdParam),
   validateQuery(PaginationValidation.paginationQuery, ProductValidation.getStoreProductQuery),
   ProductController.getProducts);
+apiRouter.route('/product/:branchId/get').get(
+  ...authChain,
+  validateParams(BranchValidation.branchIdParam),
+  validateQuery(PaginationValidation.paginationQueryV2),
+  ProductController.getProductV2);
+apiRouter.route('/product/:branchId/get/:productType').get(
+  ...authChain,
+  validateParams(BranchValidation.branchIdParam, ProductValidation.productType),
+  validateQuery(PaginationValidation.paginationQuery),
+  ProductController.getProductV2);
 apiRouter.route('/product/:branchId').post(
   ...authChain,
   validateParams(BranchValidation.branchIdParam),
   validateBody(ProductValidation.createProduct),
   ProductController.createProduct);
+apiRouter.route('/product/:branchId/update/:productId').post(
+  ...authChain,
+  validateParams(BranchValidation.branchIdParam, ProductValidation.productIdParams),
+  validateBody(ProductValidation.updateProduct),
+  ProductController.updateProduct);
 apiRouter.route('/product/:branchId/delete/:productId').delete(
   ...authChain,
   validateParams(BranchValidation.branchIdParam),
@@ -213,6 +229,12 @@ apiRouter.route('/invoice/:branchId').get(
   validateParams(BranchValidation.branchIdParam),
   validateQuery(PaginationValidation.paginationQuery),
   InvoiceController.getInvoices);
+apiRouter.route('/invoice/:branchId/prescription').get(
+  ...authChain,
+  validateParams(BranchValidation.branchIdParam),
+  validateQuery(PaginationValidation.paginationQuery),
+  InvoiceController.getInvoicesPrescription
+);
 apiRouter.route('/invoice/:branchId').post(
   ...authChain,
   validateParams(BranchValidation.branchIdParam),
@@ -236,6 +258,7 @@ apiRouter.use(storeRouter);
 apiRouter.use(importRoute);
 apiRouter.use(uploadRouter);
 apiRouter.use(doctorRoute);
+apiRouter.use(financialLedger);
 
 export default {
     apiRoutes: apiRouter,

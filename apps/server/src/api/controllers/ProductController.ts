@@ -11,13 +11,21 @@ import { BranchIdParam } from 'validations/Branch.ts';
 import prisma from 'repository/prisma.ts';
 import { ConsumerAttributes } from 'repository/consumer/schema.ts';
 import { Prisma } from '@repo/orm';
-import { CreateProduct, DeleteProductParams, GetStoreProductQuery } from 'validations/Product.ts';
+import {
+	CreateProduct,
+	DeleteProductParams,
+	GetStoreProductQuery,
+	ProductIdParam,
+	ProductType, UpdateProduct,
+} from 'validations/Product.ts';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
 import path from 'node:path';
 import * as process from 'node:process';
 import { InvoiceAttribute } from 'repository/transaction/import-invoice/schema.ts';
 import config from 'config/app-config';
+import { PaginationQueryV2 } from 'validations/Pagination.ts';
+import { transformExpressParamsForPrisma } from 'server/shared/pagination-parse';
 
 export class ProductController {
 	public static getProducts = AsyncMiddleware.asyncHandler(
@@ -143,6 +151,53 @@ export class ProductController {
 		}
 	);
 
+	public static getProductV2 = AsyncMiddleware.asyncHandler(
+		async (req: Request<BranchIdParam & ProductType, any, any, PaginationQueryV2>, res: Response) => {
+			try {
+				const branchId = req.params.branchId;
+				const productType = req.params.productType;
+				const protectAttributes = ["branch_id"];
+				const queryParse = transformExpressParamsForPrisma("products", req.query, prisma);
+				console.log(queryParse);
+				const total = await prisma.products.count({
+					where: {
+						stores: {
+							branch_id: branchId
+						},
+						...queryParse.where,
+						...(productType ? { store_group: {group_slug: productType} } : {})
+					},
+				});
+				const doctors = await prisma.products.findMany({
+					...queryParse,
+					where: {
+						stores: {
+							branch_id: branchId
+						},
+						...queryParse.where,
+						...(productType ? { store_group: {group_slug: productType} } : {})
+					},
+					include: {
+						product_units: true,
+						product_assets: true,
+						store_group: true,
+						groups: true,
+					}
+				});
+				const response = new Success({
+					data: doctors,
+					total,
+					page: Number(req.query.page),
+					totalPage: Math.ceil(total / Number(req.query.limit || 10)),
+				}).toJson;
+
+				res.status(200).json(response).end();
+			} catch (error) {
+				throw error;
+			}
+		}
+	)
+
 	public static createProduct = AsyncMiddleware.asyncHandler(
 		async (req: Request<any, any, any>, res: Response) => {
 			try {
@@ -157,20 +212,22 @@ export class ProductController {
 	);
 
 	public static updateProduct = AsyncMiddleware.asyncHandler(
-		async (req: Request<{ id: string }>, res: Response) => {
+		async (req: Request<BranchIdParam & ProductIdParam, any, UpdateProduct>, res: Response) => {
 			try {
-				const { id } = req.params;
+				const { branchId, productId } = req.params;
 				const updated = await prisma.products.update({
-					where: { id },
-					data: req.body
+					where: {
+						id: productId,
+						stores: {
+							branch_id: branchId
+						}
+					},
+					data: {
+						...req.body
+					}
 				});
-				if (!updated) {
-					throw new BadRequest('update_failed', 'Update failed', 'Product not found');
-				}
-				const updatedProduct = await prisma.products.findUnique(
-					{ where: { id } }
-				);
-				const response = new Success(updatedProduct).toJson;
+
+				const response = new Success(updated).toJson;
 				return res.status(200).json(response).end();
 			} catch (error: any) {
 				console.error(`Error updating product: ${error.message}`);
@@ -211,8 +268,6 @@ export class ProductController {
 			}
 		}
 	);
-
-	public
 
 	public static uploadImage = AsyncMiddleware.asyncHandler(
 		async (req: Request<BranchIdParam>, res: Response) => {
@@ -295,4 +350,6 @@ export class ProductController {
 			}
 		}
 	);
+
+	// public st
 }

@@ -1,6 +1,3 @@
-"use client";
-
-
 import RefreshCookieAuthProvider from '@provider/refresh-cookie-provider';
 import React from 'react';
 import AppLayout from '@layout/app-layout.tsx';
@@ -9,14 +6,12 @@ import MainLayout from '@layout/main-layout.tsx';
 import { ProfileProvider } from '@provider/profile-provider.tsx';
 import { DashboardProvider } from '@provider/dashboard-provider.tsx';
 import RetailDashboard from '@container/dashboard/sale/retail-dashboard.tsx';
-import CustomerDashboard from '@container/dashboard/partner/consumer-dashboard.tsx';
-import ProductDashboard from '@container/dashboard/product/product-dashboard.tsx';
-import ProductDashboardV1 from '@container/dashboard/product/product-dashboard-v1.tsx';
+import FeatureComingSoon from '@container/updating/feature-coming-soon.tsx';
+import FinancialLedgerDashboard from '@container/dashboard/financial-ledger';
 
 type PageProps = {
 	params: {
 		branchId: string;
-		type: string;
 	};
 }
 
@@ -35,8 +30,7 @@ const Page = (
 					>
 						<MainLayout>
 							<HeaderBarLayout>
-								{/*<ProductDashboard branchId={params.branchId} type={params.type} />*/}
-								<ProductDashboardV1 type={params.type} />
+								<FinancialLedgerDashboard />
 							</HeaderBarLayout>
 						</MainLayout>
 					</DashboardProvider>

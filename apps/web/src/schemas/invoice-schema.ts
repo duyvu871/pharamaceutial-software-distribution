@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 export const invoiceSchema = z.object({
+	id: z.string().optional(),
 	invoice_id: z.string().optional(),
 	branchId: z.string().refine(val => val.length > 0, {
 		message: "Chi nhánh là bắt buộc"
@@ -97,12 +98,12 @@ export type PrescriptionSchema = {
 	invoiceId: string
 	prescription_id: string,
 	ma_don_thuoc: string;
-	ngay_ke: Date;
+	ngay_ke: string;
 	bac_si_id: string;
 	co_so_kham: string;
 	chuan_doan?: string;
 	benh_nhan: string;
-	ngay_sinh?: Date;
+	ngay_sinh?: string;
 	nam_sinh?: number;
 	tuoi?: number;
 	thang_tuoi?: number;
@@ -114,8 +115,8 @@ export type PrescriptionSchema = {
 	the_bhyt?: string;
 	gioi_tinh: number;
 
-	created_at: Date;
-	updated_at: Date;
+	created_at: string;
+	updated_at: string;
 };
 
 export const prescriptionCreationSchema = z.object({

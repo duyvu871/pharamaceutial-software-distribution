@@ -9,9 +9,9 @@ import type { Metadata, Viewport } from "next";
 import { Inter as FontSans, Montserrat } from "next/font/google";
 import {cn} from "@lib/tailwind-merge";
 import { ThemeProvider } from "@layout/global-theme";
-import 'dayjs/locale/vi';
-import dayjs from "dayjs";
 import RootLayoutClient from '@layout/root-layout-client.tsx';
+import dayjs from "dayjs";
+import 'dayjs/locale/vi';
 dayjs().locale('vi')
 
 const fontSans = Montserrat({

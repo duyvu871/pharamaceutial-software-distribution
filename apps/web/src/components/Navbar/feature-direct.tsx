@@ -83,17 +83,23 @@ export function NavbarFeatureDirect() {
 					icon: LiaFileInvoiceDollarSolid,
 				},
 				{
+					title: 'Thuốc bán theo đơn',
+					path: `/dashboard/transactions/${branchId}/prescriptions`,
+					href: pathToRegex(`/dashboard/transactions/${branchId}/prescriptions`),
+					icon: Pill,
+				},
+				{
 					title: "Hóa đơn nhập",
 					path: `/dashboard/transactions/${branchId}/bills`,
 					href: pathToRegex(`/dashboard/transactions/${branchId}/bills`),
 					icon: FaFileInvoiceDollar ,
 				},
-				{
-					title: 'Lịch sử',
-					path: `/dashboard/transactions/${branchId}/history`,
-					href: pathToRegex(`/dashboard/transactions/${branchId}/history`),
-					icon: History,
-				},
+				// {
+				// 	title: 'Lịch sử',
+				// 	path: `/dashboard/transactions/${branchId}/history`,
+				// 	href: pathToRegex(`/dashboard/transactions/${branchId}/history`),
+				// 	icon: History,
+				// },
 				{
 					title: "Trả hàng",
 					path: `/dashboard/transactions/${branchId}/returns`,
@@ -106,12 +112,7 @@ export function NavbarFeatureDirect() {
 					href: pathToRegex(`/dashboard/transactions/${branchId}/returns-to-provider`),
 					icon: UndoDot
 				},
-				{
-					title: 'Thuốc bán theo đơn',
-					path: `/dashboard/transactions/${branchId}/prescriptions`,
-					href: pathToRegex(`/dashboard/transactions/${branchId}/prescriptions`),
-					icon: Pill,
-				},
+
 			],
 		},
 		{
@@ -215,22 +216,22 @@ export function NavbarFeatureDirect() {
 		{
 			title: 'Số quỹ',
 			icon: Wallet,
-			path: '/dashboard/fund',
-			href: pathToRegex('/dashboard/fund'),
-			dropdownItems: [
-				{
-					title: 'Thu',
-					path: `/dashboard/fund/${branchId}/income`,
-					href: pathToRegex(`/dashboard/fund/${branchId}/income`),
-					icon: DollarSign,
-				},
-				{
-					title: 'Chi',
-					path: `/dashboard/fund/${branchId}/expense`,
-					href: pathToRegex(`/dashboard/fund/${branchId}/expense`),
-					icon: Minus,
-				},
-			],
+			path: `/dashboard/fund/${branchId}/financial-ledger`,
+			href: pathToRegex(`/dashboard/fund/${branchId}/financial-ledger`),
+			// dropdownItems: [
+			// 	{
+			// 		title: 'Thu',
+			// 		path: `/dashboard/fund/${branchId}/income`,
+			// 		href: pathToRegex(`/dashboard/fund/${branchId}/income`),
+			// 		icon: DollarSign,
+			// 	},
+			// 	{
+			// 		title: 'Chi',
+			// 		path: `/dashboard/fund/${branchId}/expense`,
+			// 		href: pathToRegex(`/dashboard/fund/${branchId}/expense`),
+			// 		icon: Minus,
+			// 	},
+			// ],
 		},
 		// {
 		// 	title: 'Báo cáo',
@@ -410,7 +411,7 @@ export function NavbarFeatureDirect() {
 												</Typography>
 											</div>
 										</Menu.Target>
-										<Menu.Dropdown className={'!min-w-[200px]'}>
+										<Menu.Dropdown className={'!min-w-[200px] !z-[1000]'}>
 											{dropdownItems}
 										</Menu.Dropdown>
 									</Menu>

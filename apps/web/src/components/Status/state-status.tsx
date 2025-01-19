@@ -13,6 +13,16 @@ type StateStatusProps = {
 		3?: string;
 		[key: string]: string | undefined;
 	};
+	customColor?: {
+		success?: string;
+		pending?: string;
+		error?: string;
+		1?: string;
+		0?: string;
+		2?: string;
+		3?: string;
+		[key: string]: string | undefined;
+	}
 };
 
 const defaultText: Required<StateStatusProps['customText']> = {
@@ -25,10 +35,14 @@ const defaultText: Required<StateStatusProps['customText']> = {
 	3: 'Đã hủy',
 };
 
-function StateStatus({ state, customText = {} }: StateStatusProps) {
+function StateStatus({ state, customText = {}, customColor }: StateStatusProps) {
 	const text = { ...defaultText, ...customText }[state];
 
 	const getStateColor = (state: StateStatusProps['state']) => {
+		if (customColor && state in customColor) {
+			return customColor[state];
+		}
+
 		switch (state) {
 			case 'success':
 			case 1:

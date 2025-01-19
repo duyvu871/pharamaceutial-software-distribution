@@ -1,12 +1,16 @@
 import { InvoiceState } from '@store/state/overview/invoice.ts';
 import axiosWithAuth from '@lib/axios.ts';
-import { SuccessResponse } from '@type/api/response.ts';
-import { PrescriptionCreationSchema } from '@schema/invoice-schema.ts';
+import { Pagination, SuccessResponse } from '@type/api/response.ts';
+import { InvoiceType, PrescriptionCreationSchema, PrescriptionSchema } from '@schema/invoice-schema.ts';
+import { FilterParams } from '@type/api/params.ts';
+import { DoctorSchema } from '@schema/doctor-schema.ts';
 
 export interface InvoiceResponse {
 	id: string
 	branchId: string
+	invoice_id: string
 	saleDate: string
+	vat: number
 	saleTime: string
 	customerName: string
 	priceList: string
@@ -49,6 +53,8 @@ export interface InvoiceResponse {
 		username: string
 		type: string
 	}
+
+	invoice_prescriptions: (PrescriptionSchema & {doctor: DoctorSchema})[]
 }
 
 export const submitInvoice = async (data: InvoiceState, prescription?: PrescriptionCreationSchema) => {
@@ -94,5 +100,23 @@ export const getInvoiceList = async (
 	} catch (error: any) {
 		console.error(`Error getting invoice list: ${error.message}`);
 		return [];
+	}
+}
+
+export const getInvoicePrescription = async (
+	filter: FilterParams
+) => {
+	try {
+		if (!filter.branchId) {
+			throw new Error('Branch ID is required');
+		}
+		const response = await axiosWithAuth.get<SuccessResponse<Pagination<PrescriptionSchema & {invoices: InvoiceResponse, doctor: DoctorSchema, userInfo: {username: string, id: string, type: string}}>>>
+		(`/invoice/${filter.branchId}/prescription`, {
+			params: filter,
+		});
+		return response.data.data;
+	} catch (error: any) {
+		console.error(`Error getting invoice list: ${error.message}`);
+		throw error
 	}
 }

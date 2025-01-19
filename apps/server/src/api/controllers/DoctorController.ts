@@ -64,8 +64,8 @@ export default class DoctorController {
 				const queryParse = transformExpressParamsForPrisma("invoice_prescriptions", req.query, prisma);
 				const total = await prisma.invoice_prescriptions.count({
 					where: {
-						invoice: {
-							branch_id: branchId,
+						invoices: {
+							branchId,
 							doctor_id: doctorId,
 						},
 						...queryParse.where,
@@ -74,8 +74,8 @@ export default class DoctorController {
 				const invoicePrescriptions = await prisma.invoice_prescriptions.findMany({
 					...queryParse,
 					where: {
-						invoice: {
-							branch_id: branchId,
+						invoices: {
+							branchId: branchId,
 							doctor_id: doctorId,
 						},
 						...queryParse.where,

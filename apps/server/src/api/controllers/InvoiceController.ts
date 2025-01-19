@@ -8,6 +8,8 @@ import { BranchIdParam } from 'validations/Branch.ts';
 import { InvoiceAttribute } from 'repository/transaction/import-invoice/schema.ts';
 import { CreateInvoice } from 'validations/Invoice.ts';
 import { SalesInvoiceTask } from 'repository/transaction/sales-invoice/task.ts';
+import { PaginationQueryV2 } from 'validations/Pagination.ts';
+import { transformExpressParamsForPrisma } from 'server/shared/pagination-parse.ts';
 
 export class InvoiceController {
 	public static getInvoices = AsyncMiddleware.asyncHandler(
@@ -62,6 +64,7 @@ export class InvoiceController {
 
 				const where: Prisma.invoicesWhereInput = {
 					branchId: branchId,
+					isPrescriptionSale: false,
 					...(search ? {
 						customerName: {
 							contains: search,
@@ -76,6 +79,11 @@ export class InvoiceController {
 					take: parsedLimit,
 					skip: offset,
 					include: {
+						invoice_prescriptions: {
+							include: {
+								doctor: true
+							}
+						},
 						items: true,
 						otherCharges: true,
 					}
@@ -215,4 +223,90 @@ export class InvoiceController {
 			}
 		}
 	);
+
+	public static getInvoicesPrescription = AsyncMiddleware.asyncHandler(
+		async (req: Request<BranchIdParam, any, any, PaginationQueryV2>, res: Response) => {
+			try {
+				const branchId = req.params.branchId;
+				const queryParse = transformExpressParamsForPrisma("invoice_prescriptions", req.query, prisma);
+
+				const total = await prisma.invoice_prescriptions.count({
+					where: {
+						invoices: {
+							branchId,
+						},
+						...queryParse.where,
+					},
+				});
+				const invoicePrescriptions = await prisma.invoice_prescriptions.findMany({
+					...queryParse,
+					where: {
+						invoices: {
+							branchId,
+						},
+						...queryParse.where,
+					},
+					include: {
+						invoices: {
+							include: {
+								items: true,
+							}
+						},
+						doctor: true,
+					}
+				});
+
+				const userInfos = await Promise.all(invoicePrescriptions.map((invoicePrescription) => {
+					if (!invoicePrescription.invoices.userId) {
+						return null;
+					}
+					if (invoicePrescription.invoices.userType === 'user') {
+						return prisma.users.findUnique(
+							{
+								where: {
+									id: invoicePrescription.invoices.userId
+								},
+								select: { id: true, username: true }
+							}).then((user) =>
+									user ? ({
+										id: user.id,
+										username: user.username,
+										type: 'user',
+									}) : null
+						);
+
+					} else if (invoicePrescription.invoices.userType === 'membership') {
+						return prisma.memberships.findUnique(
+							{
+								where: { id: invoicePrescription.invoices.userId },
+								select: { id: true, username: true }
+							}).then((membership) =>
+									membership ? ({
+										id: membership.id,
+										username: membership.username,
+										type: 'membership',
+									}) : null
+							);
+					}
+					return null;
+				}));
+
+				const invoicePrescriptionsWithUserInfo = invoicePrescriptions.map((invoicePrescription, index) => ({
+					...invoicePrescription,
+					userInfo: userInfos[index],
+				}));
+
+				const response = new Success({
+					data: invoicePrescriptionsWithUserInfo,
+					total,
+					page: Number(req.query.page),
+					totalPage: Math.ceil(total / Number(req.query.limit || 10)),
+				}).toJson;
+
+				res.status(200).json(response).end();
+			} catch (error) {
+				throw error;
+			}
+		}
+	)
 }

@@ -49,7 +49,7 @@ export const ImportProductFormProvider = ({children}: ImportProductFormProviderP
 		setValue('packaging', '')
 		setValue('activeIngredient', '')
 		setValue('content', '')
-		setValue('lotNumber', '')
+		// setValue('lotNumber', '')
 		setValue('expiryDate', new Date())
 		setValue('quantity', 0)
 		setValue('importDate', new Date())

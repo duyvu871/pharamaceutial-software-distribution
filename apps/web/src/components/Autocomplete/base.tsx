@@ -105,6 +105,12 @@ interface AutocompleteSearchProps<T> extends VariantProps<typeof autocompleteVar
 	};
 	/** Default value for the input field. */
 	defaultValue?: string;
+	/** Additional props to pass down to the input field. */
+	onFocus?: () => void;
+	/** Additional props to pass down to the input field. */
+	onBlur?: () => void;
+	/** Additional props to pass down to the input field. */
+
 }
 
 /**
@@ -131,6 +137,8 @@ function AutocompleteSearch<T>({
 																 createNewItemComponent,
 																 popoverClassNames,
 																 defaultValue,
+																 onFocus,
+																 onBlur,
 																 inputProps,
 															 }: AutocompleteSearchProps<T>): React.ReactNode {
 	const [searchTerm, setSearchTerm] = useState<string>(defaultValue || "");
@@ -213,8 +221,16 @@ function AutocompleteSearch<T>({
 						label={label}
 						onChange={handleChange}
 						placeholder={placeholder}
-						onFocus={() => setPopoverOpened(true)}
-						onBlur={() => setTimeout(() => setPopoverOpened(false), 200)}
+						onFocus={() => {
+							if (onFocus) onFocus()
+							setPopoverOpened(true)
+						}}
+						onBlur={() =>
+							setTimeout(() => {
+								if (onBlur) onBlur()
+								setPopoverOpened(false)
+							}, 200)
+					}
 						rightSection={isSearching && <Loader size="xs" />}
 						value={searchTerm}
 						defaultValue={""}

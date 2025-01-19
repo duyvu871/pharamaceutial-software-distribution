@@ -9,7 +9,7 @@ import DoctorDetail from '@component/Detail/doctor-detail.tsx';
 import { useDashboard } from '@hook/dashboard/use-dasboard.ts';
 import { Typography } from '@component/Typography';
 import { Button, Combobox, Group, InputBase, LoadingOverlay, Modal, Popover, Select, Stack } from '@mantine/core';
-import { Check, ChevronDown, FilePenLine,
+import { Check, ChevronDown, ChevronUp, FilePenLine,
 	FileSpreadsheet, LockKeyholeOpen, OctagonX, Plus, RotateCw, Search, Settings, Trash2, Upload } from 'lucide-react';
 import useToast from '@hook/client/use-toast-notification.ts';
 import { timeout } from '@util/delay.ts';
@@ -22,24 +22,32 @@ import { Label } from '@component/label';
 import { useFilterString } from '@hook/client/use-filter-string.ts';
 import { CiSearch } from "react-icons/ci";
 import { InvoiceType, PrescriptionCreationSchema, PrescriptionSchema } from '@schema/invoice-schema.ts';
+import { CreationProductSchema, Product } from '@schema/product-schema.ts';
+import { getProductListWithFilter, updateProduct } from '@api/product.ts';
+import ProductDetail from '@component/product/product-detail.tsx';
+import { GroupStoreSchema } from '@schema/group-schema.ts';
+import { getStoreGroup } from '@api/group.ts';
+import { useSearchParams } from '@route/hooks';
 
 type DashboardContextType = {
 	activeModal: () => void;
-	updateDoctor: (doctor: DoctorCreationSchema) => Promise<void>;
+	update: (doctor: CreationSchema) => Promise<void>;
 	reset: () => void;
 }
 
-type Schema = DoctorSchema & {invoice_prescriptions: (PrescriptionSchema & {invoices: InvoiceType})[]};
-type CreationSchema = DoctorCreationSchema;
+const idKey = 'product_id';
 
-export const DoctorDashBoardContext = createContext<DashboardContextType>({
+type Schema = Product;
+type CreationSchema = CreationProductSchema;
+
+export const DashBoardContext = createContext<DashboardContextType>({
 	activeModal: () => {},
-	updateDoctor: async () => {},
+	update: async () => {},
 	reset: () => {}
 });
 
-const DoctorDashboardToolBox = () => {
-	const {activeModal, reset} = useContext(DoctorDashBoardContext);
+const DashboardToolBox = () => {
+	const {activeModal, reset} = useContext(DashBoardContext);
 	return (
 		<>
 			<button
@@ -71,7 +79,7 @@ const DoctorDashboardToolBox = () => {
 	)
 }
 
-export default function DoctorDashboard() {
+export default function ProductDashboardV1({ type }: {type: string}) {
 	const { branchId } = useDashboard();
 	const [data, setData] = useState<Schema[]>([]);
 	const [total, setTotal] = useState<number>(0);
@@ -79,14 +87,16 @@ export default function DoctorDashboard() {
 	const [perPage, setPerPage] = useState<number>(10);
 	const search = useFilterString<Schema>('');
 	const filter = useFilterString<Schema>('');
-	const orderBy = useFilterString<Schema>('doctor_id:desc');
+	const orderBy = useFilterString<Schema>(`${idKey}:desc`);
 	// const [activeAction]
 	const [visibleActionOverlay, { toggle, close: closeActionOverLay, open: openActionOverlay }] = useDisclosure(false);
 	const [visibleMainOverlay, { close: closeMainOverlay, open: openMainOverlay }] = useDisclosure(false);
 
+	const [storeGroups, setStoreGroups] = useState<GroupStoreSchema[]>([]);
+	const [title, setTitle] = useState('Sản phẩm');
 
 	const [opened, { open, close }] = useDisclosure(false);
-	const [doctorActiveDetail, setDoctorActiveDetail] = useState<Schema | null>(null);
+	const [activeDetail, setActiveDetail] = useState<Schema | null>(null);
 
 	const [isUpdating, setIsUpdating] = useState<boolean>(false);
 	const [detailOpen, setDetailOpen] = useState<string | null>(null);
@@ -98,43 +108,39 @@ export default function DoctorDashboard() {
 
 	const {showErrorToast, showSuccessToast, showInfoToast, showWarningToast} = useToast();
 
-	const updateOrCreateDoctor = useCallback(async (doctor: CreationSchema) => {
+	const updateOrCreate = useCallback(async (model: CreationSchema) => {
 		try {
 			setIsUpdating(true);
 			openActionOverlay();
-			const update = await upsertDoctor(branchId, doctor);
-			if (doctor.id) {
-				setData(data => data.map(item => (item.doctor_id === doctor.doctor_id) ? {...item,...doctor} : item));
-			} else {
-				setData(data => [{
-					...update,
-					invoice_prescriptions: []
-				}, ...data]);
-				setTotal(total => total + 1);
+			if (model.id) {
+				const create = await updateProduct(branchId, model.id, model);
+				if (create) {
+					showSuccessToast('Cập nhật thông tin sản phẩm thành công');
+				}
 			}
-			console.log(update);
-			showSuccessToast(`Cập nhật bác sĩ ${update.ten_bac_si} thành công`);
-
-			closeActionOverLay();
 		} catch (error: any) {
 			showErrorToast(error.message);
 		} finally {
 			setIsUpdating(false);
+			closeActionOverLay();
 		}
 	}, [branchId, showSuccessToast, showErrorToast, openActionOverlay, closeActionOverLay]);
 
 	const resetFilter = () => {
 		openMainOverlay();
-		getDoctors({
+		getProductListWithFilter(
+			{
 			branchId,
 			page: 1,
 			limit: perPage,
-			orderBy: 'doctor_id:desc'
-		})
-			.then((doctors) => {
-				setTotal(doctors.total);
-				setData(doctors.data);
-				console.log(doctors);
+			orderBy: 'product_id:desc'
+			},
+			type
+		)
+			.then((model) => {
+				setTotal(model.total);
+				setData(model.data);
+				console.log(model);
 			})
 			.catch((error) => {
 				showErrorToast(error.message);
@@ -153,73 +159,36 @@ export default function DoctorDashboard() {
 
 	const rowAction: ActionItemRender<Schema>[] = [
 		{
-			label: (doctor) =>
+			label: (model) =>
 				<Group gap={5}>
 					<FilePenLine {...iconProps}/> Xem chi tiết
 				</Group>,
-			action: (doctor) => {
-				setDoctorActiveDetail(doctor);
+			action: (model) => {
+				setActiveDetail(model);
 				open();
 			}
 		},
-		{
-			label: (doctor) => doctor.status === 1
-				? <Group gap={5}>
-					<OctagonX {...iconProps} />
-					Dừng hoạt động
-				</Group>
-				: <Group gap={5}>
-					<Check {...iconProps} />
-					Kích hoạt
-				</Group>,
-			action: async (doctor) => {
-				try {
-					let doctorUpdate = doctor;
-					const newData = data.map((item) => {
-						if (item.doctor_id === doctor.doctor_id) {
-							if (item.status === 2) {
-								// showWarningToast('Bác sĩ đã bị xóa, không thể kích hoạt');
-								throw new Error('Bác sĩ đã bị xóa, không thể kích hoạt');
-							} else {
-								item.is_active = !item.is_active;
-								item.status = item.is_active ? 1 : 0;
-								doctorUpdate = item;
-							}
-						}
-						return item;
-					});
-
-					showSuccessToast(`Bác sĩ ${doctorUpdate.ten_bac_si} đã ${doctorUpdate.is_active ? 'được kích hoạt' : 'ngừng hoạt động'}`);
-					setData(newData);
-
-					const update = await updateOrCreateDoctor(doctor)
-
-				} catch (error: any) {
-					showErrorToast(error.message);
-				}
-			}
-		},
-		{
-			label: (doctor) => doctor.status === 2
-				? <Group gap={5}>
-					<LockKeyholeOpen {...iconProps} />
-					Khôi phục
-				</Group>
-				: <Group gap={5}>
-					<Trash2 {...iconProps} />
-					Xóa
-				</Group>,
-			action: (doctor) => {
-				const newData = data.map((item) => {
-					if (item.doctor_id === doctor.doctor_id) {
-						item.is_deleted = !item.is_deleted;
-						item.status = item.is_deleted ? 2 : 1;
-					}
-					return item;
-				});
-				setData(newData);
-			}
-		}
+		// {
+		// 	label: (doctor) => doctor.status === 2
+		// 		? <Group gap={5}>
+		// 			<LockKeyholeOpen {...iconProps} />
+		// 			Khôi phục
+		// 		</Group>
+		// 		: <Group gap={5}>
+		// 			<Trash2 {...iconProps} />
+		// 			Xóa
+		// 		</Group>,
+		// 	action: (doctor) => {
+		// 		const newData = data.map((item) => {
+		// 			if (item.doctor_id === doctor.doctor_id) {
+		// 				item.is_deleted = !item.is_deleted;
+		// 				item.status = item.is_deleted ? 2 : 1;
+		// 			}
+		// 			return item;
+		// 		});
+		// 		setData(newData);
+		// 	}
+		// }
 	]
 
 	const ActionButton = ({data}: {data: Schema}) => {
@@ -238,7 +207,7 @@ export default function DoctorDashboard() {
 					<Stack gap={5} pos={"relative"}>
 						{rowAction.map((action, index) => (
 							<Group
-								key={`action-${data.doctor_id}-${index}`}
+								key={`action-${data[idKey]}-${index}`}
 								className={cn('hover:bg-zinc-100 transition-all p-2 py-1 cursor-pointer', isUpdating && 'opacity-50 cursor-not-allowed')}
 								gap={5}
 								wrap={"nowrap"}
@@ -258,11 +227,12 @@ export default function DoctorDashboard() {
 	}
 
 	const FilterComponent = () => {
+		const searchParams = useSearchParams();
 		const [tempStatus, setTempStatus] = useState<string>("");
 		const [tempSearch, setTempSearch] = useState<string>("");
 
 		const applySearch = () => {
-			search.editFilter("ten_bac_si", tempSearch);
+			search.editFilter("product_name", tempSearch);
 		}
 
 		return (
@@ -286,21 +256,18 @@ export default function DoctorDashboard() {
 							},
 							{
 								value: "1",
-								label: "Đang hoạt động"
+								label: "Kinh doanh"
 							}, {
 								value: "0",
-								label: "Ngừng hoạt động"
-							}, {
-								value: "2",
-								label: "Đã xóa"
-							}
+								label: "Ngưng kinh doanh"
+							},
 						]}
 					/>
 				</Label>
 				<Label label={"Tìm kiếm"} position={"top"}>
 					<Group wrap={"nowrap"} gap={5}>
 						<InputBase
-							placeholder="Tìm kiếm theo tên bác sĩ"
+							placeholder={`Tìm kiếm theo tên ${title}`}
 							className={"w-72"}
 							onChange={(event) => setTempSearch(event.currentTarget.value)}
 						/>
@@ -319,45 +286,80 @@ export default function DoctorDashboard() {
 
 	const tableData: TableRender<Schema> = [
 		{
-			title: "Mã bác sĩ",
-			render: (data) => data.doctor_id
+			title: 'Mã hàng hóa',
+			render: (data) => data.product_id
 		},
 		{
-			title: "Tên bác sĩ",
-			render: (data) => data.ten_bac_si
+			title: 'Tên hàng hóa',
+			render: (data) => data.product_name
 		},
 		{
-			title: "Chuyên khoa",
-			render: (data) => data.chuyen_khoa
+			title: "Số đăng ký",
+			render: (data) => data.register_no || ""
 		},
 		{
-			title: "Trình độ",
-			render: (data) => data.trinh_do
+			title: "Số lô",
+			render: (data) => data.lot_no || ""
 		},
 		{
-			title: "Nơi công tác",
-			render: (data) => data.noi_cong_tac
+			title: "Hạn dùng",
+			render: (data) => new Date(data.expire_date).toLocaleDateString() || ""
 		},
 		{
-			title: "Ghi chú",
-			render: (data) => data.ghi_chu || ""
+			title: "Đơn vị tính",
+			render: (data) => data.base_unit || ""
+		},
+		{
+			title: "Giá bán",
+			render: (data) => data.sell_price.toLocaleString('vi-VN')
+		},
+		{
+			title: "Số lượng tồn",
+			render: (data) => data.quantity_of_stock
 		},
 		{
 			title: "Trạng thái",
-			render: (data) => (
-				<StateStatus
-					state={data.status}
-					customText={{
-						1: "Đang hoạt động",
-						0: "Ngừng hoạt động",
-						2: "Đã xóa"
-					}}
-				/>
-			)
+			render: (data) =>
+				<span className={cn(
+					'px-2 whitespace-nowrap py-1 rounded-md text-sm',
+					data.status === 1
+						? 'bg-teal-500/10 text-teal-500'
+						: 'bg-gray-500/10 text-gray-500',
+				)}>
+					{data.status === 1 ? 'Kinh doanh' : 'Ngưng kinh doanh'}
+				</span> ,
 		},
 		{
-			title: "Hành động",
-			render: (data) => <ActionButton data={data} />
+			title: 'Liên thông',
+			render: (data) =>
+				<input
+					type="checkbox"
+					className="rounded border-gray-300"
+					// checked={selectedItems.includes(data.id)}
+					// onChange={() => toggleSelectItem(data.id)}
+				/>,
+		},
+		// {
+		// 	title: "Hành động",
+		// 	render: (data) =>
+		// 		<Group gap={6} w={"fit-content"}>
+		// 			<ActionButton data={data} />
+		// 		</Group>
+		// },
+		{
+			title: "Chi tiết",
+			render: (data) => (
+				<Button
+					onClick={() => toggleDetail(data[idKey])}
+					color={"var(--main-color)"}
+					size={"md"}
+					px={5}
+					h={20}
+					w={60}
+				>
+					{detailOpen === data[idKey] ? <ChevronUp size={15} /> : <ChevronDown size={15}/>}
+				</Button>
+			)
 		}
 	]
 
@@ -366,26 +368,29 @@ export default function DoctorDashboard() {
 	]
 
 	useEffect(() => {
-			if (!opened) {
-				setDoctorActiveDetail(null);
-				closeActionOverLay();
-			}
+		if (!opened) {
+			setActiveDetail(null);
+			closeActionOverLay();
+		}
 	}, [opened]);
 
 	useEffect(() => {
 		openMainOverlay();
-		getDoctors({
+		getProductListWithFilter(
+			{
 			branchId,
 			page: page,
 			limit: perPage,
 			filterBy: filter.filter,
 			searchFields: search.filter,
 			orderBy: orderBy.filter
-		})
-			.then((doctors) => {
-				setTotal(doctors.total);
-				setData(doctors.data);
-				console.log(doctors);
+			},
+			type
+		)
+			.then((model) => {
+				setTotal(model.total);
+				setData(model.data);
+				console.log(model);
 			})
 			.catch((error) => {
 				showErrorToast(error.message);
@@ -402,42 +407,54 @@ export default function DoctorDashboard() {
 		console.log('perPage', perPage);
 	}, [page, perPage]);
 
+	useEffect(() => {
+		if (branchId) {
+			getStoreGroup(branchId).then((data) => {
+				setStoreGroups(data);
+				setTitle(data.find(group => group.group_slug === type)?.group_name || 'Sản phẩm');
+			})
+		}
+	}, [branchId]);
+
 	return (
-		<DoctorDashBoardContext.Provider value={{
+		<DashBoardContext.Provider value={{
 			activeModal: open,
-			updateDoctor: updateOrCreateDoctor,
+			update: updateOrCreate,
 			reset: resetFilter,
 		}}>
-				<Modal
-					opened={opened}
-					onClose={close}
-					title={
-						<Typography size={"h5"} weight={"semibold"}>Chi tiết bác sĩ</Typography>
-					}
-					size="70vw"
-					maw={"70vw"}
-				>
-					<LoadingOverlay visible={visibleActionOverlay} zIndex={1000} overlayProps={{ radius: "sm", blur: 2 }} />
-					{<DoctorDetail<Schema> detail={doctorActiveDetail} submit={updateOrCreateDoctor} />}
-				</Modal>
-				<EnterpriseResourcePlanningTable<Schema>
-					name={"Danh sách bác sĩ"}
-					data={tableData}
-					keyName={"doctor_id"}
-					render={data}
-					filter={filterComponent}
-					total={total}
-					toolBox={<DoctorDashboardToolBox />}
-					getItem={(page, limit) => {
-						console.log('page', page);
-						console.log('limit', limit);
-						page && setPage(page);
-						limit && setPerPage(limit);
-					}}
-					visibleMainOverlay={visibleMainOverlay}
-					// detail={(doctor) => <DoctorDetail detail={doctor} />}
-					// openDetail={detailOpen}
-				/>
-		</DoctorDashBoardContext.Provider>
+			{/*<Modal*/}
+			{/*	opened={opened}*/}
+			{/*	onClose={close}*/}
+			{/*	title={*/}
+			{/*		<Typography size={"h5"} weight={"semibold"}>Chi tiết bác sĩ</Typography>*/}
+			{/*	}*/}
+			{/*	size="70vw"*/}
+			{/*	maw={"70vw"}*/}
+			{/*>*/}
+			{/*	<LoadingOverlay visible={visibleActionOverlay} zIndex={1000} overlayProps={{ radius: "sm", blur: 2 }} />*/}
+			{/*	{<DoctorDetail<Schema> detail={doctorActiveDetail} submit={updateOrCreateDoctor} />}*/}
+			{/*</Modal>*/}
+			<EnterpriseResourcePlanningTable<Schema>
+				name={`Danh sách ${title}`}
+				data={tableData}
+				keyName={idKey}
+				render={data}
+				filter={filterComponent}
+				total={total}
+				toolBox={<DashboardToolBox />}
+				getItem={(page, limit) => {
+					console.log('page', page);
+					console.log('limit', limit);
+					page && setPage(page);
+					limit && setPerPage(limit);
+				}}
+				visibleMainOverlay={visibleMainOverlay}
+				detail={(model) =>
+					<ProductDetail product={model} type={type} />
+				}
+				openDetail={detailOpen}
+
+			/>
+		</DashBoardContext.Provider>
 	)
 }

@@ -1,15 +1,14 @@
 import { ImportProductState } from '@store/state/overview/import-product.ts';
 import axiosWithAuth from '@lib/axios.ts';
-import { SuccessResponse } from '@type/api/response.ts';
+import { Pagination, SuccessResponse } from '@type/api/response.ts';
 import { ImportInvoiceProductSchema, ImportSchema } from '@schema/import-schema.ts';
 import { IProduct } from '@schema/product-schema.ts';
 import { Provider } from '@schema/provider-schema.ts';
+import { FilterParams } from '@type/api/params.ts';
 
 export interface ResponseImportProduct extends ImportSchema {
 	products: IProduct[]
 }
-
-
 
 export interface ResponseImportProductList {
 	count: number;
@@ -59,5 +58,24 @@ export const getImportProductList = async (filter: {
 		return response.data.data;
 	} catch (error) {
 		throw new Error("error");
+	}
+}
+
+export const getImportByProduct = async (productId: string, filter: FilterParams) => {
+	try {
+		if (!filter.branchId) {
+			throw new Error("Branch id is required");
+		}
+		if (!productId) {
+			throw new Error("Product id is required");
+		}
+
+		const response = await axiosWithAuth.get<SuccessResponse<Pagination<ImportInvoiceProductSchema>>>(`/import/${filter.branchId}/product/${productId}`, {
+			params: filter
+		});
+
+		return response.data.data;
+	} catch (error) {
+		throw error;
 	}
 }

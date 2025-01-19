@@ -7,7 +7,7 @@ export type FilterKey = string;
 export type UseFilterStringReturn<Schema extends Record<string, any>> = {
 	filter: FilterString,
 	editFilter: (key: keyof Schema, value: string) => void,
-	editMultipleFilter: (filter: Record<keyof Schema, string>) => void,
+	editMultipleFilter: (filter: Partial<Record<keyof Schema, string>>) => void,
 	removeFilter: (key: keyof Schema) => void,
 	getFilter: () => Record<keyof Schema, string>
 };
@@ -28,7 +28,7 @@ export const useFilterString = <Schema extends Record<string, any>>(filterString
 		setFilter(parse.join(","));
 	}, [filter]);
 
-	const editMultipleFilter = useCallback((filter: Record<keyof Schema, string>) => {
+	const editMultipleFilter = useCallback((filter: Partial<Record<keyof Schema, string>>) => {
 		const parse = getFilter();
 		Object.assign(parse, filter);
 

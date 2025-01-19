@@ -126,7 +126,8 @@ function ImportTab() {
 			<Stack w={"100%"} gap={0}>
 				{/*<Resizable className={"flex-grow"} w={"100%"} h={"600px"} direction={"vertical"}>*/}
 				{/*	<ScrollArea h={600} className={'flex-grow w-full h-800px]'}>*/}
-						<ProductFormV3 />
+				<ProductFormV3 />
+
 					{/*</ScrollArea>*/}
 				{/*</Resizable>*/}
 				<Divider size="md" />
@@ -311,25 +312,11 @@ function ImportTab() {
 					</div>
 
 					<div className="relative">
-						{/*<input*/}
-						{/*	type="text"*/}
-						{/*	placeholder="Tìm khách hàng (F4)"*/}
-						{/*	className="w-full pl-10 pr-10 py-2 border rounded"*/}
-						{/*/>*/}
-						{/*<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />*/}
 						<Label label={"Nhà cung cấp"}>
 							<div className={"w-full relative"}>
 								<ProviderAutocomplete
 									setValue={({ name, id }) => {
-										console.log('provider', name, id);
-										// // updateProductInvoice(activeTab, { provider: id })
-										// importProductActions({
-										// 	type: 'update',
-										// 	invoiceId: activeTab,
-										// 	state: {
-										// 		provider: id
-										// 	}
-										// });
+										// console.log('provider', name, id);
 										updateProductInvoice(activeTab, { provider: id })
 									}} />
 								<ProviderModal>
@@ -341,17 +328,6 @@ function ImportTab() {
 							</div>
 						</Label>
 					</div>
-
-					{/*<button*/}
-					{/*	className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded flex justify-between items-center">*/}
-					{/*	Bảng giá chung*/}
-					{/*	<ChevronDown className="h-5 w-5" />*/}
-					{/*</button>*/}
-
-					{/*<label className="flex items-center space-x-2">*/}
-					{/*	<input type="checkbox" className="form-checkbox" />*/}
-					{/*	<span>Tích điểm</span>*/}
-					{/*</label>*/}
 
 					<div className="space-y-2">
 						<div className="flex justify-between items-center">
@@ -377,22 +353,6 @@ function ImportTab() {
 								{totalPrice.toLocaleString()}đ
 							</span>
 						</div>
-						{/*<div className="flex justify-between items-center">*/}
-						{/*	<span className="text-sm">Giảm giá (F6)</span>*/}
-						{/*	<div className="flex items-center gap-2">*/}
-						{/*		<MoneyInput*/}
-						{/*			value={discount}*/}
-						{/*			onChange={(value) => {*/}
-						{/*				setDiscount(value);*/}
-						{/*			}}*/}
-						{/*			className={'w-[120px]'}*/}
-						{/*		/>*/}
-						{/*	</div>*/}
-						{/*</div>*/}
-						{/*<div className="flex justify-between items-center">*/}
-						{/*	<span className="text-sm">Thu khác</span>*/}
-						{/*	<span className="bg-gray-100 text-gray-800 px-2 py-1 rounded">0</span>*/}
-						{/*</div>*/}
 					</div>
 
 					<div className="space-y-2">

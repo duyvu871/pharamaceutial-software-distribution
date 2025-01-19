@@ -1,9 +1,10 @@
 import React from 'react';
-import { Card, Group, Text, Table, Badge, Grid, Paper } from '@mantine/core';
+import { Card, Group, Text, Table, Badge, Grid, Paper, Button } from '@mantine/core';
 import { InvoiceType } from '@schema/invoice-schema';
 import { InvoiceResponse } from '@api/invoice.ts';
 import dayjs from 'dayjs';
 import 'dayjs/locale/vi'
+import SaleInvoice from '@component/Print/sale-invoice.tsx';
 
 
 interface InvoiceDetailProps {
@@ -120,9 +121,16 @@ export default function InvoiceDetail({ invoice }: InvoiceDetailProps) {
 			)}
 
 			<Group mt="xl">
-				<Badge color={invoice.isPrescriptionSale ? 'blue' : 'gray'}>
-					{invoice.isPrescriptionSale ? 'Đơn thuốc kê' : 'Không phải đơn thuốc kê'}
-				</Badge>
+				<SaleInvoice invoiceData={invoice}>
+					<Button
+						color={"var(--main-color)"}
+					>
+						In hóa đơn
+					</Button>
+				</SaleInvoice>
+				{/*<Badge color={invoice.isPrescriptionSale ? 'blue' : 'gray'}>*/}
+				{/*	{invoice.isPrescriptionSale ? 'Đơn thuốc kê' : 'Không phải đơn thuốc kê'}*/}
+				{/*</Badge>*/}
 				{/*<Badge color={invoice.autoPrintInvoice ? 'green' : 'gray'}>*/}
 				{/*	{invoice.autoPrintInvoice ? 'Tự động in hóa đơn' : 'Không tự động in hóa đơn'}*/}
 				{/*</Badge>*/}

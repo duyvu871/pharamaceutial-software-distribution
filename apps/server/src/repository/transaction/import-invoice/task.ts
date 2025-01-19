@@ -1,4 +1,4 @@
-import * as ImportValidationTs from 'validations/ImportValidation.ts';
+import {ImportProductBody} from 'validations/ImportValidation.ts';
 import prisma from 'repository/prisma.ts';
 import Forbidden from 'responses/clientErrors/Forbidden.ts';
 import { Prisma, PrismaClient, products, product_units } from '@prisma/client';
@@ -14,20 +14,46 @@ type SuccessImportProduct = {
 
 export class ImportInvoiceTask {
 	// @Benchmark()
-	public static async importInvoices(storeId: string, importInvoice: ImportValidationTs.ImportProductBody) {
+	public static async importInvoices(storeId: string, importInvoice: ImportProductBody) {
 		try {
 			// Store all successfully imported products
 			const successImportProducts = new Set<products>();
+			const rawSuccessImportProducts = new Set<ImportProductBody['productData'][number]>();
 
 			// Store all failed imported products
 			const importInvoiceCreate = await prisma.$transaction(async (tx) => {
 
+				// Count import invoice
+				const importInvoiceCount = await prisma.import_invoices.count({
+					where: {
+						store_id: storeId
+					}
+				})
+				// Create import invoice
+				const createImport = await tx.import_invoices.create({
+					data: {
+						store_id: storeId,
+						provider_id: importInvoice.provider ,
+						invoice_no: `NH-${(importInvoiceCount + 1).toString().padStart(6, '0')}`,
+						name: importInvoice.name,
+						lot_no: `LO-${(importInvoiceCount + 1).toString().padStart(6, '0')}`,
+						total_amount: importInvoice.total,
+						amount_due: importInvoice.amountDue,
+						amount_paid: importInvoice.amountPaid,
+						debit: importInvoice.debit,
+						notes: importInvoice.notes,
+						vat: importInvoice.vat,
+						status: 1,
+						createdAt: new Date(importInvoice.time),
+					},
+				});
 				// Create new products
 				const handleCreateNewProduct = await Promise.all(importInvoice.productData.map(async product => {
 					try {
 						// Get total product count
 						const product_count = await tx.products.count({
 							where: {
+								store_id: storeId,
 								product_id: { startsWith: "HH", mode: 'insensitive' }
 							}
 						});
@@ -53,7 +79,7 @@ export class ImportInvoiceTask {
 						const productUnitValue = {
 							name: product?.largerUnit || product.unit,
 							value: Number(product.largerUnitValue) || 1,
-							no: product.lotNumber,
+							no: createImport.lot_no || "",
 							is_base: `${product.unit}` === `${product.largerUnit}` ? 1 : 0,
 							updated_at: new Date(),
 						}
@@ -98,8 +124,8 @@ export class ImportInvoiceTask {
 								manufacturer: product?.manufacturer,
 								barcode: product?.barcode,
 								register_no: product?.registrationNumber,
-								product_no: product?.lotNumber,
-								lot_no: product?.lotNumber,
+								product_no: createImport?.lot_no || "",
+								lot_no: createImport?.lot_no || "",
 								original_price: product?.purchasePrice,
 								sell_price: product?.sellingPrice,
 								packing: product?.packaging,
@@ -126,8 +152,8 @@ export class ImportInvoiceTask {
 								manufacturer: product.manufacturer,
 								barcode: product.barcode,
 								register_no: product.registrationNumber,
-								product_no: product.lotNumber,
-								lot_no: product.lotNumber,
+								product_no: createImport?.lot_no || "",
+								lot_no: createImport?.lot_no || "",
 								original_price: product.purchasePrice,
 								sell_price: product.sellingPrice,
 								packing: product.packaging,
@@ -180,6 +206,8 @@ export class ImportInvoiceTask {
 							...upsertProduct,
 							quantity_of_stock: product.quantity
 						});
+						// Add product to raw success import products
+						rawSuccessImportProducts.add(product);
 
 						return {
 							product: {
@@ -199,27 +227,9 @@ export class ImportInvoiceTask {
 
 				console.log('handleCreateNewProduct', handleCreateNewProduct);
 
-				// Count import invoice
-				const importInvoiceCount = await prisma.import_invoices.count()
-				// Create import invoice
-				const createImport = await tx.import_invoices.create({
-					data: {
-						store_id: storeId,
-						provider_id: importInvoice.provider ,
-						invoice_no: `NH-${(importInvoiceCount + 1).toString().padStart(6, '0')}`,
-						name: importInvoice.name,
-						total_amount: importInvoice.total,
-						amount_due: importInvoice.amountDue,
-						amount_paid: importInvoice.amountPaid,
-						debit: importInvoice.debit,
-						notes: importInvoice.notes,
-						vat: importInvoice.vat,
-						status: 1,
-						createdAt: new Date(importInvoice.time),
-					},
-				});
 				// Create import invoice product from history and additional data
-				const importInvoiceProductCreate = await Promise.all([...successImportProducts].map(async state => {
+				const arrayImportProduct = [...rawSuccessImportProducts];
+				const importInvoiceProductCreate = await Promise.all([...successImportProducts].map(async (state, index) => {
 					return tx.import_invoice_product.create({
 						data: {
 							import_invoice: createImport.id,
@@ -227,6 +237,23 @@ export class ImportInvoiceTask {
 							quantity: state.quantity_of_stock,
 							total: state.original_price * state.quantity_of_stock,
 							price: state.original_price,
+							barcode: state.barcode,
+							manufacturer: arrayImportProduct[index].manufacturer,
+							ingredients: arrayImportProduct[index].ingredients,
+							packaging: arrayImportProduct[index].packaging,
+							active_ingredient: arrayImportProduct[index].activeIngredient,
+							content: arrayImportProduct[index].content,
+							lot_no: createImport.lot_no,
+							expired_date: new Date(arrayImportProduct[index].expiryDate),
+							import_date: new Date(arrayImportProduct[index].importDate),
+							note: arrayImportProduct[index].note,
+							register_no: arrayImportProduct[index].registrationNumber,
+							type: arrayImportProduct[index].type,
+							larger_unit: arrayImportProduct[index].largerUnit,
+							larger_unit_value: parseInt(arrayImportProduct[index].largerUnitValue, 10) || 1,
+							smaller_unit: arrayImportProduct[index].unit,
+							smaller_unit_value: 1,
+
 							createdAt: new Date(),
 							updatedAt: new Date(),
 						}

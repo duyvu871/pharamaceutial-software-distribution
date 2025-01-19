@@ -58,11 +58,47 @@ export class ProductValidation {
 		}).optional(),
 	});
 
+	public static productType = z.object({
+		productType: z.enum(['thuoc', 'thuc-pham-chuc-nang', 'my-pham', 'dung-cu-y-te', 'hang-hoa-khac']).optional()
+	})
 
+	public static productIdParams = z.object({
+		productId: z
+			.string({
+				message: "Product ID is not valid",
+			})
+			.uuid({
+				message: "Product ID is not valid",
+			}),
+	});
+
+	public static updateProduct = z.object({
+		barcode: z.string().optional(),
+		register_no: z.string().optional(),
+		product_name: z.string(),
+		original_price: z.number(),
+		sell_price: z.number(),
+		weight: z.number().optional(),
+		base_unit: z.string(),
+		status: z.number().optional(),
+		import_date: z.string().datetime().optional(),
+		expire_date: z.string().datetime().optional(),
+		description: z.string().optional(),
+		usage: z.string().optional(),
+		ingredient: z.string().optional(),
+		packing: z.string().optional(),
+		active_ingredient: z.string().optional(),
+		content: z.string().optional(),
+		note: z.string().optional(),
+		manufacturer: z.string().optional(),
+		made_in: z.string().optional(),
+	})
 }
 
 export type ProductQuery = z.infer<typeof ProductValidation.getProductQuery>;
 export type CreateProduct = z.infer<typeof ProductValidation.createProduct>;
 export type DeleteProductParams = z.infer<typeof ProductValidation.deleteProductParams>;
 export type GetStoreProductQuery = z.infer<typeof ProductValidation.getStoreProductQuery>;
-
+export type ProductType = z.infer<typeof ProductValidation.productType>;
+export type ProductIdParam = z.infer<typeof ProductValidation.productIdParams>;
+export type UpdateProduct = z.infer<typeof ProductValidation.updateProduct>;

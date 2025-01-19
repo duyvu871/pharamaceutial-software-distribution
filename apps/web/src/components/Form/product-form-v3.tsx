@@ -174,11 +174,11 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 											setValue('sellingPrice', product.sell_price)
 											setValue('quantity', product.quantity_of_stock)
 											// setValue('activeIngredient', product.drug_ingredients || '')
-											setValue('content', product.drug_content || '')
-											setValue('usage', product.drug_usage || '')
-											setValue('ingredients', product.drug_ingredients || '')
-											setValue('packaging', product.drug_packaging || '')
-											setValue('lotNumber', product.product_no)
+											setValue('content', product.content || '')
+											setValue('usage', product.usage || '')
+											setValue('ingredients', product.ingredients || '')
+											setValue('packaging', product.packing || '')
+											// setValue('lotNumber', product.product_no)
 											setValue('unit', product?.productUnit?.name || 'vien')
 											if (!product?.productUnit?.is_base) {
 												setValue('largerUnit', product?.productUnit?.no || 'vien')
@@ -210,6 +210,7 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 													autoCorrect={"off"}
 													{...field}
 													onSelectProduct={(product) => {
+														setValue('barcode', product.barcode || '')
 														setValue('name', product.product_name)
 														setValue('code', product.product_id || 'HH-0000014')
 														setValue('registrationNumber', product.register_no || '')
@@ -219,11 +220,11 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 														setValue('sellingPrice', product.sell_price)
 														setValue('quantity', product.quantity_of_stock)
 														// setValue('activeIngredient', product.drug_ingredients || '')
-														setValue('content', product.drug_content || '')
-														setValue('usage', product.drug_usage || '')
-														setValue('ingredients', product.drug_ingredients || '');
-														setValue('packaging', product.drug_packaging || '');
-														setValue('lotNumber', product.product_no);
+														setValue('content', product.content || '')
+														setValue('usage', product.usage || '')
+														setValue('ingredients', product.ingredients || '');
+														setValue('packaging', product.packing || '');
+														// setValue('lotNumber', product.product_no);
 														setValue('unit', product?.productUnit?.name || 'vien');
 														if (!product?.productUnit?.is_base) {
 															setValue('largerUnit', product?.productUnit?.no || 'vien')
@@ -428,21 +429,22 @@ export default function ProductFormV3({ onSubmit, modalProps }: ProductFormProps
 							<Stack>
 								<Group wrap={"nowrap"}>
 									<Box w={"100%"}>
-										<Controller
-											name="lotNumber"
-											control={control}
-											render={({ field }) => (
+										{/*<Controller*/}
+										{/*	name="lotNumber"*/}
+										{/*	control={control}*/}
+										{/*	render={({ field }) => (*/}
 												<TextInput
 													autoCapitalize={"none"}
 													autoComplete={"off"}
 													autoCorrect={"off"}
 													label="Số Lô"
-													required
-													error={errors.lotNumber?.message}
-													{...field}
+													// required
+													disabled
+													// error={errors.lotNumber?.message}
+													// {...field}
 												/>
-											)}
-										/>
+										{/*	)}*/}
+										{/*/>*/}
 									</Box>
 									<Box w={"100%"}>
 										<Controller

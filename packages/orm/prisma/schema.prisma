@@ -32,6 +32,7 @@ model branches {
 
   @@index([branch_name])
   @@index([owner_id])
+  financial_ledger financial_ledger[]
 }
 
 model branch_integration {
@@ -277,6 +278,7 @@ model import_invoices {
   provider_id            String?                  @db.Uuid
   invoice_no             String                   @db.VarChar(255)
   name                   String
+  lot_no                 String?                   @db.VarChar(255)
   total_amount           Float
   amount_due             Float
   amount_paid            Float
@@ -298,9 +300,31 @@ model import_invoice_product {
   id              String          @id @default(uuid()) @db.Uuid
   import_invoice  String          @db.Uuid
   product_id      String          @db.Uuid
+  barcode         String?          @db.VarChar(255)
+  register_no     String?          @db.VarChar(255)
+  type            String          @db.VarChar(255) @default("thuoc")
+
   quantity        Float
   price           Float
   total           Float
+  expired_date    DateTime        @default(now()) @db.Timestamptz(6)
+  import_date     DateTime        @default(now()) @db.Timestamptz(6)
+  lot_no          String?         @db.VarChar(255)
+  status          Int             @default(1)
+  larger_unit     String          @db.VarChar(255) @default("Vỉ")
+  larger_unit_value Int           @default(1)
+  smaller_unit    String          @db.VarChar(255) @default("Vỉ")
+  smaller_unit_value Int          @default(1)
+
+  note           String?         @db.VarChar(255)
+
+  usage           String?         @db.VarChar(255)
+  manufacturer    String?         @db.VarChar(255)
+  ingredients     String?          @db.VarChar(255)
+  packaging       String?          @db.VarChar(255)
+  active_ingredient String?       @db.VarChar(255)
+  content         String?          @db.VarChar(255)
+
   createdAt       DateTime        @default(now()) @db.Timestamptz(6)
   updatedAt       DateTime        @updatedAt @db.Timestamptz(6)
   import_invoices import_invoices @relation(fields: [import_invoice], references: [id])
@@ -395,32 +419,32 @@ model clinics {
 }
 
 model doctors {
-  id             String    @id @default(uuid()) @db.Uuid
-  doctor_id      String
-  branch_id      String    @db.Uuid
-  specialization String?   @db.VarChar(255)
-  email          String?   @db.VarChar(255)
-  status         Int       @default(1)
-  chuyen_khoa    String    @db.VarChar(255)
-  dia_chi        String    @db.VarChar(255)
-  sdt            String    @db.VarChar(255)
-  ghi_chu        String?   @db.VarChar(255)
-  is_active      Boolean   @default(true)
-  is_deleted     Boolean   @default(false)
-  loai_so_quy    Int       @default(0)
-  noi_cong_tac   String    @db.VarChar(255)
-  ten_bac_si     String    @db.VarChar(255)
-  ten_slug       String    @db.VarChar(255)
-  trinh_do       String    @db.VarChar(255)
-  created_at     DateTime  @default(now()) @db.Timestamptz(6)
-  updated_at     DateTime  @default(now()) @db.Timestamptz(6)
-  deleted_at     DateTime? @db.Timestamptz(6)
-  branch         branches  @relation(fields: [branch_id], references: [branch_id])
-  stores         stores?   @relation(fields: [storesId], references: [id])
-  storesId       String?   @db.Uuid
+  id                    String                  @id @default(uuid()) @db.Uuid
+  doctor_id             String
+  branch_id             String                  @db.Uuid
+  specialization        String?                 @db.VarChar(255)
+  email                 String?                 @db.VarChar(255)
+  status                Int                     @default(1)
+  chuyen_khoa           String                  @db.VarChar(255)
+  dia_chi               String                  @db.VarChar(255)
+  sdt                   String                  @db.VarChar(255)
+  ghi_chu               String?                 @db.VarChar(255)
+  is_active             Boolean                 @default(true)
+  is_deleted            Boolean                 @default(false)
+  loai_so_quy           Int                     @default(0)
+  noi_cong_tac          String                  @db.VarChar(255)
+  ten_bac_si            String                  @db.VarChar(255)
+  ten_slug              String                  @db.VarChar(255)
+  trinh_do              String                  @db.VarChar(255)
+  created_at            DateTime                @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime                @default(now()) @db.Timestamptz(6)
+  deleted_at            DateTime?               @db.Timestamptz(6)
+  branch                branches                @relation(fields: [branch_id], references: [branch_id])
+  stores                stores?                 @relation(fields: [storesId], references: [id])
+  storesId              String?                 @db.Uuid
+  invoice_prescriptions invoice_prescriptions[]
 
   @@index([branch_id])
-  invoice_prescriptions invoice_prescriptions[]
 }
 
 model providers {
@@ -660,7 +684,7 @@ model invoice_prescriptions {
   updated_at DateTime @default(now()) @db.Timestamptz(6)
 
   invoices invoices @relation(fields: [invoiceId], references: [id])
-  doctor  doctors  @relation(fields: [bac_si_id], references: [id])
+  doctor   doctors  @relation(fields: [bac_si_id], references: [id])
 
   @@map("invoice_prescriptions")
 }
@@ -693,7 +717,42 @@ model other_charges {
   @@map("other_charges")
 }
 
+model financial_ledger {
+  id                        String   @id @default(uuid()) @db.Uuid
+  soQuyID                   String
+  maPhieu                   String
+  loai                      Int        @default(0)
+  loai_chung_tu             Int
+  loai_thu_chi              Int
+  ten_loai_thu_chi          String
+  loai_nguoi_nop_nhan       Int
+  nguoi_nop_nhan_id         Int
+  ten_nguoi_nop_nhan        String
+  ngay_thu_chi              DateTime
+  ghi_chu_he_thong          String?
+  ton_quy_truoc             Float
+  gia_tri                   Float
+  ton_quy_sau               Float
+  trang_thai                String
+  branch_id                 String   @db.Uuid
+  ghi_chu                   String?
+  phuong_thuc_thanh_toan_id Int
+  phieu_lien_quan           Int?
+  tong_tien_phieu_lien_quan Float?
+  ma_phieu_lien_quan        String?
+  ten_loai_chung_tu         String?
+  ten_loai_nguoi_nop_nhan   String?
+  ten_nha_thuoc             String?
+  ten_nguoi_tao               String?
+  user_id                   String
+  user_type                 String
+  phuong_thuc_thanh_toan    Int      @default(0) // 0: Tiền mặt, 1: Chuyển khoản
 
+  createdAt                 DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt                 DateTime @default(now()) @db.Timestamptz(6)
+
+  branches branches @relation(fields: [branch_id], references: [branch_id], onDelete: Cascade)
+}
 
 // Product assets (images, videos, etc.)
 // This table is used to store the relationship between a product and its assets
@@ -820,4 +879,14 @@ enum all_permission {
   User_Read      @map("User.Read")
   User_Update    @map("User.Update")
   User_Create    @map("User.Create")
+}
+
+enum LoaiChungTu {
+  Thu
+  Chi
+}
+
+enum LoaiThuChi {
+  Thu
+  Chi
 }

@@ -282,48 +282,6 @@ export default function ProductDashboard({branchId, type}: {branchId: string, ty
 															/>
 														</Table.Td>
 														<Table.Td onClick={() => toggleDetail(transformedProduct)}>{index + 1}</Table.Td>
-														{/*<Table.Td*/}
-														{/*	onClick={() => toggleDetail(transformedProduct)}*/}
-														{/*	className={'whitespace-nowrap '}*/}
-														{/*>{transformedProduct.code}</Table.Td>*/}
-														{/*<Table.Td*/}
-														{/*	onClick={() => toggleDetail(transformedProduct)}*/}
-														{/*	className="max-w-md truncate"*/}
-														{/*>{transformedProduct.name}</Table.Td>*/}
-														{/*<Table.Td*/}
-														{/*	onClick={() => toggleDetail(transformedProduct)}*/}
-														{/*	className={'whitespace-nowrap '}*/}
-														{/*>{transformedProduct.unit}</Table.Td>*/}
-														{/*<Table.Td*/}
-														{/*	onClick={() => toggleDetail(transformedProduct)}*/}
-														{/*	className={'whitespace-nowrap '}*/}
-														{/*>{transformedProduct.costPrice.toLocaleString('vi-VN')}</Table.Td>*/}
-														{/*<Table.Td*/}
-														{/*	onClick={() => toggleDetail(transformedProduct)}*/}
-														{/*	className={'whitespace-nowrap '}*/}
-														{/*>{transformedProduct.sellPrice.toLocaleString('vi-VN')}</Table.Td>*/}
-														{/*<Table.Td*/}
-														{/*	onClick={() => toggleDetail(transformedProduct)}*/}
-														{/*	className="text-center whitespace-nowrap "*/}
-														{/*>{transformedProduct.stock}</Table.Td>*/}
-														{/*<Table.Td onClick={() => toggleDetail(transformedProduct)}>*/}
-														{/*	<span className={cn(*/}
-														{/*		'px-2 whitespace-nowrap py-1 rounded-md text-sm',*/}
-														{/*		transformedProduct.status === 'active'*/}
-														{/*			? 'bg-teal-500/10 text-teal-500'*/}
-														{/*			: 'bg-gray-500/10 text-gray-500'*/}
-														{/*	)}>*/}
-														{/*		Kinh doanh*/}
-														{/*</span>*/}
-														{/*</Table.Td>*/}
-														{/*<Table.Td className={"text-center"}>*/}
-														{/*	<input*/}
-														{/*		type="checkbox"*/}
-														{/*		className="rounded border-gray-300"*/}
-														{/*		checked={selectedItems.includes(transformedProduct.id)}*/}
-														{/*		onChange={() => toggleSelectItem(transformedProduct.id)}*/}
-														{/*	/>*/}
-														{/*</Table.Td>*/}
 														{tableRenderData.map((data, index) => (
 															<Table.Td key={`td-${product.product_id}-${index}`} onClick={() => toggleDetail(transformedProduct)}>{data.render(product)}</Table.Td>
 														))}
@@ -334,23 +292,7 @@ export default function ProductDashboard({branchId, type}: {branchId: string, ty
 													>
 														<Table.Td p={0} colSpan={10}>
 															<Box h={productDetailActive === transformedProduct.id ? '' : 0} className={'transition-all overflow-hidden'}>
-																<ProductDetail product={{
-																	id: product.id.toString(),
-																	code: transformedProduct.code,
-																	name: transformedProduct.name,
-																	type: product.product_type,
-																	costPrice: transformedProduct.costPrice,
-																	sellPrice: transformedProduct.sellPrice,
-																	group: '',
-																	minStock: product.min_quantity,
-																	maxStock: product.max_quantity,
-																	avgCostPrice: product.avg_original_price,
-																	manufacturer: product.manufacturer || '',
-																	origin: product.made_in || '',
-																	description: product.description || '',
-																	location: '',
-																	image: product.default_image || '/images/placeholder.png',
-																}} />
+																<ProductDetail product={product} type={type || ""}/>
 															</Box>
 														</Table.Td>
 													</Table.Tr>
