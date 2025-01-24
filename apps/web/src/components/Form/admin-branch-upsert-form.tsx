@@ -24,7 +24,7 @@ const creationSchema = z.object({
 	branch_status: z.enum(['inactive', 'active']),
 })
 
-type FormField = z.infer<typeof creationSchema>;
+type FormFieldCreation = z.infer<typeof creationSchema>;
 
 type FormProps = {
 	onSubmit?: (value: AdminGettingBranches) => void;
