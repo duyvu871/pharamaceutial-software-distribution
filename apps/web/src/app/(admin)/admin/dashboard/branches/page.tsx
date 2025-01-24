@@ -5,19 +5,22 @@ import RefreshCookieAuthProvider from "@provider/refresh-cookie-provider"
 import ProtectHighEndAdmin from '@layout/protect/high-end-admin.tsx';
 import { AdminProfileProvider } from '@provider/admin-profile-provider.tsx';
 import BranchDashboard from '@container/admin/branch-dashboard.tsx';
+import { Suspense } from "react";
 
 export default function DashBoard (){
 	return (
 		<RefreshCookieAuthProvider>
-			<AppLayout>
-				<ProtectHighEndAdmin>
-					<AdminProfileProvider>
-						<AdminSidebarLayout>
-							<BranchDashboard />
-						</AdminSidebarLayout>
-					</AdminProfileProvider>
-				</ProtectHighEndAdmin>
-			</AppLayout>
+			<Suspense>
+				<AppLayout>
+					<ProtectHighEndAdmin>
+						<AdminProfileProvider>
+							<AdminSidebarLayout>
+								<BranchDashboard />
+							</AdminSidebarLayout>
+						</AdminProfileProvider>
+					</ProtectHighEndAdmin>
+				</AppLayout>
+			</Suspense>
 		</RefreshCookieAuthProvider>
 	)
 }
