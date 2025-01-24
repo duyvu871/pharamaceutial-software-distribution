@@ -1,34 +1,40 @@
-import { branches, branch_plans, payment_histories } from "@prisma/client";
+import { Prisma, branches, branch_plans, payment_histories } from "@prisma/client";
 
 export type Subscription = {
 	id: string;
 	branch_id: string;
 	plan_type: string;
 	plan_id: string;
-	start_date: string;
-	end_date: string;
+	start_date: Date;
+	end_date: Date;
 	status: string;
 	auto_renew: boolean;
-	payment_method: string;
-	createdAt: string;
-	updatedAt: string;
-	branches: branches;
+	payment_method: string | null;
+	createdAt: Date;
+	updatedAt: Date;
+	// branches: branches;
 	branch_plans: branch_plans;
-	payment_histories: payment_histories[];
+	// payment_histories: payment_histories[];
 };
 
-export type BranchPlans = {
-	id: string;
-	plan_name: string;
-	plan_type: string;
-	price: number;
-	duration: number;
-	description: string;
-	createdAt: string;
-	updatedAt: string;
+// export type BranchPlans = {
+// 	id: string;
+// 	plan_name: string;
+// 	plan_type: string;
+// 	price: number;
+// 	duration: number;
+// 	description: string;
+// 	createdAt: Date;
+// 	updatedAt: Date;
+//
+// 	subscription: Subscription[];
+// }
 
-	subscription: Subscription[];
-}
+export type BranchPlans = Prisma.branch_plansGetPayload<{
+	include: {
+		subscriptions: true
+	}
+}>;
 
 export type AdminSubscription = {
 	id: string;

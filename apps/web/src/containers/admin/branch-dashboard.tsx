@@ -195,12 +195,15 @@ export default function BranchDashboard() {
 			openActionOverlay();
 			const create = await registerSubscription("branch", model.id, activeDetail.branch_id);
 			if (create) {
-				setData((prev) =>
-					prev.map((item) => (
-						item[idKey] === activeDetail.branch_id
-							? {...item, subscriptions: [create ,...item.subscriptions]}
+				setData(
+					data.map((item) =>
+						item.branch_id === activeDetail.branch_id
+							? {
+								...item,
+								subscriptions: [...item.subscriptions, create],
+							}
 							: item
-					))
+					)
 				);
 				showSuccessToast('Đăng ký gói dịch vụ thành công');
 			}
