@@ -26,7 +26,7 @@ function BranchPlan() {
 	const remainingDays = Math.ceil((endDate.getTime() - new Date().getTime()) / (1000 * 3600 * 24));
 
 	// Format ngày tháng
-	const formatDate = (dateString: string) =>
+	const formatDate = (dateString: string | Date) =>
 		new Date(dateString).toLocaleDateString('vi-VN', {
 			day: '2-digit',
 			month: '2-digit',
