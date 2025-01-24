@@ -62,7 +62,10 @@ export const transformExpressParamsForPrisma = <T extends PrismaModel>(
 				if (!modelFields.includes(field as PrismaModelFields<T>)) {
 					throw new BadRequest("invalid_query", `Check searchFields again.`, "Invalid query.");
 				}
-				(prismaOptions.where as any)[field] = { contains: value };
+				(prismaOptions.where as any)[field] = {
+					contains: value,
+					mode: 'insensitive'
+				};
 			}
 		});
 	}
@@ -139,7 +142,10 @@ export const transformExpressParamsForPrismaWithTimeRangeBase = <T extends Prism
 				if (!modelFields.includes(field as PrismaModelFields<T>)) {
 					throw new BadRequest("invalid_query", `Check searchFields again.`, "Invalid query.");
 				}
-				(prismaOptions.where as any)[field] = { contains: value };
+				(prismaOptions.where as any)[field] = {
+					contains: value,
+					mode: 'insensitive'
+				};
 			}
 		});
 	}
@@ -156,9 +162,12 @@ export const transformExpressParamsForPrismaWithTimeRangeBase = <T extends Prism
 				const [start, end] = dateMatch.map(match => match.slice(1, -1));
 				const dateFilter: any = {};
 
+				console.log("start", start);
+				console.log("end", end);
+
 				if (start) {
 					try {
-						const startDate = new Date(start);
+						const startDate = new Date(Number(start));
 						if(isNaN(startDate.getTime())) {
 							throw new BadRequest("invalid_query", `Invalid start date format in ${field} filter`, "Invalid query.");
 						}
@@ -170,7 +179,7 @@ export const transformExpressParamsForPrismaWithTimeRangeBase = <T extends Prism
 
 				if (end) {
 					try {
-						const endDate = new Date(end);
+						const endDate = new Date(Number(end));
 						if(isNaN(endDate.getTime())) {
 							throw new BadRequest("invalid_query", `Invalid end date format in ${field} filter`, "Invalid query.");
 						}

@@ -1,5 +1,6 @@
 import { z } from "zod"
 import { phoneRegex } from '@util/validator';
+import { Prisma } from '@prisma/client';
 
 export interface Branch {
 	branch_id: string
@@ -186,3 +187,18 @@ export const pointSettingsSchema = z.object({
 });
 
 export type PointSettingsFormValues = z.infer<typeof pointSettingsSchema>;
+
+export type AdminGettingBranches = Prisma.branchesGetPayload<{
+	include: {
+		users: {
+			omit: {
+				password: true
+			}
+		},
+		subscriptions: {
+			include: {
+				branch_plans: true,
+			}
+		}
+	}
+}>;

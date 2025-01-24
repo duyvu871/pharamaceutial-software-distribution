@@ -24,7 +24,7 @@ export const validateNumber = (fieldName: string, isPositive: boolean = false, i
 
             return Number.isFinite(n) && !Number.isNaN(n);
         }, value => ({ message: `Field ${fieldName} Expected number or numeric string, received '${value}'` }))
-        // .transform(Number);
+        .transform(Number);
 };
 
 // (() => {

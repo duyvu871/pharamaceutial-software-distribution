@@ -55,8 +55,9 @@ export const useFilterString = <Schema extends Record<string, any>>(filterString
 		const parse = filter.split(",");
 		const result: Record<string, string> = {};
 		parse.forEach((item) => {
+			if (!item) return;
 			const [key, value] = item.split(":");
-			result[key.trim()] = value.trim();
+			result[key.trim()] = (value || "").trim();
 		});
 
 		return result as Record<keyof Schema, string>;

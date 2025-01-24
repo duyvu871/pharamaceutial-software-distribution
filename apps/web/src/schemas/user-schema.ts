@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { Branch, branchSchema } from '@schema/branch-schema.ts';
 import { phoneRegex } from '@util/validator.ts';
+import { branches, admin_to_user, user_permissions } from "@prisma/client";
 
 // login schema for validation in login form
 export const loginSchema = z.object({
@@ -85,3 +86,24 @@ export const userSettingSchema = z.object({
 }).partial();
 
 export type UserSettingPayloadType = z.infer<typeof userSettingSchema>;
+
+export type UserSchema = {
+	id: string;
+	username: string;
+	password: string;
+	email: string | null;
+	age: number | null;
+	phone_number: string | null;
+	address: string | null;
+	avatar: string | null;
+	notes: string | null;
+	is_active: boolean;
+	last_login: string | null;
+	reset_token: string | null;
+	permission: string[];
+	createdAt: string | null;
+	updatedAt: string | null;
+	branches: branches[];
+	admin_to_user: admin_to_user[];
+	user_permissions: user_permissions[];
+};

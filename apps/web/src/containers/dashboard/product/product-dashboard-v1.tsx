@@ -269,7 +269,13 @@ export default function ProductDashboardV1({ type }: {type: string}) {
 						<InputBase
 							placeholder={`Tìm kiếm theo tên ${title}`}
 							className={"w-72"}
-							onChange={(event) => setTempSearch(event.currentTarget.value)}
+							onChange={(event) => 									setTempSearch(event.currentTarget.value)
+							}
+							onKeyDown={(event) => {
+								if (event.key === "Enter") {
+									applySearch();
+								}
+							}}
 						/>
 						<Button
 							color={"var(--main-color)"}

@@ -13,6 +13,9 @@ import {import_invoices, import_invoice_product} from "@prisma/client"
 import { PaginationQueryV2 } from 'validations/Pagination.ts';
 import { transformExpressParamsForPrisma } from 'server/shared/pagination-parse.ts';
 import { ProductIdParam } from 'validations/Product.ts';
+import { FinancialLedgerService } from 'services/FinancialLedgerService.ts';
+import { FinancialLedgerStatus, FinancialLedgerType } from 'server/common/enums/model/financial-ledger.ts';
+import { FinancalLedgerPaymentMethod } from 'web/src/types/enum/financal.ts';
 
 export class ImportController {
 	public static importProduct = AsyncMiddleware.asyncHandler(
@@ -21,6 +24,10 @@ export class ImportController {
 				console.log('params: ', req.params);
 				console.log('import product: ', req.body);
 				const branchId = req.params.branchId;
+				const jwtPayload = req.jwtPayload;
+				if (!jwtPayload) {
+					throw new Forbidden('jwt_payload_not_found', 'Không tìm thấy thông tin người dùng', 'Không tìm thấy thông tin người dùng');
+				}
 
 				const store = await prisma.stores.findFirst({
 					select: {
@@ -38,6 +45,20 @@ export class ImportController {
 				const store_id = store.id;
 				// TODO: Implement filter request body, before sending to the task
 				const task = await benchmarkAsync(ImportInvoiceTask.importInvoices)(store_id, req.body)
+
+				// Create financial ledger for the import task
+				const financialLedger = await FinancialLedgerService.createFinancialLedger(
+					branchId,
+					{
+						ten_nguoi_nop_nhan: 'Nhập hàng từ nhà cung cấp',
+						loai_thu_chi: FinancialLedgerType.EXPENSE_FROM_PROVIDER,
+						gia_tri: task.total_amount,
+						phuong_thuc_thanh_toan: FinancalLedgerPaymentMethod.cash,
+						trang_thai: FinancialLedgerStatus.APPROVED,
+					},
+					{userType: jwtPayload.type, id: jwtPayload.id}
+				);
+
 				const response = new Success({
 					...task
 				});

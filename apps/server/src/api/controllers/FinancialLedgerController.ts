@@ -7,6 +7,7 @@ import { toLowerCaseNonAccentVietnamese } from 'utils/non-acent-vietnam.ts';
 import { BranchIdParam } from 'validations/Branch.ts';
 import { PaginationQueryV2 } from 'validations/Pagination.ts';
 import { CreationFinancialLedger } from 'validations/FinancialLedger.ts';
+import { FinancialLedgerService } from 'services/FinancialLedgerService.ts';
 
 export class FinancialLedgerController {
 	public static getFinancialLedgers = AsyncMiddleware.asyncHandler(
@@ -66,29 +67,30 @@ export class FinancialLedgerController {
 						},
 					})
 				} else {
-					const count = await prisma.financial_ledger.count({
-						where: {
-							branch_id: branchId,
-						},
-					});
-					response = await prisma.financial_ledger.create({
-						data: {
-							...data,
-							maPhieu: "HDTC" + (count + 1).toString().padStart(6, "0"),
-							branch_id: branchId,
-							soQuyID: "SQ" + (count + 1).toString().padStart(6, "0"),
-							loai_chung_tu: 1,
-							ten_loai_thu_chi: data.loai_thu_chi === 0 ? "Thu" : "Chi",
-							loai_nguoi_nop_nhan: 1, // 1: nộp
-							nguoi_nop_nhan_id: 1, // 1: nộp
-							ton_quy_truoc: 0,
-							ton_quy_sau: 0,
-							trang_thai: "approved",
-							phuong_thuc_thanh_toan_id: data.phuong_thuc_thanh_toan,
-							user_id: userId,
-							user_type: userType,
-						},
-					});
+					// const count = await prisma.financial_ledger.count({
+					// 	where: {
+					// 		branch_id: branchId,
+					// 	},
+					// });
+					// response = await prisma.financial_ledger.create({
+					// 	data: {
+					// 		...data,
+					// 		maPhieu: "HDTC" + (count + 1).toString().padStart(6, "0"),
+					// 		branch_id: branchId,
+					// 		soQuyID: "SQ" + (count + 1).toString().padStart(6, "0"),
+					// 		loai_chung_tu: 1,
+					// 		ten_loai_thu_chi: data.loai_thu_chi === 0 ? "Thu" : "Chi",
+					// 		loai_nguoi_nop_nhan: 1, // 1: nộp
+					// 		nguoi_nop_nhan_id: 1, // 1: nộp
+					// 		ton_quy_truoc: 0,
+					// 		ton_quy_sau: 0,
+					// 		trang_thai: "approved",
+					// 		phuong_thuc_thanh_toan_id: data.phuong_thuc_thanh_toan,
+					// 		user_id: userId,
+					// 		user_type: userType,
+					// 	},
+					// });
+					response = await FinancialLedgerService.createFinancialLedger(branchId, data, {id: userId, userType});
 				}
 
 				const returnResponse = new Success(response).toJson

@@ -3,6 +3,9 @@ import { phoneRegex } from 'utils/regex';
 
 export class BranchValidation {
 	public static createBranchBody = z.object({
+		branch_id: z.string().uuid({
+			message: 'ID chi nhánh không hợp lệ'
+		}).optional(),
 		branch_name: z.string({
 			invalid_type_error: 'Tên chi nhánh không hợp lệ',
 			required_error: 'Tên chi nhánh không được để trống'
@@ -92,7 +95,6 @@ export class BranchValidation {
 		nguoi_chiu_trach_nhiem_chuyen_mon: z.string().nonempty("Người chịu trách nhiệm chuyên môn không được để trống."),
 		so_chung_chi_hanh_nghe: z.string().nonempty("Số chứng chỉ hành nghề không được để trống."),
 	});
-
 
 }
 

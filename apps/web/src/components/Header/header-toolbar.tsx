@@ -11,6 +11,7 @@ import RingNoti from '@component/Notification/ring-noti.tsx';
 import { getNotifications } from '@api/notification.ts';
 import { notificationAtom } from '@store/state/overview/notifocation.ts';
 import ContextHeader from '@component/Header/context-header.tsx';
+import BranchPlan from '@component/Subscription/branch-plan.tsx';
 
 
 
@@ -49,6 +50,7 @@ function HeaderToolbar() {
 					</div>
 				</div>
 				<div className={"mx-4 flex items-center gap-3"}>
+					<BranchPlan />
 					<Button className={"hover-button-with-primary"}>
 						<Label
 							label={

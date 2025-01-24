@@ -1,7 +1,6 @@
 import { useAuth } from '@hook/auth';
 import NoPermission from '@component/Execption/no-permission.tsx';
 
-
 type Props = {
 	children: React.ReactNode;
 	roles: ('admin'|'user'|'membership')[];

@@ -24,3 +24,22 @@ export function removeUndefinedProperties<T extends AnyObject>(object: T): T {
 
 	return cleanedObject;
 }
+
+
+export function omitProperties<T extends Record<string, any>, K extends keyof T>(
+	object: T,
+	propertiesToOmit: K[]
+): Omit<T, K> {
+	const omittedObject: Record<string, any> = {}; // Declare with index signature and any type
+
+	for (const key of Object.keys(object)) {
+		if (
+			Object.prototype.hasOwnProperty.call(object, key) &&
+			!propertiesToOmit.includes(key as K)
+		) {
+			omittedObject[key] = object[key]; // Assign using key as string
+		}
+	}
+
+	return omittedObject as Omit<T, K>; // Cast to the expected return type
+}

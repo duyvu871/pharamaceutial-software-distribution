@@ -31,6 +31,8 @@ import { uploadRouter } from 'server/api/routes/upload.ts';
 import { ProviderValidation } from 'validations/Provider.ts';
 import { doctorRoute } from 'server/api/routes/doctor.ts';
 import { financialLedger } from 'server/api/routes/financial-ledger.ts';
+import { adminRoute } from 'server/api/routes/admin.ts';
+import { subscriptionRoute } from 'server/api/routes/subscription.ts';
 
 const apiRouter = Router();
 const pageRouter = Router();
@@ -259,6 +261,8 @@ apiRouter.use(importRoute);
 apiRouter.use(uploadRouter);
 apiRouter.use(doctorRoute);
 apiRouter.use(financialLedger);
+apiRouter.use(adminRoute);
+apiRouter.use(subscriptionRoute);
 
 export default {
     apiRoutes: apiRouter,

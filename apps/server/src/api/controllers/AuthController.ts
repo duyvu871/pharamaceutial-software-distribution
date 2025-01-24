@@ -9,10 +9,11 @@ import { TaskOwner } from 'server/common/enums/task';
 import Unauthorized from 'responses/clientErrors/Unauthorized';
 import { MembershipTask } from 'server/repository/membership/task';
 import Success from 'responses/successful/Success.ts';
+import { AdminTask } from 'repository/admin/task.ts';
 
 const AuthTasks = {
 	user: UserTask,
-	admin: UserTask,
+	admin: AdminTask,
 	membership: MembershipTask,
 }
 

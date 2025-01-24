@@ -1,7 +1,10 @@
+import {admin_permissions, admin_subsciption, admin_to_user, enum_gender, roles} from '@prisma/client';
+
+import { z } from 'zod';
+import { Prisma } from '@repo/orm';
 
 export type AdminSchema = {}
 
-import { z } from 'zod';
 
 export const StoreSchema = z.object({
 	username: z
@@ -67,7 +70,8 @@ export const UserSchema = z.object({
 	gender: z.string().optional(),
 });
 
-export const AdminSchema = z.object({
+export const adminSchema = z.object({
+	id: z.string().optional(),
 	username: z
 		.string()
 		.nonempty({ message: 'Tên tài khoản không được để trống' })
@@ -76,20 +80,17 @@ export const AdminSchema = z.object({
 		.string()
 		.nonempty({ message: 'Mật khẩu không được để trống' })
 		.min(6, { message: 'Mật khẩu phải có ít nhất 6 ký tự' }),
-	firstName: z.string().optional(),
-	lastName: z.string().optional(),
+	first_name: z.string().optional(),
+	last_name: z.string().optional(),
 	address: z.string().optional(),
-	zipCode: z.string().optional(),
-	dob: z
-		.string()
-		.optional()
-	,
-	phone: z.string().optional(),
-	email: z
-		.string()
-		.optional(),
-	gender: z.string().optional(),
+	postal_code: z.string().optional(),
+	dob: z.string().optional(),
+	phone_number: z.string().optional(),
+	email: z.string().optional(),
+	gender: z.enum(['male', 'female', 'other']).optional(),
 });
+
+export type AdminCreateSchema = z.infer<typeof adminSchema>;
 
 // login schema for validation in login form
 export const loginSchema = z.object({
@@ -102,3 +103,38 @@ export const loginSchema = z.object({
 });
 export type LoginPayloadType = z.infer<typeof loginSchema>;
 export type LoginFormType = LoginPayloadType;
+
+
+export type AdminType = {
+	id: string;
+	username: string;
+	last_name: string;
+	first_name: string;
+	gender: enum_gender;
+	password: string;
+	email: string | null;
+	phone_number: string | null;
+	postal_code: string | null;
+	address: string | null;
+	avatar: string | null;
+	notes: string | null;
+	bio: string | null;
+	dob: string | null;
+	is_active: boolean;
+	last_login: string | null;
+	reset_token: string | null;
+	permission: string[];
+	roleId: string | null;
+	createdAt: string | null;
+	updatedAt: string | null;
+	roles: roles | null;
+	admin_to_user: admin_to_user[];
+	admin_subsciption: Prisma.admin_subsciptionGetPayload<{
+		include: {
+			admin_plans: true;
+		}
+	}>[];
+	admin_permissions: admin_permissions[];
+};
+
+

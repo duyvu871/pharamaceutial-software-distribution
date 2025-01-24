@@ -6,7 +6,7 @@ import StoreModal from './ModalCreatStore.tsx';
 import { IconDotsVertical } from '@tabler/icons-react';
 import EditStore from './EditStore.tsx';
 import { StatItem } from '@schema/test/stat.ts';
-import { getAdminData } from '@api/admin/get-admin.ts';
+import { getAdminData } from '@api/admin/admin-curd.ts';
 
 const StoreManager = () => {
     const [elements, setElements] = useState<StatItem[] | undefined>(undefined);

@@ -1,7 +1,8 @@
 import axiosWithAuth from '@lib/axios.ts';
 import { API_URL } from 'config';
-import { ProfilePayloadType } from '@schema/user-schema.ts';
-import { SuccessResponse } from '@type/api/response.ts';
+import { ProfilePayloadType, UserSchema } from '@schema/user-schema.ts';
+import { Pagination, SuccessResponse } from '@type/api/response.ts';
+import { PaginationFilterParams } from '@type/api/params.ts';
 
 export const getUserProfile = async (userId: any): Promise<ProfilePayloadType | null> => {
 	try {

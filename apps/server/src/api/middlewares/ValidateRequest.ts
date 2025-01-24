@@ -76,10 +76,12 @@ const validate = (type: ValidateType, ...schemas: ZodType<any>[]) => {
 					console.log('DTOToValidate: ', DTOToValidate);
 					const schemaParse = schema.parse(DTOToValidate);
 					console.log('schemaParse: ', schemaParse);
-					validatedData = { ...validatedData, ...DTOToValidate };
+					validatedData = { ...validatedData, ...DTOToValidate, ...schemaParse };
 				}
 			}
 
+			console.log(`req[${type}] validatedData: `, validatedData);
+			req[type] = validatedData;
 			next();
 
 		} catch (error) {

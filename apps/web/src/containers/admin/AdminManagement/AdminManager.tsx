@@ -6,7 +6,7 @@ import AdminModal from './ModalCreat';
 import { IconDotsVertical } from '@tabler/icons-react';
 import EditAdmin from './EditAdmin';
 import { StatItems } from '@schema/test/stat.ts';
-import { getAdminData } from '@api/admin/get-admin.ts';
+import { getAdminData } from '@api/admin/admin-curd.ts';
 const AdminManager = () => {
       const [elements, setElements] = useState<StatItems[] | undefined>(undefined);
       const [currentPage, setCurrentPage] = useState(1);

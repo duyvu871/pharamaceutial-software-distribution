@@ -25,8 +25,8 @@ export class PaginationValidation {
 			).innerType()
 	});
 	public static paginationQueryV2 = z.object({
-		page: validateNumber("page", true).optional(),
-		limit: validateNumber("limit", true).optional(),
+		page: validateNumber("page", true).innerType().optional().default("1"),
+		limit: validateNumber("limit", true).innerType().optional().default("10"),
 		search: z.string().max(200, {
 			message: 'Search query too long'
 		}).optional(),

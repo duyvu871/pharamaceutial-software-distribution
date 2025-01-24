@@ -166,6 +166,7 @@ model memberships {
   @@index([username])
   @@index([email])
   @@index([phone_number])
+  membership_permissions membership_permissions[]
 }
 
 model product_groups {
@@ -468,7 +469,7 @@ model providers {
 
 model admins {
   id                String              @id @default(uuid()) @db.Uuid
-  username          String              @db.VarChar(255)
+  username          String              @db.VarChar(255) @unique
   last_name         String              @db.VarChar(255)
   first_name        String              @db.VarChar(255)
   gender            enum_gender
@@ -480,6 +481,7 @@ model admins {
   avatar            String?             @db.VarChar(255)
   notes             String?             @db.VarChar(255)
   bio               String?             @db.VarChar(255)
+  dob               DateTime?           @db.Timestamptz(6)
   is_active         Boolean             @default(true)
   last_login        DateTime?           @db.Timestamptz(6)
   reset_token       String?             @db.VarChar(255)
@@ -490,12 +492,14 @@ model admins {
   roles             roles?              @relation(fields: [roleId], references: [id])
   admin_to_user     admin_to_user[]
   admin_subsciption admin_subsciption[]
+
+  admin_permissions admin_permissions[]
 }
 
 model admin_to_user {
   id        String   @id @default(uuid()) @db.Uuid
   adminId   String   @db.Uuid
-  userId    String   @db.Uuid
+  userId    String   @db.Uuid @unique
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
   admins    admins   @relation(fields: [adminId], references: [id])
@@ -525,6 +529,7 @@ model users {
   @@index([username])
   @@index([email])
   @@index([phone_number])
+  user_permissions user_permissions[]
 }
 
 model subscriptions {
@@ -534,6 +539,8 @@ model subscriptions {
   plan_id    String   @db.Uuid
   start_date DateTime @default(now()) @db.Timestamptz(6)
   end_date   DateTime
+  auto_renew Boolean @default(true)  // ADDED
+  payment_method String? @db.VarChar(255) // ADDED
   status     String   @db.VarChar(50) // e.g., "active", "expired", "pending"
   createdAt  DateTime @default(now()) @db.Timestamptz(6)
   updatedAt  DateTime @updatedAt
@@ -543,6 +550,7 @@ model subscriptions {
 
   @@index([branch_id])
   @@index([plan_id])
+  payment_histories payment_histories[]
 }
 
 model branch_plans {
@@ -565,11 +573,16 @@ model admin_subsciption {
   start_date DateTime @default(now()) @db.Timestamptz(6)
   end_date   DateTime
   status     String   @db.VarChar(50) // e.g., "active", "expired", "pending"
+  auto_renew Boolean @default(true)  // ADDED
+  payment_method String? @db.VarChar(255) // ADDED
+  trial_ends_at DateTime? @db.Timestamptz(6) // ADDED
   createdAt  DateTime @default(now()) @db.Timestamptz(6)
   updatedAt  DateTime @updatedAt @db.Timestamptz(6)
 
   admins      admins      @relation(fields: [admin_id], references: [id], onDelete: Cascade)
   admin_plans admin_plans @relation(fields: [plan_id], references: [id], onDelete: Cascade)
+
+  payment_histories payment_histories[]
 }
 
 model admin_plans {
@@ -585,14 +598,86 @@ model admin_plans {
   admin_subsciption admin_subsciption[]
 }
 
+model payment_histories {
+  id String @id @default(uuid()) @db.Uuid // ADDED
+  subscription_id String @db.Uuid // ADDED
+  admin_subscription_id String? @db.Uuid // ADDED
+  payment_date DateTime @default(now()) @db.Timestamptz(6) // ADDED
+  amount Float // ADDED
+  payment_method String? @db.VarChar(255)  // ADDED
+  status String  @db.VarChar(50)  // ADDED
+  createdAt DateTime @default(now()) @db.Timestamptz(6)  // ADDED
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)  // ADDED
+
+  subscriptions subscriptions @relation(fields:[subscription_id], references: [id], onDelete: Cascade)  // ADDED
+  admin_subsciption admin_subsciption? @relation(fields: [admin_subscription_id], references: [id], onDelete: Cascade)  // ADDED
+}
+
+model role_permissions {
+  role_id String  @db.Uuid  // ADDED
+  permission_id String @db.Uuid  // ADDED
+  createdAt DateTime @default(now()) @db.Timestamptz(6)  // ADDED
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)   // ADDED
+  roles   roles @relation(fields: [role_id], references: [id]) // ADDED
+  permissions  permissions @relation(fields: [permission_id], references: [id], onDelete: Cascade)   // ADDED
+
+  @@id([role_id, permission_id])// ADDED
+}
+
+model user_permissions {
+  user_id String  @db.Uuid  // ADDED
+  permission_id String @db.Uuid  // ADDED
+  createdAt DateTime @default(now()) @db.Timestamptz(6)  // ADDED
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)  // ADDED
+  users   users @relation(fields: [user_id], references: [id], onDelete: Cascade)    // ADDED
+  permissions  permissions @relation(fields: [permission_id], references: [id], onDelete: Cascade)  // ADDED
+
+  @@id([user_id, permission_id])   // ADDED
+}
+
+model membership_permissions {
+  membership_id String  @db.Uuid  // ADDED
+  permission_id String @db.Uuid  // ADDED
+  createdAt DateTime @default(now()) @db.Timestamptz(6)  // ADDED
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)  // ADDED
+  memberships   memberships @relation(fields: [membership_id], references: [id], onDelete: Cascade)    // ADDED
+  permissions  permissions @relation(fields: [permission_id], references: [id], onDelete: Cascade)  // ADDED
+
+  @@id([membership_id, permission_id])   // ADDED
+}
+
+model admin_permissions {
+  admin_id String  @db.Uuid  // ADDED
+  permission_id String @db.Uuid  // ADDED
+  createdAt DateTime @default(now()) @db.Timestamptz(6)  // ADDED
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)  // ADDED
+  admins   admins @relation(fields: [admin_id], references: [id], onDelete: Cascade)    // ADDED
+  permissions  permissions @relation(fields: [permission_id], references: [id], onDelete: Cascade)  // ADDED
+
+  @@id([admin_id, permission_id])   // ADDED
+}
+
+model permissions {
+  id          String   @id @default(uuid()) @db.Uuid // ADDED
+  name        String   @db.VarChar(255) // ADDED
+  description String? @db.VarChar(255) // ADDED
+  createdAt   DateTime @default(now()) @db.Timestamptz(6) // ADDED
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)  // ADDED
+  role_permissions role_permissions[]  // ADDED
+  admin_permissions admin_permissions[]
+  user_permissions user_permissions[]
+  membership_permissions membership_permissions[]
+}
+
 model roles {
   id         String   @id @default(uuid()) @db.Uuid
   role_name  String   @db.VarChar(255)
-  permission String   @db.VarChar(255) // ex: "Store.All, Report.All, Supplier.All, Medicine.All, Membership.All, Promotion.All, Customer.All, User.All"
+  permission String[]   @db.VarChar(255) // ex: "Store.All, Report.All, Supplier.All, Medicine.All, Membership.All, Promotion.All, Customer.All, User.All"
   createdAt  DateTime @default(now()) @db.Timestamptz(6)
   updatedAt  DateTime @updatedAt @db.Timestamptz(6)
 
   admins admins[]
+  role_permissions role_permissions[]
 }
 
 model points {

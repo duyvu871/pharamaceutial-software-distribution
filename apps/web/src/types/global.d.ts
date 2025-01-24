@@ -9,6 +9,12 @@ declare global {
 		B) extends infer O
 		? { [K in keyof O]: O[K] }
 		: never;
+	type NullableProperties<T> = {
+		[K in keyof T]: T[K] | null;
+	}
+	type OptionalProperties<T> = {
+		[K in keyof T]?: T[K];
+	}
 }
 
 export {};

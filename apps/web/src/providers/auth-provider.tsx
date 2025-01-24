@@ -23,7 +23,7 @@ export type IAuthContext = {
 	token: string | null;
 	setToken: (newToken: string | null) => void;
 	loginAction: (userPayload: LoginFormType, redirect: string) => Promise<void>;
-	logout: () => void;
+	logout: (direct?: string) => void;
 };
 
 export const AuthContext = createContext<IAuthContext>({
@@ -79,12 +79,12 @@ const AuthProvider = ({ children, refreshToken }: AuthProviderProps) => {
 
 	};
 
-	const logout = useCallback(() => {
+	const logout = useCallback((direct?: string) => {
 		removeCookie('accessToken');
 		removeLocalStorage('user-session-info');
 		setAuthProfile(null);
 		setToken(null);
-		router.replace(paths.auth.login);
+		router.replace(direct || paths.auth.login);
 	}, [router, setToken]);
 
 

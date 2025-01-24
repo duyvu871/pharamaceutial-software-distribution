@@ -66,9 +66,9 @@ export default class DoctorController {
 					where: {
 						invoices: {
 							branchId,
-							doctor_id: doctorId,
 						},
 						...queryParse.where,
+						bac_si_id: doctorId,
 					},
 				});
 				const invoicePrescriptions = await prisma.invoice_prescriptions.findMany({
@@ -76,9 +76,9 @@ export default class DoctorController {
 					where: {
 						invoices: {
 							branchId: branchId,
-							doctor_id: doctorId,
 						},
 						...queryParse.where,
+						bac_si_id: doctorId,
 					},
 				});
 				const response = new Success({

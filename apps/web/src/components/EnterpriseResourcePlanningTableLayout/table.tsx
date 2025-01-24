@@ -64,7 +64,7 @@ function EnterpriseResourcePlanningTable<item extends Record<string, any>>(props
 		>
 			<LoadingOverlay visible={props.visibleMainOverlay} zIndex={1000} overlayProps={{ radius: "sm", blur: 2 }} />
 			<Group align={'start'} className="h-full overflow-hidden !flex-nowrap" gap={0}>
-				<div className="flex-1 p-4 h-full flex flex-col">
+				<div className="flex-1 p-4 h-full flex flex-col overflow-x-auto">
 					{/*Header*/}
 					{props.customFilter
 						||
