@@ -113,7 +113,7 @@ const BranchSubscriptionCollection: React.FC<SubscriptionListProps> = ({ subscri
 					</Grid.Col>
 				))}
 				{subscriptions.length === 0 &&
-					<Text align="center" size="lg" color="gray">
+					<Text size="lg" color="gray">
 						Chưa có đăng ký nào
 					</Text>
 				}
