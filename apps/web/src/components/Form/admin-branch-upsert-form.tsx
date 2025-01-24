@@ -5,6 +5,7 @@ import { phoneRegex } from '@util/validator.ts';
 import { AdminGettingBranches } from '@schema/branch-schema.ts';
 
 const creationSchema = z.object({
+	branch_id: z.string().optional(),
 	branch_name: z.string({
 		invalid_type_error: 'Tên chi nhánh không hợp lệ',
 		required_error: 'Tên chi nhánh không được để trống'
@@ -27,7 +28,7 @@ const creationSchema = z.object({
 type FormFieldCreation = z.infer<typeof creationSchema>;
 
 type FormProps = {
-	onSubmit?: (value: AdminGettingBranches) => void;
+	onSubmit?: (value: FormFieldCreation) => void;
 	defaultValue?: AdminGettingBranches;
 }
 
