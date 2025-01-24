@@ -83,7 +83,9 @@ function AdminBranchUpsertForm({ defaultValue, onSubmit }: FormProps) {
 			onSubmit={(value) => {
 				onSubmit && onSubmit({
 					...value,
-					branch_id: defaultValue?.branch_id,
+					...(defaultValue ? {
+						branch_id: defaultValue.branch_id
+					} : {}),
 				});
 				console.log('Submit', {
 					...defaultValue,
