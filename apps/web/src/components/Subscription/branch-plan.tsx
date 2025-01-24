@@ -36,11 +36,11 @@ function BranchPlan() {
 	return (
 		<div className="flex items-center gap-3 px-4 py-2 bg-teal-50 rounded-lg border border-teal-100">
 			<div className="flex-1 min-w-0">
-				<div className="flex items-center gap-2 mb-1">
-          <span className="text-sm font-semibold text-teal-600 truncate">
-            {subscription.branch_plans.name}
-          </span>
-				</div>
+				{/*<div className="flex items-center gap-2 mb-1">*/}
+        {/*  <span className="text-sm font-semibold text-teal-600 truncate">*/}
+        {/*    {subscription?.branch_plans?.name}*/}
+        {/*  </span>*/}
+				{/*</div>*/}
 
 				<div className="flex flex-col items-center gap-2 text-xs text-teal-600">
           <span>
