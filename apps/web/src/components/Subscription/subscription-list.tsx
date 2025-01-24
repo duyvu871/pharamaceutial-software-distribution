@@ -111,6 +111,9 @@ const SubscriptionList: React.FC<SubscriptionListProps> = ({ subscriptions, onCa
 						<SubscriptionCard subscription={subscription} onCancel={onCancel} />
 					</Grid.Col>
 				))}
+				{subscriptions.length === 0 && <Text  size="lg">
+					Chưa có đăng ký nào
+				</Text>}
 			</Grid>
 		</Box>
 	);
