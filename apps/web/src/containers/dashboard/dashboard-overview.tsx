@@ -70,7 +70,7 @@ function DashboardOverview() {
 				<Typography weight={'semibold'} size={'h5'}>Tổng quan</Typography>
 				<Tooltip label="Đăng xuất" color={"var(--main-color)"}>
 					<button
-						onClick={logout}
+						onClick={() => logout('/login')}
 						className={"absolute right-2 w-10 h-10 flex items-center justify-center text-teal-600 rounded-md transition-all hover:!bg-teal-100"}>
 						<LogOut />
 						{/*Đăng xuất*/}
