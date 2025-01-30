@@ -15,7 +15,7 @@ import BranchPlan from '@component/Subscription/branch-plan.tsx';
 
 
 
-function HeaderToolbar() {
+function AdminHeaderToolbar() {
 	// const [branchDetail] = useAtom(currentBranchAtom);
 	// const [, setNotifications] = useAtom(notificationAtom);
 	//
@@ -33,10 +33,10 @@ function HeaderToolbar() {
 	// }, []);
 
 	return (
-		<div className={"w-full h-14 bg-white border-b border-b-zinc-200"}>
-			<div className={"flex flex-row justify-between items-center w-full h-full"}>
+		<div className={"w-full flex flex-row items-center justify-end h-14 bg-white border-b border-b-zinc-200"}>
+			<div className={"flex flex-row justify-between items-center w-fit h-full"}>
 				<div className={"mx-4 flex items-center gap-3"}>
-					<Button className={"hover-button-with-primary"}>
+					<Button color={"var(--main-color)"} variant={"light"}>
 						<Label
 							label={
 								<AiFillQuestionCircle className={"text-emerald-600"} />
@@ -59,4 +59,4 @@ function HeaderToolbar() {
 	);
 }
 
-export default HeaderToolbar;
+export default AdminHeaderToolbar;

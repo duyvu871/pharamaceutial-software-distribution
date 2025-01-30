@@ -62,6 +62,7 @@ const JsonWebToken =  AsyncMiddleware.asyncHandler(async (req: Request, res: Res
           throw new Unauthorized('TOKEN_NOT_YET_VALID', ErrorDescription.UNAUTHORIZED, 'token is not yet valid');
       }
 
+      // @ts-ignore
       req.jwtPayload = decodedToken.payload;
       //@ts-ignore
       req.scopes = decodedToken.scopes;

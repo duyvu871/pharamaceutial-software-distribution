@@ -49,7 +49,7 @@ import { useFilterString } from "@hook/client/use-filter-string.ts";
 import { useSearchParams } from "@route/hooks";
 import { DatePicker, DateTimePicker } from "@mantine/dates";
 import { AdminCreateSchema, AdminType } from '@schema/admin/admin-schema.ts';
-import { createAdminData, getAdminData, updateAdminData } from '@api/admin/admin-curd.ts';
+import { createAdminData, deleteAdminData, getAdminData, updateAdminData } from '@api/admin/admin-curd.ts';
 import { MdOutlineSubscriptions } from "react-icons/md";
 import { genderVi } from "@global/locale.ts";
 import { AdminPlanType } from "@type/enum/admin.ts";
@@ -157,11 +157,17 @@ export default function AdminDashboard() {
 			if (model.id) {
 				const create = await updateAdminData(model.id, model);
 				if (create) {
+					setData((prev) =>
+						prev.map((item) =>
+							item[idKey] === model.id ? { ...item, ...model } : item
+						)
+					);
 					showSuccessToast('Cập nhật thông tin admin thành công');
 				}
 			} else {
 				const create = await createAdminData(model);
 				if (create) {
+					setData((prev) => [create, ...prev]);
 					showSuccessToast('Tạo mới admin thành công');
 				}
 			}
@@ -260,13 +266,27 @@ export default function AdminDashboard() {
 		{
 			label: (model) => (
 				<Group gap={5} className={cn({
-					"opacity-50 cursor-not-allowed": model
+					"opacity-50 cursor-not-allowed": !model
 				})}>
 					<Trash2 {...iconProps} /> Xóa
 				</Group>
 			),
-			action: (model) => {
-				showWarningToast("Chức năng này đang được phát triển");
+			action: async (model) => {
+				try {
+					if (!model) {
+						showErrorToast("Không tìm thấy thông tin");
+						return;
+					}
+
+					const comfirm = confirm("Bạn có chắc chắn muốn xóa thông tin này không?");
+					if (!comfirm) return;
+
+					const deleted = await deleteAdminData(model.id);
+					setData((prev) => prev.filter((item) => item.id !== model.id));
+					
+				} catch (e: any) {
+					showErrorToast(e.message);
+				}
 			},
 		},
 	];
@@ -343,7 +363,7 @@ export default function AdminDashboard() {
 		};
 
 		return (
-			<>
+			<Group wrap={"nowrap"}>
 				<Label label={"Từ ngày"} position={"top"}>
 					<DateTimePicker
 						placeholder={"Chọn ngày bắt đầu"}
@@ -373,7 +393,7 @@ export default function AdminDashboard() {
 						</Button>
 					</Group>
 				</Label>
-			</>
+			</Group>
 		);
 	};
 
@@ -388,6 +408,7 @@ export default function AdminDashboard() {
 				<Group gap={5} maw={200}>
 					{data?.admin_subsciption?.map((sub) => (
 						<StateStatus
+							key={sub.id}
 							state={sub?.admin_plans?.plan_type}
 							customColor={{
 								[AdminPlanType["30Day"]]: "bg-zinc-500/10 text-zinc-500",

@@ -11,6 +11,20 @@ export class BranchTask {
 				data: {
 					...branchInit,
 					owner_id: ownerId,
+					stores: {
+						create: {
+							store_name: branchInit.branch_name,
+							address: branchInit.address,
+							store_reward_point: {
+								create: {
+									convert_to: 'VND',
+									convert_rate: 100000,
+									point_value: 5000,
+									status: 1
+								}
+							}
+						}
+					}
 				}
 			});
 		} catch (error) {

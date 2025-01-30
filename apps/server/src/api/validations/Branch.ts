@@ -2,35 +2,6 @@ import { z } from 'zod';
 import { phoneRegex } from 'utils/regex';
 
 export class BranchValidation {
-	public static createBranchBody = z.object({
-		branch_id: z.string().uuid({
-			message: 'ID chi nhánh không hợp lệ'
-		}).optional(),
-		branch_name: z.string({
-			invalid_type_error: 'Tên chi nhánh không hợp lệ',
-			required_error: 'Tên chi nhánh không được để trống'
-		})
-			.min(3, 'Tên chi nhánh phải có ít nhất 3 ký tự')
-			.max(255, 'Tên chi nhánh không được quá 255 ký tự'),
-		address: z.string({
-			invalid_type_error: 'Địa chỉ không hợp lệ',
-			required_error: 'Địa chỉ không được để trống'
-		})
-			.min(3, 'Địa chỉ phải có ít nhất 3 ký tự')
-			.max(255, 'Địa chỉ không được quá 255 ký tự'),
-		phone_number: z.string({
-			invalid_type_error: 'Số điện thoại không hợp lệ',
-			required_error: 'Số điện thoại không được để trống'
-		})
-			.min(10, 'Số điện thoại phải có ít nhất 10 ký tự')
-			.max(12, 'Số điện thoại không được quá 12 ký tự')
-			.regex(phoneRegex, 'Số điện thoại không hợp lệ'),
-		branch_status: z.enum(['active', 'inactive'], {
-			invalid_type_error: 'Trạng thái chi nhánh không hợp lệ',
-			required_error: 'Trạng thái chi nhánh không được để trống'
-		}),
-	});
-
 	public static getBranchesQuery = z.object({
 		branch_id: z.string({
 			invalid_type_error: 'ID chi nhánh không hợp lệ',
@@ -84,16 +55,73 @@ export class BranchValidation {
 	});
 
 	public static upsertPharmacyDetailBody = z.object({
-		so_dang_ky: z.string().nonempty("Số đăng ký không được để trống."),
-		ten_nha_thuoc: z.string().nonempty("Tên nhà thuốc không được để trống."),
-		loai_hinh: z.string().nonempty("Loại hình không được để trống."),
-		tinh: z.string().nonempty("Tỉnh không được để trống."),
-		huyen: z.string().nonempty("Huyện không được để trống."),
-		dia_chi: z.string().nonempty("Địa chỉ không được để trống."),
-		nguoi_dai_dien: z.string().nonempty("Người đại diện không được để trống."),
-		nguoi_chiu_trach_nhiem: z.string().nonempty("Người chịu trách nhiệm không được để trống."),
-		nguoi_chiu_trach_nhiem_chuyen_mon: z.string().nonempty("Người chịu trách nhiệm chuyên môn không được để trống."),
-		so_chung_chi_hanh_nghe: z.string().nonempty("Số chứng chỉ hành nghề không được để trống."),
+		so_dang_ky: z.string({
+			message: 'Số đăng ký không hợp lệ'
+		}),
+		ten_nha_thuoc: z.string({
+			message: 'Tên nhà thuốc không hợp lệ'
+		}),
+		loai_hinh: z.string({
+			message: 'Loại hình không hợp lệ'
+		}),
+		tinh: z.string({
+			message: 'Tỉnh không hợp lệ'
+		}),
+		huyen: z.string({
+			message: 'Huyện không hợp lệ'
+		}),
+		dia_chi: z.string({
+			message: 'Địa chỉ không hợp lệ'
+		}),
+		nguoi_dai_dien: z.string({
+			message: 'Người đại diện không hợp lệ'
+		}),
+		nguoi_chiu_trach_nhiem: z.string({
+			message: 'Người chịu trách nhiệm không hợp lệ'
+		}),
+		nguoi_chiu_trach_nhiem_chuyen_mon: z.string({
+			message: 'Người chịu trách nhiệm chuyên môn không hợp lệ'
+		}),
+		so_chung_chi_hanh_nghe: z.string({
+			message: 'Số chứng chỉ hành nghề không hợp lệ'
+		}),
+	});
+
+	public static createBranchBody = z.object({
+		branch_id: z.string().uuid({
+			message: 'ID chi nhánh không hợp lệ'
+		}).optional(),
+		branch_name: z.string({
+			invalid_type_error: 'Tên chi nhánh không hợp lệ',
+			required_error: 'Tên chi nhánh không được để trống'
+		})
+			.min(3, 'Tên chi nhánh phải có ít nhất 3 ký tự')
+			.max(255, 'Tên chi nhánh không được quá 255 ký tự'),
+		address: z.string({
+			invalid_type_error: 'Địa chỉ không hợp lệ',
+			required_error: 'Địa chỉ không được để trống'
+		})
+			.min(3, 'Địa chỉ phải có ít nhất 3 ký tự')
+			.max(255, 'Địa chỉ không được quá 255 ký tự'),
+		phone_number: z.string({
+			invalid_type_error: 'Số điện thoại không hợp lệ',
+			required_error: 'Số điện thoại không được để trống'
+		})
+			.min(10, 'Số điện thoại phải có ít nhất 10 ký tự')
+			.max(12, 'Số điện thoại không được quá 12 ký tự')
+			.regex(phoneRegex, 'Số điện thoại không hợp lệ'),
+		branch_status: z.enum(['active', 'inactive'], {
+			invalid_type_error: 'Trạng thái chi nhánh không hợp lệ',
+			required_error: 'Trạng thái chi nhánh không được để trống'
+		}),
+		user_id: z.string({
+			invalid_type_error: 'ID người dùng không hợp lệ',
+			required_error: 'ID người dùng không được để trống'
+		}).uuid({
+			message: 'ID người dùng không hợp lệ'
+		}).optional(),
+		branch_details: BranchValidation.upsertPharmacyDetailBody.partial().optional(),
+		branch_integration: BranchValidation.upsertBranchIntegrationBody.partial().optional(),
 	});
 
 }

@@ -13,6 +13,8 @@ export const userSchema = z.object({
 		.string()
 		.nonempty({ message: 'Tên tài khoản không được để trống' })
 		.min(2, { message: 'Tên tài khoản phải có ít nhất 2 ký tự' }),
+	first_name: z.string().optional(),
+	last_name: z.string().optional(),
 	password: z
 		.string()
 		.min(6, { message: 'Mật khẩu phải có ít nhất 6 ký tự' }),
@@ -55,6 +57,8 @@ export const UserForm = ({
 			setValue("phone_number", data.phone_number ?? "");
 			setValue("email", data.email ?? undefined);
 			setValue("notes", data.notes ?? "");
+			setValue("first_name", data.first_name ?? "");
+			setValue("last_name", data.last_name ?? "");
 		}
 	}, [data]);
 
@@ -114,19 +118,6 @@ export const UserForm = ({
 				/>
 			</Group>
 
-
-			<Controller
-				name="address"
-				control={control}
-				render={({ field }) => (
-					<TextInput
-						label="Địa Chỉ"
-						placeholder="Nhập địa chỉ"
-						{...field}
-						error={errors.address?.message}
-					/>
-				)}
-			/>
 			<Group grow>
 				<Controller
 					name="email"
@@ -154,6 +145,46 @@ export const UserForm = ({
 					)}
 				/>
 			</Group>
+
+			<Group grow>
+				<Controller
+					name="first_name"
+					control={control}
+					render={({ field }) => (
+						<TextInput
+							label="Họ"
+							placeholder="Nhập Họ"
+							{...field}
+							error={errors.last_name?.message}
+						/>
+					)}
+				/>
+				<Controller
+					name="last_name"
+					control={control}
+					render={({ field }) => (
+						<TextInput
+							label="Tên"
+							placeholder="Nhập Tên"
+							{...field}
+							error={errors.last_name?.message}
+						/>
+					)}
+				/>
+			</Group>
+
+			<Controller
+				name="address"
+				control={control}
+				render={({ field }) => (
+					<TextInput
+						label="Địa Chỉ"
+						placeholder="Nhập địa chỉ"
+						{...field}
+						error={errors.address?.message}
+					/>
+				)}
+			/>
 			<Controller
 				name="notes"
 				control={control}

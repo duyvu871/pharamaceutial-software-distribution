@@ -14,6 +14,8 @@ export class UploadController {
 				const { branchId } = req.params;
 				const { type } = req.query;
 
+				 console.log('file', file);
+				 // console.log('req', req);
 				if (!file) {
 					throw new BadRequest('BAD_REQUEST', 'Image is required', 'Image is required');
 				}

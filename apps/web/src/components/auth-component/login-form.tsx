@@ -63,9 +63,9 @@ export function LoginForm(props: PaperProps) {
 			console.log(value);
 		}, (errors) => {
 			console.log(errors);
-			toast.showErrorToast(Object.values(errors).map(item => {
-				return item.message;
-			}).join(', '));
+			// toast.showErrorToast(Object.values(errors).map(item => {
+			// 	return item.message;
+			// }).join(', '));
 		});
 	};
 
@@ -118,6 +118,7 @@ export function LoginForm(props: PaperProps) {
 									{ value: 'membership', label: 'Nhân viên' },
 									{ value: 'user', label: 'Quản lý' },
 								]}
+								error={formState.errors?.role?.message}
 								// defaultValue="user"
 								radius="sm"
 								size="md"

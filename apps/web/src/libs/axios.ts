@@ -127,16 +127,22 @@ const responseInterceptor = axiosWithAuth.interceptors.response.use(
 		return response;
 	},
 	(error) => {
+		// Handle specific status codes first
 		switch (error?.response?.status) {
 			case 401:
 				removeCookie("accessToken");
+				const isAdmin = window.location.pathname.includes("admin");
+				window.location.href = isAdmin ? paths.admin.login : paths.auth.login;
+				break;
+			case 400:
+				// Handle 400 specifically if needed (even without errorMessage)
+				break;
+		}
 
-				window.location.href = paths.auth.login;
-				break;
-			// case 400: //TODO handle case 400 if required
-			//     break;
-			default:
-				break;
+		// Handle error message extraction after status code handling
+		if (error.response?.data?.errorMessage) {
+			const serverError = new Error(error.response.data.errorMessage);
+			return Promise.reject(serverError);
 		}
 
 		return Promise.reject(error);

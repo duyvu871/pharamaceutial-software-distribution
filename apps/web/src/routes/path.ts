@@ -10,6 +10,9 @@ export const paths = {
 		register: `/register`,
 	},
 	settings: `/settings`,
+	admin: {
+		login: '/admin/login',
+	}
 };
 
 export const apiPaths = {

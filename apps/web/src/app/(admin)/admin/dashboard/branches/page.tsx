@@ -6,15 +6,17 @@ import ProtectHighEndAdmin from '@layout/protect/high-end-admin.tsx';
 import { AdminProfileProvider } from '@provider/admin-profile-provider.tsx';
 import BranchDashboard from '@container/admin/branch-dashboard.tsx';
 import { Suspense } from "react";
+import AdminHeaderToolbar from "@component/Header/admin-header.tsx";
 
 export default function DashBoard (){
 	return (
 		<RefreshCookieAuthProvider>
 			<Suspense>
 				<AppLayout>
-					<ProtectHighEndAdmin>
+					<ProtectHighEndAdmin blockRender={false}>
 						<AdminProfileProvider>
 							<AdminSidebarLayout>
+								<AdminHeaderToolbar />
 								<BranchDashboard />
 							</AdminSidebarLayout>
 						</AdminProfileProvider>

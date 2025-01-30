@@ -6,19 +6,21 @@ import AdminDashboard from '@container/admin/admin-dashboard.tsx';
 import ProtectHighEndAdmin from '@layout/protect/high-end-admin.tsx';
 import { AdminProfileProvider } from '@provider/admin-profile-provider.tsx';
 import { Suspense } from "react";
+import AdminHeaderToolbar from '@component/Header/admin-header.tsx';
 
 export default function DashBoard (){
 	return (
 		<RefreshCookieAuthProvider>
 			<Suspense>
 				<AppLayout>
-					<AdminSidebarLayout>
-						<ProtectHighEndAdmin>
-							<AdminProfileProvider>
+					<ProtectHighEndAdmin>
+						<AdminProfileProvider>
+							<AdminSidebarLayout>
+								<AdminHeaderToolbar />
 								<AdminDashboard />
-							</AdminProfileProvider>
-						</ProtectHighEndAdmin>
-					</AdminSidebarLayout>
+							</AdminSidebarLayout>
+						</AdminProfileProvider>
+					</ProtectHighEndAdmin>
 				</AppLayout>
 			</Suspense>
 		</RefreshCookieAuthProvider>

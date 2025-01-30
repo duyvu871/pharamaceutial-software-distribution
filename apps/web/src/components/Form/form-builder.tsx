@@ -1,3 +1,12 @@
+/**
+ * FormBuilder - Component xây dựng form động với react-hook-form và Mantine UI
+ * Hỗ trợ:
+ * - Tự động validation với Zod schema
+ * - Tích hợp sẵn các loại field phổ biến
+ * - Custom component và form instance từ bên ngoài
+ * - Responsive grid layout
+ */
+
 import {
 	Button,
 	Group,
@@ -5,35 +14,31 @@ import {
 	TextInput,
 	Grid,
 	GridCol,
-	ActionIcon,
 	PasswordInput,
 	Radio,
 	Checkbox,
 	Stack,
 	MantineColor,
-    MantineSpacing,
+	MantineSpacing,
+    InputProps,
 } from "@mantine/core";
 import {
 	useForm,
 	Controller,
 	SubmitHandler,
 	Path,
-	ControllerRenderProps,
-    Mode,
+	UseFormReturn,
+	Mode,
+	FieldValues,
 } from "react-hook-form";
-import {
-	ComponentType,
-	ReactElement,
-	useEffect,
-	forwardRef,
-	useState,
-	cloneElement,
-} from "react";
+import { ComponentType, ReactElement, useEffect, useMemo, cloneElement } from "react";
 import { z, ZodSchema, TypeOf } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { IconEye, IconEyeOff } from "@tabler/icons-react";
 import { DatePickerInput } from "@mantine/dates";
+import isEqual from "lodash.isequal"
 
+// ==================== TYPE DEFINITIONS ====================
+/** Kiểu dữ liệu cho các loại field được hỗ trợ */
 export type FormFieldType =
 	| "text"
 	| "select"
@@ -46,7 +51,15 @@ export type FormFieldType =
 	| "checkbox"
 	| "checkbox-group";
 
-export type FormField<T extends ZodSchema> = {
+const defaultFieldProps = {
+	autoCapitalize:"off",
+	autoComplete:"off",
+	autoCorrect:"off",
+	spellCheck: false,
+}
+
+/** Cấu hình cho từng field trong form */
+export type FormField<T extends ZodSchema> = InputProps & {
 	type: FormFieldType;
 	name: Path<TypeOf<T>>;
 	label?: string;
@@ -59,26 +72,46 @@ export type FormField<T extends ZodSchema> = {
 	colSpan?: number;
 	customProps?: Record<string, unknown>;
 	wrapperStyle?: React.CSSProperties;
+	autoComplete?: string;
 };
 
+/** Props cho component FormBuilder */
 export type FormBuilderProps<T extends ZodSchema> = {
+	/** Danh sách các field trong form */
 	fields: FormField<T>[];
-	schema: T;
+	/** Zod schema cho validation (optional nếu dùng form bên ngoài) */
+	schema?: T;
+	/** Callback khi submit form */
 	onSubmit: SubmitHandler<TypeOf<T>>;
+	/** Callback khi cancel form */
 	onCancel?: () => void;
+	/** Giá trị mặc định của form */
 	defaultValues?: Partial<TypeOf<T>>;
+	/** Text nút submit */
 	submitText?: string;
+	/** Text nút cancel */
 	cancelText?: string;
+	/** Layout các field */
 	layout?: "horizontal" | "vertical";
+	/** Khoảng cách giữa các field */
 	spacing?: string;
+	/** Khoảng cách grid gutter */
 	gridGutter?: number;
+	/** Custom components cho loại field 'custom' */
 	customComponents?: Record<string, ComponentType<any>>;
+	/** Custom action buttons */
 	actions?: ReactElement[];
+	/** Màu sắc chủ đạo */
 	color?: MantineColor;
+	/** Khoảng cách giữa các phần tử */
 	gap?: MantineSpacing;
+	/** Chế độ validation của react-hook-form */
 	mode?: Mode;
+	/** Form instance từ bên ngoài */
+	form?: UseFormReturn<TypeOf<T>>;
 };
 
+// ==================== MAIN COMPONENT ====================
 export const FormBuilder = <T extends ZodSchema>({
 																									 fields,
 																									 schema,
@@ -95,39 +128,42 @@ export const FormBuilder = <T extends ZodSchema>({
 																									 color,
 																									 gap,
 																									 mode,
+																									 form: externalForm,
 																								 }: FormBuilderProps<T>) => {
 	type FormValues = TypeOf<T>;
 
-	const {
-		control,
-		handleSubmit,
-		formState: { errors },
-		setValue,
-	} = useForm<FormValues>({
-		resolver: zodResolver(schema),
+	// Merge default values từ props và từng field
+	const mergedDefaultValues = useMemo(() => {
+		const fieldDefaults = fields.reduce((acc, field) => {
+			if (field.defaultValue !== undefined) {
+				acc[field.name as keyof FormValues] = field.defaultValue;
+			}
+			return acc;
+		}, {} as Partial<FormValues>);
+
+		return { ...fieldDefaults, ...defaultValues };
+	}, [fields, defaultValues]);
+
+	// Khởi tạo form nội bộ nếu không có form từ bên ngoài
+	const internalForm = useForm<FormValues>({
+		resolver: schema ? zodResolver(schema) : undefined,
 		mode: mode || "onSubmit",
-		defaultValues: defaultValues as any,
+		defaultValues: mergedDefaultValues as any,
 	});
 
+	// Ưu tiên sử dụng form từ bên ngoài
+	const { control, handleSubmit, formState: { errors }, setValue, reset, getValues } =
+	externalForm || internalForm;
+
+	// Reset form khi default values thay đổi
 	useEffect(() => {
-		// Set default value từ từng field
-		fields.forEach((field) => {
-			if (field.defaultValue !== undefined) {
-				setValue(field.name as any, field.defaultValue);
-			}
-		});
-
-		// Ghi đè bằng defaultValues nếu có
-		if (defaultValues) {
-			(Object.entries(defaultValues) as [keyof FormValues, any][]).forEach(
-				([key, value]) => {
-					// @ts-ignore
-					setValue(key, value);
-				}
-			);
+		if (mergedDefaultValues && !isEqual(mergedDefaultValues, getValues())) {
+			reset(mergedDefaultValues as any);
 		}
-	}, [defaultValues, setValue, fields]);
+	}, [mergedDefaultValues, reset, getValues]);
 
+	// ==================== FIELD RENDERER ====================
+	/** Render UI cho từng loại field */
 	const renderField = (field: FormField<T>): ReactElement => {
 		const commonProps = {
 			label: field.label,
@@ -139,6 +175,7 @@ export const FormBuilder = <T extends ZodSchema>({
 			...field.customProps,
 		};
 
+		/** Xác định container cho các field group */
 		const getOrientationContainer = (
 			orientation: "horizontal" | "vertical" = "horizontal"
 		) => {
@@ -159,7 +196,10 @@ export const FormBuilder = <T extends ZodSchema>({
 				);
 			}
 			case "password":
-				return <PasswordInput {...commonProps} />;
+				return <PasswordInput
+					{...defaultFieldProps}
+					{...commonProps}
+				/>;
 			case "radio": {
 				const orientation = (field.customProps?.orientation as
 					| "horizontal"
@@ -209,10 +249,15 @@ export const FormBuilder = <T extends ZodSchema>({
 				);
 			}
 			default:
-				return <TextInput type={field.type} {...commonProps} />;
+				return <TextInput
+					type={field.type}
+					{...defaultFieldProps}
+					{...commonProps}
+				/>;
 		}
 	};
 
+	// ==================== MAIN RENDER ====================
 	return (
 		<form onSubmit={handleSubmit(onSubmit)}>
 			<Grid gutter={gridGutter}>
@@ -251,3 +296,41 @@ export const FormBuilder = <T extends ZodSchema>({
 		</form>
 	);
 };
+
+// ==================== USAGE EXAMPLES ====================
+/**
+ * Cách sử dụng cơ bản:
+ *
+ * const schema = z.object({
+ *   email: z.string().email(),
+ *   password: z.string().min(8)
+ * });
+ *
+ * <FormBuilder
+ *   schema={schema}
+ *   fields={[
+ *     { type: "email", name: "email", label: "Email" },
+ *     { type: "password", name: "password", label: "Password" }
+ *   ]}
+ *   onSubmit={(data) => console.log(data)}
+ * />
+ *
+ * Sử dụng với form instance từ bên ngoài:
+ *
+ * const form = useForm({...});
+ * <FormBuilder
+ *   form={form}
+ *   fields={[...]}
+ *   onSubmit={...}
+ * />
+ *
+ * Custom component:
+ *
+ * const MyCustomField = (props) => (...);
+ *
+ * <FormBuilder
+ *   customComponents={{ 'fieldName': MyCustomField }}
+ *   fields={[{ type: "custom", name: "fieldName", ... }]}
+ *   ...
+ * />
+ */

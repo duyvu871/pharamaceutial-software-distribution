@@ -9,6 +9,8 @@ import { AdminController } from 'controllers/AdminController.ts';
 import { AdminValidation } from 'validations/Admin.ts';
 import permissionMiddleware from 'middlewares/PermissionMiddleware.ts';
 import { HighEndProtected } from 'middlewares/HighEndProtected.ts';
+import { UserValidation } from 'validations/User.ts';
+import { SubscriptionValidation } from 'validations/Subscription.ts';
 
 export const adminRoute = Router();
 
@@ -36,8 +38,24 @@ adminRoute.route('/admin/check-high-end').get(
 adminRoute.route('/admin/branches').get(
 	...authChain,
 	permissionMiddleware(['Admin.All', "Admin.Read"]),
-	validateQuery(PaginationValidation.paginationQueryV2),
+	validateQuery(
+		PaginationValidation.paginationQueryV2,
+		SubscriptionValidation.subscriptionPaymentStatus
+	),
 	AdminController.getBranches
+)
+
+adminRoute.route('/admin/payment-subscription').post(
+	...authChain,
+	permissionMiddleware(['Admin.All', "Admin.Update"]),
+	validateBody(AdminValidation.updatePaymentSubscriptionBody),
+	AdminController.updatePaymentSubscription
+)
+
+adminRoute.route('/admin/payment-stat').get(
+	...authChain,
+	permissionMiddleware(['Admin.All', "Admin.Read"]),
+	AdminController.getBranchPaymentStat
 )
 
 adminRoute.route('/admin/branches').post(
@@ -45,6 +63,13 @@ adminRoute.route('/admin/branches').post(
 	permissionMiddleware(['Admin.All', "Admin.Create", "Branch.Update"]),
 	validateBody(BranchValidation.createBranchBody),
 	AdminController.createOrUpdateBranch
+)
+
+adminRoute.route('/admin/branches/:branchId').delete(
+	...authChain,
+	permissionMiddleware(['Admin.All', "Admin.Delete", "Branch.Delete"]),
+	validateParams(BranchValidation.branchIdParam),
+	AdminController.deleteBranch
 )
 
 adminRoute.route('/admin/user-slave').get(
@@ -61,11 +86,17 @@ adminRoute.route('/admin/user-slave').post(
 	AdminController.createOrUpdateUserSlave
 );
 
+adminRoute.route('/admin/user-slave/:userId').delete(
+	...authChain,
+	permissionMiddleware(['Admin.All', "Admin.Read"]),
+	validateParams(UserValidation.userIdParam),
+	AdminController.deleteUserSlave
+);
+
 adminRoute.route('/admin/:adminId').post(
 	...authChain,
 	permissionMiddleware(['Admin.All', "Admin.Update"]),
 	validateParams(AdminValidation.adminIdParam),
-	validateBody(AdminValidation.adminCreation),
 	AdminController.updateAdmin
 )
 
@@ -81,5 +112,5 @@ adminRoute.route('/admin/:adminId').delete(
 	HighEndProtected,
 	permissionMiddleware(['Admin.All', "Admin.Delete"]),
 	validateParams(AdminValidation.adminIdParam),
-	// AdminController.deleteAdmin
+	AdminController.deleteAdmin
 );

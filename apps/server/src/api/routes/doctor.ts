@@ -10,7 +10,8 @@ export const doctorRoute = Router();
 
 doctorRoute.route('/doctor/:branchId').get(
 	...authChain,
-	validateParams(PaginationValidation.paginationQueryV2),
+	validateParams(BranchValidation.branchIdParam),
+	validateQuery(PaginationValidation.paginationQueryV2),
 	DoctorController.getDoctors
 );
 

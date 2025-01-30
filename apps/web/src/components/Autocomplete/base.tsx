@@ -1,4 +1,4 @@
-import React, { useState, useEffect, ChangeEvent } from 'react';
+import React, { useState, useEffect, ChangeEvent, useCallback } from 'react';
 import { Popover, TextInput, List, Loader, Divider, TextInputProps, ScrollArea } from '@mantine/core';
 import { useDebounce } from "@uidotdev/usehooks";
 import { cva, type VariantProps } from "class-variance-authority";
@@ -153,7 +153,7 @@ function AutocompleteSearch<T>({
 		setSearchTerm(e.target.value);
 	};
 
-	const selectItem = (item: T) => {
+	const selectItem = useCallback((item: T) => {
 		onSelect(item);
 		setPopoverOpened(false);
 		setResults([]);
@@ -168,7 +168,7 @@ function AutocompleteSearch<T>({
 		setRecentResults(updatedRecentResults);
 
 		localStorage.setItem(recentKey, JSON.stringify(updatedRecentResults));
-	};
+	}, [onSelect, valueKey, getItemValue, recent]);
 
 	useEffect(() => {
 		const searchItems = async () => {

@@ -236,7 +236,7 @@ export default function ProductDashboardV1({ type }: {type: string}) {
 		}
 
 		return (
-			<>
+			<Group wrap={"nowrap"}>
 				<Label label={"Trạng thái"} position={"top"}>
 					<Select
 						placeholder="Chọn trạng thái"
@@ -286,7 +286,7 @@ export default function ProductDashboardV1({ type }: {type: string}) {
 						</Button>
 					</Group>
 				</Label>
-			</>
+			</Group>
 		)
 	}
 

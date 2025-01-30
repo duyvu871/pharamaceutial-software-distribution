@@ -37,8 +37,13 @@ export class UserValidation {
 		message: 'Passwords do not match',
 		path: ['confirmPassword'],
 	});
+
+	public static userIdParam = z.object({
+		userId: z.string().uuid({ message: 'User ID is invalid' })
+	})
 }
 
 export type ProfileQuery = z.infer<typeof UserValidation.profileQuery>;
 export type UpdateProfile = z.infer<typeof UserValidation.updateProfile>;
 export type ResetPassword = z.infer<typeof UserValidation.resetPassword>;
+export type UserIdParam = z.infer<typeof UserValidation.userIdParam>;

@@ -11,6 +11,7 @@ import { getActivities } from '@api/notification.ts';
 import { getRevenueReportChart, getStat, getTopSales } from '@api/report.ts';
 import { useAtom } from 'jotai';
 import { useDisclosure } from '@mantine/hooks';
+import BranchNotFound from '@component/Execption/branch-not-found.tsx';
 
 type DashboardProviderProps = {
     children: React.ReactNode;
@@ -33,7 +34,7 @@ export const DashboardContext = createContext<DashboardContextType>({
 export const DashboardProvider = ({children, branchId, availableStates}: DashboardProviderProps) => {
 	const {profile} = useProfile();
 	const [branch_id, setBranchId] = useState<string>(branchId);
-	const [, setBranchDetail] = useAtom(currentBranchAtom);
+	const [currentBranch, setBranchDetail] = useAtom(currentBranchAtom);
 	const [, setQRCode] = useAtom(qrCodeAtom);
 	const [, setRevenueReport] = useAtom(revenueReportAtom);
 	const [, setActivities] = useAtom(activityAtom);
@@ -52,12 +53,14 @@ export const DashboardProvider = ({children, branchId, availableStates}: Dashboa
 			// closeOverlay();
 
 			// get branch detail
-			availableStates?.branchDetail && getBranches(branchId).then((branchDetails) => {
-				console.log('details', branchDetails);
-				// openOverlay();
-				setBranchDetail(branchDetails as BranchType);
-				setQRCode(branchDetails?.store?.store_asset);
-			});
+			availableStates?.branchDetail && getBranches(branchId)
+				.then((branchDetails) => {
+					console.log('details', branchDetails);
+					// openOverlay();
+					setBranchDetail(branchDetails as BranchType);
+					setQRCode(branchDetails?.store?.store_asset);
+				})
+
 			// get activities
 			availableStates?.activities && getActivities({ page: 1, limit: 10, order: 'createdAt:desc' }).then((activities) => {
 				console.log('activities', activities);
@@ -86,12 +89,14 @@ export const DashboardProvider = ({children, branchId, availableStates}: Dashboa
 		})()
 	}, [profile]);
 
-	 	return (
+	if (!currentBranch && visible) return <BranchNotFound />
+
+	return (
 			<DashboardContext.Provider value={{
 				ready: visible,
 				branchId: branch_id,
 			}}>
 		 		{children}
 			</DashboardContext.Provider>
-	 	);
+	);
 };

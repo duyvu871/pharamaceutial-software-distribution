@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { userProfileAtom } from '@store/state/profile/user-profile.ts';
 import { useAtom } from 'jotai';
 import { getUserProfile } from '@api/user.ts';
@@ -18,6 +18,8 @@ import CreateBranch from '@component/Form/create-branch.tsx';
 import { cn } from '@lib/tailwind-merge.ts';
 import useToast from '@hook/client/use-toast-notification.ts';
 import { LogOut } from 'lucide-react';
+import AdminBranchUpsertForm from '@component/Form/admin-branch-upsert-form.tsx';
+import { createBranch } from '@api/branch';
 
 function DashboardOverview() {
 	const router = useRouter();
@@ -28,6 +30,29 @@ function DashboardOverview() {
 	const [userProfile, setUserProfile] = useAtom(userProfileAtom);
 	const [openDrawerState, { open: openDrawer, close: closeDrawer }] = useDisclosure(false);
 	const [isLoading, setIsLoading] = useState<boolean>(true);
+
+	// const createBranchAction = useCallback(async (value: ) => {
+	// 	createBranch(value).then((data) => {
+	// 			if (data?.errorCode) {
+	// 				toast.showErrorToast(data.errorMessage || 'Có lỗi xảy ra');
+	// 				return;
+	// 			}
+	// 			console.log(data);
+	// 			setLoading(false);
+	// 			clearForm();
+	// 			toast.showSuccessToast('Thêm chi nhánh thành công');
+	//
+	// 			if (data.branch_id && userProfile) {
+	// 				setUserProfile({
+	// 					...userProfile,
+	// 					branches: [
+	// 						data as unknown as BranchType,
+	// 						...userProfile.branches,
+	// 					]
+	// 				});
+	// 			}
+	// 		});
+	// }, [])
 
 	useEffect(() => {
 		console.log('userSessionInfo', userSessionInfo);
@@ -57,7 +82,6 @@ function DashboardOverview() {
 		// 	isMounted = false;
 		// };
 	}, [userSessionInfo?.id, isAuthenticated, setUserProfile]);
-
 
 	const directToBranch = (branchId: string) => {
 		router.push(`/dashboard/branch/${branchId}`);
@@ -163,10 +187,17 @@ function DashboardOverview() {
 							</Stack>
 						</CenterBox>
 					</div>
-					<Drawer position={'right'} opened={openDrawerState} onClose={closeDrawer} title={
-						<Typography weight={'semibold'} size={'h5'}>Thêm chi nhánh</Typography>
-					}>
+					<Drawer
+						size={"xl"}
+						position={'right'}
+						opened={openDrawerState}
+						onClose={closeDrawer}
+						title={
+							<Typography weight={'semibold'} size={'h5'}>Thêm chi nhánh</Typography>
+						}
+					>
 						<CreateBranch />
+						{/*<AdminBranchUpsertForm />*/}
 					</Drawer>
 				</div>
 			)}

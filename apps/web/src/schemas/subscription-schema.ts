@@ -10,6 +10,7 @@ export type Subscription = {
 	status: string;
 	auto_renew: boolean;
 	payment_method: string | null;
+	payment_status: string | null;
 	createdAt: Date;
 	updatedAt: Date;
 	// branches: branches;

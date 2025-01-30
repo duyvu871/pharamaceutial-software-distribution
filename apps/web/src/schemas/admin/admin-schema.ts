@@ -2,6 +2,8 @@ import {admin_permissions, admin_subsciption, admin_to_user, enum_gender, roles}
 
 import { z } from 'zod';
 import { Prisma } from '@repo/orm';
+import { phoneRegex } from '@util/validator.ts';
+import { branchDetailsSchema, branchIntegrationSchema } from '@schema/branch-schema.ts';
 
 export type AdminSchema = {}
 
@@ -137,4 +139,29 @@ export type AdminType = {
 	admin_permissions: admin_permissions[];
 };
 
+export const adminBranchCreationSchema = z.object({
+	branch_id: z.string().optional(),
+	user_id: z.string().optional(),
+	branch_name: z.string({
+		invalid_type_error: 'Tên chi nhánh không hợp lệ',
+		required_error: 'Tên chi nhánh không được để trống'
+	})
+		.min(3, 'Tên chi nhánh phải có ít nhất 3 ký tự'),
+	address: z.string({
+		invalid_type_error: 'Địa chỉ không hợp lệ',
+		required_error: 'Địa chỉ không được để trống'
+	}),
+	phone_number: z.string({
+		invalid_type_error: 'Số điện thoại không hợp lệ',
+		required_error: 'Số điện thoại không được để trống'
+	})
+		.min(10, 'Số điện thoại phải có ít nhất 10 ký tự')
+		.max(12, 'Số điện thoại không được quá 12 ký tự')
+		.regex(phoneRegex, 'Số điện thoại không hợp lệ'),
+	branch_status: z.enum(['inactive', 'active']),
+	branch_integration: branchIntegrationSchema.partial(),
+	branch_details: branchDetailsSchema.partial()
+})
+
+export type AminBranchFormFieldCreation = z.infer<typeof adminBranchCreationSchema>;
 

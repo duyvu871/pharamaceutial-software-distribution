@@ -51,7 +51,7 @@ import { DatePicker, DateTimePicker } from "@mantine/dates";
 import { AdminCreateSchema, AdminType } from '@schema/admin/admin-schema.ts';
 import {
 	createAdminData,
-	createOrUpdateUserSlave,
+	createOrUpdateUserSlave, deleteUserSlave,
 	getAdminData,
 	getUserSlaveList,
 	updateAdminData,
@@ -127,7 +127,7 @@ export default function UserDashboard() {
 	const [perPage, setPerPage] = useState<number>(10);
 	const search = useFilterString<Schema>("");
 	const filter = useFilterString<Schema>("");
-	const orderBy = useFilterString<Schema>(`${idKey}:desc`);
+	const orderBy = useFilterString<Schema>('createdAt:desc');
 	// const [activeAction]
 	const [
 		visibleActionOverlay,
@@ -183,7 +183,7 @@ export default function UserDashboard() {
 			setIsUpdating(false);
 			closeActionOverLay();
 		}
-	}, [openActionOverlay, showSuccessToast, showErrorToast, closeActionOverLay]);
+	}, [openActionOverlay, showSuccessToast, showErrorToast, close]);
 
 	const registerSubscriptionAction = useCallback(async (model: AdminPlans) => {
 		try {
@@ -272,13 +272,29 @@ export default function UserDashboard() {
 		{
 			label: (model) => (
 				<Group gap={5} className={cn({
-					"opacity-50 cursor-not-allowed": model
+					"opacity-50 cursor-not-allowed": !model
 				})}>
 					<Trash2 {...iconProps} /> Xóa
 				</Group>
 			),
-			action: (model) => {
-				showWarningToast("Chức năng này đang được phát triển");
+			action: async (model) => {
+				try {
+					if (!model) return;
+
+					const allowToDelete = confirm(`Bạn có chắc chắn muốn xóa đại lý ${model.username} không?`);
+					if (!allowToDelete) return;
+
+					const deleted = await deleteUserSlave(model.id)
+					console.log("deleted", deleted);
+
+					if (deleted) {
+						setData((prev) => prev.filter((item) => item.id !== model.id));
+						showSuccessToast(`Xóa đại lý ${model.username} thành công`);
+					}
+					// showWarningToast("Chức năng này đang được phát triển");
+				} catch (error: any) {
+					showErrorToast(error.message);
+				}
 			},
 		},
 	];
@@ -353,7 +369,7 @@ export default function UserDashboard() {
 		};
 
 		return (
-			<>
+			<Group wrap={"nowrap"}>
 				<Label label={"Từ ngày"} position={"top"}>
 					<DateTimePicker
 						placeholder={"Chọn ngày bắt đầu"}
@@ -383,7 +399,7 @@ export default function UserDashboard() {
 						</Button>
 					</Group>
 				</Label>
-			</>
+			</Group>
 		);
 	};
 
@@ -391,6 +407,10 @@ export default function UserDashboard() {
 		{
 			title: "Tai khoản",
 			render: (data) => data.username,
+		},
+		{
+			title: "Họ và tên",
+			render: (data) => `${data.first_name ?? ""} ${data.last_name ?? ""}`,
 		},
 		{
 			title: "Số điện thoại",

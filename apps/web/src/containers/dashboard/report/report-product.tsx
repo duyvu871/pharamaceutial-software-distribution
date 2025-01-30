@@ -102,7 +102,7 @@ export default function ReportProduct() {
 		}
 
 		return (
-			<>
+			<Group wrap={"nowrap"}>
 
 				<Label label={"Từ khoá tìm kiếm (F3)"} position={"top"}>
 					<Group wrap={"nowrap"} gap={5}>
@@ -120,7 +120,7 @@ export default function ReportProduct() {
 						</Button>
 					</Group>
 				</Label>
-			</>
+			</Group>
 		)
 	}
 

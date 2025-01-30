@@ -1,7 +1,7 @@
 import axiosWithAuth from '@lib/axios.ts';
 import { API_ENDPOINT, API_URL, PREFIX, PREFIX_VERSION } from 'config';
 import {
-	BranchDetails,
+	BranchDetails, BranchIntegration,
 	BranchType,
 	CreateBranchType,
 	CreatedBranchResponse,
@@ -65,7 +65,7 @@ export const updateBranchDetail = async (branchId: string, data: Partial<BranchD
 	}
 }
 
-export const upsertBranchIntegration = async (branchId: string, data: Partial<IntegrationFormValues>) => {
+export const upsertBranchIntegration = async (branchId: string, data: Partial<BranchIntegration>) => {
 	if (!branchId) {
 		return {
 			error: 'Branch ID is required'
@@ -74,9 +74,9 @@ export const upsertBranchIntegration = async (branchId: string, data: Partial<In
 	try {
 		const response = await axiosWithAuth.post<SuccessResponse<BranchType>>(`/branch/${branchId}/upsert-integration`, {
 			...({
-				integration_id: data.integrationCode,
-				integration_account: data.integrationAccount,
-				integration_password: data.integrationPassword
+				integration_id: data.integration_id,
+				integration_account: data.integration_account,
+				integration_password: data.integration_password
 			}),
 		});
 		return response.data.data;

@@ -6,10 +6,15 @@ import { PaginationQueryV2 } from 'validations/Pagination.ts';
 import { transformExpressParamsForPrismaWithTimeRangeBase } from 'server/shared/pagination-parse.ts';
 import prisma from 'repository/prisma.ts';
 import Success from "server/responses/successful/Success";
-import { AdminCreation, AdminIdParam, UserCreation } from 'validations/Admin.ts';
+import { AdminCreation, AdminIdParam, UpdatePaymentSubscriptionBody, UserCreation } from 'validations/Admin.ts';
 import AuthService from 'services/AuthService.ts';
 import { SubscriptionService } from 'services/SubcriptionService.ts';
-import { CreateBranchBody } from 'validations/Branch.ts';
+import { BranchIdParam, CreateBranchBody } from 'validations/Branch.ts';
+import { UserIdParam } from 'validations/User.ts';
+import { BranchService } from 'services/BranchService.ts';
+import { Prisma, branch_integration, branch_details } from "@repo/orm";
+import { SubscriptionPaymentStatus } from 'validations/Subscription.ts';
+import { StoreService } from 'services/StoreService.ts';
 
 export class AdminController {
 	public static createOtherAdmin = AsyncMiddleware.asyncHandler(
@@ -39,9 +44,22 @@ export class AdminController {
 						...admin,
 						password: passwordHashed,
 					},
+					include: {
+						admin_subsciption: {
+							include: {
+								admin_plans: true,
+							}
+						}
+					}
 				});
-				res.status(200).json(newAdmin).end();
+				const response = new Success(newAdmin).toJson;
+				res.status(200).json(response).end();
 			} catch (error) {
+				if (error instanceof Prisma.PrismaClientKnownRequestError) {
+					if (error.code === "P2002") {
+						throw new BadRequest("username_exist", "Tên tài khoản đã tồn tại", "Tên tài khoản đã tồn tại");
+					}
+				}
 				throw error;
 			}
 		}
@@ -154,10 +172,10 @@ export class AdminController {
 
 				const isHighEndAdmin = await AdminTask.isAdminHighEnd(id);
 
-				if (!isHighEndAdmin) {
-					console.log(`User id ${id} is not a high end admin, cannot create another admin`);
-					throw new BadRequest("internal_error", "Tài khoản của bạn không có quyền tạo admin", "Tài khoản của bạn không có quyền tạo admin");
-				}
+				// if (!isHighEndAdmin) {
+				// 	console.log(`User id ${id} is not a high end admin, cannot create another admin`);
+				// 	throw new BadRequest("internal_error", "Tài khoản của bạn không có quyền tạo admin", "Tài khoản của bạn không có quyền tạo admin");
+				// }
 				const response = new Success(isHighEndAdmin).toJson;
 				return res.status(200).json(response).end();
 			} catch (error) {
@@ -268,6 +286,9 @@ export class AdminController {
 						data: {
 							...user,
 							password
+						},
+						omit: {
+							password: true,
 						}
 					});
 					const response = new Success(updatedUser).toJson;
@@ -279,6 +300,9 @@ export class AdminController {
 							...user,
 							password: passwordHashed,
 						},
+						omit: {
+							password: true,
+						}
 					});
 					const adminToUser = await prisma.admin_to_user.create({
 						data: {
@@ -297,12 +321,55 @@ export class AdminController {
 		}
 	)
 
-	public static getBranches = AsyncMiddleware.asyncHandler(
-		async (req: Request<any, any, any, PaginationQueryV2>, res: Response) => {
+	public static deleteUserSlave = AsyncMiddleware.asyncHandler(
+		async (req: Request<UserIdParam, any, any>, res: Response) => {
 			try {
 				const jwtPayload = req.jwtPayload;
 				const id = jwtPayload?.id as string;
 				const userType = jwtPayload?.type as "MEMBERSHIP" | "USER" | "ADMIN";
+				const userId = req.params.userId;
+
+				if (userType !== "ADMIN") {
+					console.log(`User type ${userType} id ${id} is not an admin, cannot create another admin`);
+					throw new BadRequest("internal_error", "Internal server error", "Internal server error");
+				}
+
+				const adminToUser = await prisma.admin_to_user.findFirst({
+					where: {
+						adminId: id,
+						userId,
+					}
+				});
+
+				if (!adminToUser) {
+					throw new BadRequest("user_not_found", "Người dùng không tồn tại", "Người dùng không tồn tại");
+				}
+
+				const deletedUser = await prisma.users.delete({
+					where: {
+						id: userId,
+					},
+					omit: {
+						password: true,
+					}
+				});
+
+				const response = new Success(deletedUser).toJson;
+
+				return res.status(200).json(response).end();
+			} catch (error) {
+				throw error;
+			}
+		}
+	)
+
+	public static getBranches = AsyncMiddleware.asyncHandler(
+		async (req: Request<any, any, any, PaginationQueryV2 & SubscriptionPaymentStatus>, res: Response) => {
+			try {
+				const jwtPayload = req.jwtPayload;
+				const id = jwtPayload?.id as string;
+				const userType = jwtPayload?.type as "MEMBERSHIP" | "USER" | "ADMIN";
+				const paymentStatus = req.query.paymentStatus;
 				const parsedQuery = transformExpressParamsForPrismaWithTimeRangeBase("branches", req.query, prisma);
 
 				if (userType !== "ADMIN") {
@@ -310,13 +377,46 @@ export class AdminController {
 					throw new BadRequest("internal_error", "Internal server error", "Internal server error");
 				}
 
+
+				const paymentStatusQuery: Prisma.branchesFindManyArgs = {
+					where: {}
+				};
+
+				if (paymentStatus === "total" || !paymentStatus) {
+					paymentStatusQuery.where = {}
+				} else if (paymentStatus === "unregistered") {
+					paymentStatusQuery.where = {
+						subscriptions: {
+							none: {},
+						}
+					}
+				} else {
+					paymentStatusQuery.where = {
+						subscriptions: {
+							some: {
+								payment_status: paymentStatus,
+							}
+						}
+					}
+				}
+
+				console.log("paymentStatusQuery", paymentStatusQuery);
+
 				const isHighEndAdmin = await AdminTask.isAdminHighEnd(id);
 				if (isHighEndAdmin) {
 					const count = await prisma.branches.count({
 						...parsedQuery,
+						where: {
+							...parsedQuery.where,
+							...paymentStatusQuery.where,
+						}
 					});
 					const branches = await prisma.branches.findMany({
 						...parsedQuery,
+						where: {
+							...parsedQuery.where,
+							...paymentStatusQuery.where,
+						},
 						include: {
 							users: {
 								omit: {
@@ -327,7 +427,9 @@ export class AdminController {
 								include: {
 									branch_plans: true,
 								}
-							}
+							},
+							branch_details: true,
+							branch_integration: true,
 						}
 					});
 					const response = new Success({
@@ -343,6 +445,7 @@ export class AdminController {
 					...parsedQuery,
 					where: {
 						...parsedQuery.where,
+						...paymentStatusQuery.where,
 						users: {
 							admin_to_user: {
 								some: {
@@ -361,7 +464,9 @@ export class AdminController {
 							include: {
 								branch_plans: true,
 							}
-						}
+						},
+						branch_details: true,
+						branch_integration: true,
 					}
 				}
 
@@ -377,6 +482,260 @@ export class AdminController {
 					page: Number(req.query.page),
 					totalPage: Math.ceil(count / Number(req.query.limit || 10)),
 				}).toJson;
+				return res.status(200).json(response).end();
+			} catch (error) {
+				throw error;
+			}
+		}
+	)
+
+	public static createOrUpdateBranch = AsyncMiddleware.asyncHandler(
+		async (req: Request<any, any, CreateBranchBody>, res: Response) => {
+			try {
+				const jwtPayload = req.jwtPayload;
+				const id = jwtPayload?.id as string;
+				const userType = jwtPayload?.type as "MEMBERSHIP" | "USER" | "ADMIN";
+				const {branch_details, branch_integration, ...branch} = req.body;
+
+				let branchCreated;
+				let upsertBranchDetails: branch_details | null = null;
+				let upsertBranchIntegration: branch_integration | null = null;
+
+				if (branch.branch_id) {
+					branchCreated = await prisma.branches.update({
+						where: {
+							branch_id: branch.branch_id,
+						},
+						data: {
+							...branch,
+						},
+						include: {
+							users: {
+								omit: {
+									password: true,
+								}
+							},
+							subscriptions: {
+								include: {
+									branch_plans: true,
+								}
+							},
+							branch_details: true,
+							branch_integration: true,
+						}
+					});
+				}
+				else {
+					const { user_id, ...creationBranch } = branch;
+					if (!branch.user_id) throw new BadRequest("user_id_required", "Để tạo chi nhánh cần có đại lí", "Để tạo chi nhánh cần có đại lí");
+					branchCreated = await prisma.branches.create({
+						data: {
+							...creationBranch,
+							owner_id: branch.user_id,
+							stores: {
+								create: {
+									store_name: branch.branch_name || '',
+									address: branch.address || '',
+									created_at: new Date(),
+									updated_at: new Date(),
+									store_reward_point: {
+										create: {
+											convert_to: 'VND',
+											convert_rate: 100000,
+											point_value: 5000,
+											status: 1
+										}
+									}
+								}
+							}
+						},
+						include: {
+							users: {
+								omit: {
+									password: true,
+								}
+							},
+							subscriptions: {
+								include: {
+									branch_plans: true,
+								}
+							}
+						}
+					});
+
+				}
+
+				if (branch_integration) {
+					upsertBranchIntegration = await BranchService.upsertBranchIntegration(branchCreated.branch_id, branch_integration);
+				}
+
+				if (branch_details) {
+					upsertBranchDetails = await BranchService.upsertBranchDetail(branchCreated.branch_id, branch_details);
+				}
+
+				const response = new Success({
+					...branchCreated,
+					branch_integration: [upsertBranchIntegration],
+					branch_details: [upsertBranchDetails],
+				}).toJson;
+				return res.status(200).json(response).end();
+			} catch (error) {
+				throw error;
+			}
+		}
+	)
+
+	public static getBranchPaymentStat = AsyncMiddleware.asyncHandler(
+		async (req: Request<any, any, any>, res: Response) => {
+			try {
+				const jwtPayload = req.jwtPayload;
+				const id = jwtPayload?.id as string;
+				const userType = jwtPayload?.type as "MEMBERSHIP" | "USER" | "ADMIN";
+
+				if (userType !== "ADMIN") {
+					console.log(`User type ${userType} id ${id} is not an admin, cannot create another admin`);
+					throw new BadRequest("internal_error", "Internal server error", "Internal server error");
+				}
+
+				const isHighEndAdmin = await AdminTask.isAdminHighEnd(id);
+
+				const countQuery: Record<string, Prisma.branchesFindManyArgs> = {
+					total: {
+						where: {}
+					},
+					unregistered: {
+						where: {
+							subscriptions: {
+								none: {}
+							}
+						}
+					},
+					...(['paid', 'unpaid', 'pending', 'cancelled', 'expired'].reduce((acc, status) => {
+						acc[status] = {
+							where: {
+								subscriptions: {
+									some: {
+										payment_status: status,
+									}
+								}
+							}
+						}
+						return acc;
+					}, {}))
+				}
+
+				const adminQuery: Prisma.branchesFindManyArgs = {
+					where: {}
+				}
+
+				if (isHighEndAdmin) {
+					adminQuery.where = {}
+				} else {
+					adminQuery.where = {
+						users: {
+							admin_to_user: {
+								some: {
+									adminId: id,
+								}
+							}
+						}
+					}
+				}
+
+				const stats = await Promise.all(Object.keys(countQuery).map(async (key) => {
+					const count = await prisma.branches.count({
+						where: {
+							...adminQuery.where,
+							...countQuery[key].where,
+						}
+					});
+					return {
+						[key]: count
+					}
+				}, {}));
+
+				const statsObject = stats.reduce((acc, stat) => ({ ...acc, ...stat, }), {});
+
+				const response = new Success(statsObject).toJson;
+
+				return res.status(200).json(response).end();
+			} catch (error) {
+				throw error;
+			}
+		}
+	)
+
+	public static deleteBranch = AsyncMiddleware.asyncHandler(
+		async (req: Request<BranchIdParam, any, any>, res: Response) => {
+			try {
+				const jwtPayload = req.jwtPayload;
+				const id = jwtPayload?.id as string;
+				const userType = jwtPayload?.type as "MEMBERSHIP" | "USER" | "ADMIN";
+				const branchId = req.params.branchId;
+
+				if (userType !== "ADMIN") {
+					console.log(`User type ${userType} id ${id} is not an admin, cannot create another admin`);
+					throw new BadRequest("internal_error", "Internal server error", "Internal server error");
+				}
+
+				const branch = await prisma.branches.findUnique({
+					where: {
+						branch_id: branchId,
+					}
+				});
+
+				if (!branch) {
+					throw new BadRequest("branch_not_found", "Chi nhánh không tồn tại", "Chi nhánh không tồn tại");
+				}
+
+				const deletedBranch = await prisma.branches.delete({
+					where: {
+						branch_id: branchId,
+					}
+				});
+
+				const response = new Success(deletedBranch).toJson;
+				return res.status(200).json(response).end();
+			} catch (error) {
+				throw error;
+			}
+		}
+	)
+
+	public static deleteAdmin = AsyncMiddleware.asyncHandler(
+		async (req: Request<AdminIdParam, any, any>, res: Response) => {
+			try {
+				const jwtPayload = req.jwtPayload;
+				const id = jwtPayload?.id as string;
+				const userType = jwtPayload?.type as "MEMBERSHIP" | "USER" | "ADMIN";
+				const adminId = req.params.adminId;
+
+				if (userType !== "ADMIN") {
+					console.log(`User type ${userType} id ${id} is not an admin, cannot create another admin`);
+					throw new BadRequest("internal_error", "Internal server error", "Internal server error");
+				}
+
+				const isHighEndAdmin = await AdminTask.isAdminHighEnd(id);
+
+				if (!isHighEndAdmin) {
+					console.log(`User id ${id} is not a high end admin, cannot create another admin`);
+					throw new BadRequest("internal_error", "Tài khoản của bạn không có quyền tạo admin", "Tài khoản của bạn không có quyền tạo admin");
+				}
+
+				const isDeletedAdminHighEnd = await AdminTask.isAdminHighEnd(adminId);
+
+				if (isDeletedAdminHighEnd) {
+					console.log(`User id ${adminId} is a high end admin, cannot delete`);
+					throw new BadRequest("internal_error", "Tài khoản của bạn không có quyền xóa", "Tài khoản của bạn không có quyền xóa");
+				}
+
+				const deletedAdmin = await prisma.admins.delete({
+					where: {
+						id: adminId,
+					}
+				});
+
+				const response = new Success(deletedAdmin).toJson;
 				return res.status(200).json(response).end();
 			} catch (error) {
 				throw error;
@@ -412,34 +771,39 @@ export class AdminController {
 		}
 	)
 
-	public static createOrUpdateBranch = AsyncMiddleware.asyncHandler(
-		async (req: Request<any, any, CreateBranchBody>, res: Response) => {
+	public static updatePaymentSubscription = AsyncMiddleware.asyncHandler(
+		async (req: Request<any, any, UpdatePaymentSubscriptionBody>, res: Response) => {
 			try {
 				const jwtPayload = req.jwtPayload;
-				const id = jwtPayload?.id as string;
-				const userType = jwtPayload?.type as "MEMBERSHIP" | "USER" | "ADMIN";
-				const branch = req.body;
+				const adminId = jwtPayload?.id as string;
+				const type = req.body.type;
+				const id = req.body.id;
+				const status = req.body.status;
 
-				if (branch.branch_id) {
-					const updatedBranch = await prisma.branches.update({
-						where: {
-							branch_id: branch.branch_id,
-						},
-						data: {
-							...branch,
-						}
-					});
-					const response = new Success(updatedBranch).toJson;
+				if (type === "admin") {
+					const isHighEndAdmin = await AdminTask.isAdminHighEnd(adminId);
+					if (!isHighEndAdmin) {
+						console.log(`User id ${adminId} is not a high end admin, cannot create another admin`);
+						throw new BadRequest("internal_error", "Tài khoản của bạn không có quyền thực hiện hành động này", "Tài khoản của bạn không có quyền thực hiện hành động này");
+					}
+
+					const updateSubscription = await prisma.subscriptions.update({
+						where: { id, },
+						data: { payment_status: status, }
+					})
+
+					const response = new Success(updateSubscription).toJson;
 					return res.status(200).json(response).end();
-				} else {
-					const newBranch = await prisma.branches.create({
-						data: {
-							...branch,
-						}
-					});
-					const response = new Success(newBranch).toJson;
+				} else if (type === "branch") {
+					const updateSubscription = await prisma.subscriptions.update({
+						where: { id, },
+						data: { payment_status: status, }
+					})
+
+					const response = new Success(updateSubscription).toJson;
 					return res.status(200).json(response).end();
 				}
+
 			} catch (error) {
 				throw error;
 			}

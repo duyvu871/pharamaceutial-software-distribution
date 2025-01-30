@@ -16,6 +16,9 @@ export default class DoctorController {
 				const protectAttributes = ["branch_id"];
 				const queryParse = transformExpressParamsForPrisma("doctors", req.query, prisma);
 				console.log(queryParse);
+
+				console.log("branchId", branchId);
+
 				const total = await prisma.doctors.count({
 					where: {
 						branch_id: branchId,

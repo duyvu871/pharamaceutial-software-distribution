@@ -9,7 +9,7 @@ import {
 	IconBuildingStore,
 	IconChevronRight
 } from "@tabler/icons-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
 	UnstyledButton,
 	Group,
@@ -25,8 +25,12 @@ import { useProtectHighEndAdmin } from '@layout/protect/high-end-admin.tsx';
 import { useAuth } from '@hook/auth';
 import { Typography } from '@component/Typography';
 import { MdOutlineSpaceDashboard } from "react-icons/md";
-import { IoIosSettings,  } from "react-icons/io";
+import { IoIosSettings } from "react-icons/io";
 import { IoExitOutline } from "react-icons/io5";
+import NextImage from 'next/image';
+import {Button, Image} from '@mantine/core'
+
+
 interface NavItemProps {
 	item: SidebarItem;
 	depth?: number;
@@ -35,8 +39,8 @@ interface NavItemProps {
 export interface SidebarItem {
 	icon?: React.ElementType;
 	label: string;
-	href?:string;
-	active?:boolean;
+	href?: string;
+	active?: boolean;
 	initiallyOpened?: boolean;
 	children?: SidebarItem[];
 }
@@ -45,12 +49,12 @@ export const sidebarItems: SidebarItem[] = [
 	{
 		icon: IconLayoutDashboard,
 		label: "Dashboard",
-		href:"/admin/dashboard",
+		href: "/admin/dashboard",
 	},
 	{
 		icon: IconUser,
 		label: "Quản lý Admin",
-		href:"/admin/dashboard/admins",
+		href: "/admin/dashboard/admins",
 	},
 	{
 		icon: IconUser,
@@ -60,7 +64,7 @@ export const sidebarItems: SidebarItem[] = [
 	{
 		icon: IconBuildingStore,
 		label: "Danh sách cửa hàng",
-		href:"/admin/dashboard/branches",
+		href: "/admin/dashboard/branches",
 	},
 	{
 		icon: IconSettings,
@@ -68,7 +72,7 @@ export const sidebarItems: SidebarItem[] = [
 		children: [
 			{
 				label: "Chung",
-				href:"/admin/dashboard/settings/general",
+				href: "/admin/dashboard/settings/general",
 			},
 			{
 				label: "Bảo mật",
@@ -80,39 +84,41 @@ export const sidebarItems: SidebarItem[] = [
 
 const blockHighEndRoute = [
 	"/admin/dashboard/admins",
-]
+];
 
 function NavItem({ item, depth = 0 }: NavItemProps) {
-	const {isHighEndAdmin} = useProtectHighEndAdmin();
-
+	const { isHighEndAdmin } = useProtectHighEndAdmin();
 	const pathname = usePathname();
-
 	const [opened, setOpened] = useState(item.initiallyOpened || false);
 	const hasChildren = item.children && item.children.length > 0;
-	const isActive = item.href === pathname
-	const toggleOpen = () => {
-		if (hasChildren) {
-			setOpened((o) => !o);
-		}
-	};
+	const isActive = item.href === pathname;
+
+	const shouldHideItem = useMemo(() => {
+		return !isHighEndAdmin && item.href && blockHighEndRoute.some(route =>
+			item.href?.startsWith(route)
+		);
+	}, [isHighEndAdmin, item.href]);
+
+	console.log("shouldHideItem", shouldHideItem);
 
 	useEffect(() => {
-		if(item.children) {
-			if(item.children.some((child) => child.href === pathname)) {
-				setOpened(true)
-			} else {
-				setOpened(false)
-			}
+		if (item.children) {
+			const hasActiveChild = item.children.some(child =>
+				child.href === pathname || pathname?.startsWith(child.href || "")
+			);
+			setOpened(hasActiveChild);
 		}
-	}, [pathname, item.children])
+	}, [pathname, item.children, isHighEndAdmin]);
 
-	if(!isHighEndAdmin && (item.href && blockHighEndRoute.includes(item.href))) return null;
+	const toggleOpen = () => hasChildren && setOpened(o => !o);
+
+	if (shouldHideItem) return null;
 
 	return (
 		<Stack gap={0}>
 			<UnstyledButton
 				component={item.href ? Link : undefined}
-				href={item.href || "#"}
+				href={item.href || '#'}
 				onClick={toggleOpen}
 				className={cn(
 					"w-full !p-3 rounded-lg transition-colors duration-200 ease-in-out group",
@@ -124,25 +130,20 @@ function NavItem({ item, depth = 0 }: NavItemProps) {
 			>
 				<Group className="items-center">
 					{item.icon && (
-						<span
-							className={cn(
-								"text-zinc-100",
-								{
-									"group-hover:text-white": !isActive,
-									"text-white": isActive
-								}
-							)}
-						>
-              <item.icon size={26} />
-            </span>
+						<item.icon
+							size={26}
+							className={cn({
+								"text-white": isActive,
+								"!text-zinc-100 group-hover:!text-white": !isActive
+							})}
+						/>
 					)}
 					<Text
-						color="white"
 						className={cn(
-							"flex-grow !text-xl font-medium ",
+							"flex-grow !text-xl font-medium",
 							{
-								"group-hover:text-white": !isActive,
-								"text-white": isActive
+								"!text-white": isActive,
+								"!text-zinc-100 group-hover:!text-white": !isActive
 							}
 						)}
 					>
@@ -150,17 +151,21 @@ function NavItem({ item, depth = 0 }: NavItemProps) {
 					</Text>
 					{hasChildren && (
 						<IconChevronRight
-							className={`transition-transform duration-200 ease-in-out text-zinc-100 ${
+							className={`transition-transform duration-200 ease-in-out ${
 								opened ? "rotate-90" : ""
-							}`}
+							} ${isActive ? "text-white" : "text-zinc-100"}`}
 							size={16}
 						/>
 					)}
 				</Group>
 			</UnstyledButton>
+
 			{hasChildren && (
 				<Collapse in={opened}>
-					<Stack gap={0} className={`ml-${depth * 4 + 4} mt-1 border-l border-zinc-100 pl-2`}>
+					<Stack
+						gap={0}
+						className={`ml-${depth * 4 + 4} mt-1 border-l border-zinc-200 pl-2`}
+					>
 						{item.children?.map((child, index) => (
 							<NavItem key={index} item={child} depth={depth + 1} />
 						))}
@@ -172,36 +177,51 @@ function NavItem({ item, depth = 0 }: NavItemProps) {
 }
 
 export function AdminSidebar() {
-	const {logout} = useAuth()
+	const { logout } = useAuth();
+	const { isHighEndAdmin } = useProtectHighEndAdmin();
+
+	const filteredItems = useMemo(() =>
+			sidebarItems.filter(item =>
+					isHighEndAdmin || !blockHighEndRoute.some(route =>
+						item.href?.startsWith(route)
+					)
+			),
+		[isHighEndAdmin]
+	);
 
 	return (
-		<div className="min-h-screen bg-[var(--main-color)] p-4 flex flex-col justify-between">
+		<div className="min-h-screen bg-teal-600 p-4 flex flex-col justify-between border-r border-zinc-100">
 			<div>
-				<div className="mb-6">
-					<Text color="white" className="!text-3xl !font-semibold px-3">
+				<div className="mb-6 p-4 py-2 flex items-center gap-2 bg-zinc-100 rounded-md">
+					<Image component={NextImage} src={"/images/logo-MP-thuoc.png"} alt={"logo"} width={200} height={200}
+								 className={"!w-8"} />
+					<Typography
+						size="h3"
+						weight="bold"
+						color="primary"
+						className="px-3"
+					>
 						Quản Trị
-					</Text>
+					</Typography>
 				</div>
-				<Stack gap={"xs"}>
-					{sidebarItems.map((item, index) => (
+				<Stack gap="xs">
+					{filteredItems.map((item, index) => (
 						<NavItem key={index} item={item} />
 					))}
 				</Stack>
 			</div>
-			<Stack gap={"xs"}>
+
+			<Stack gap="xs">
 				<NavLink
-					className="!p-3 !bg-white rounded-lg transition-colors duration-200 ease-in-out group"
-					color={'var(--main-color)'}
-					active={true}
+					className="!p-3 !bg-teal-50 rounded-lg hover:!bg-teal-100 transition-colors"
+					active={false}
 					label={
-						<Typography size={'h5'} weight={'semibold'} color={'primary'}>Đăng xuất</Typography>
+						<Typography size="h5" weight="semibold" color="primary">
+							Đăng xuất
+						</Typography>
 					}
-					description={''}
-					leftSection={<IoExitOutline  size={30} />}
-					onClick={() => {
-						console.log('Đăng xuất');
-						logout("/admin/login");
-					}}
+					leftSection={<IoExitOutline size={24} className="text-teal-600" />}
+					onClick={() => logout("/admin/login")}
 				/>
 			</Stack>
 		</div>

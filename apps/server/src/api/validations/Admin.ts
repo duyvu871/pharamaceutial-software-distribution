@@ -23,23 +23,23 @@ export class AdminValidation {
 		}),
 		address: z.string({
 			message: 'Địa chỉ không được để trống'
-		}),
+		}).optional(),
 		postal_code: z.string({
 			message: 'Mã bưu chính không được để trống'
-		}),
+		}).optional(),
 		dob: z.string({
 			message: 'Ngày sinh không được để trống'
 		}).datetime({
 			message: 'Ngày sinh không hợp lệ'
-		}),
+		}).optional(),
 		phone_number: z.string({
 			message: 'Số điện thoại không được để trống'
-		}),
+		}).optional(),
 		email: z.string({
 			message: 'Email không được để trống'
 		}).email({
 			message: 'Email không hợp lệ'
-		}),
+		}).optional(),
 		gender: z.enum(['male', 'female', 'other']),
 	})
 
@@ -59,8 +59,17 @@ export class AdminValidation {
 		email: z.string().email({ message: 'Email không hợp lệ' }).optional(),
 		notes: z.string().optional(),
 	});
+
+	public static updatePaymentSubscriptionBody = z.object({
+		type: z.enum(['admin', 'branch']),
+		id: z.string().uuid({
+			message: 'Id không hợp lệ'
+		}),
+		status: z.enum(['paid', 'unpaid', 'pending', 'cancelled', 'expired'])
+	});
 }
 
 export type AdminIdParam = z.infer<typeof AdminValidation.adminIdParam>;
 export type AdminCreation = z.infer<typeof AdminValidation.adminCreation>;
 export type UserCreation = z.infer<typeof AdminValidation.userCreation>;
+export type UpdatePaymentSubscriptionBody = z.infer<typeof AdminValidation.updatePaymentSubscriptionBody>;

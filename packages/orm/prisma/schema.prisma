@@ -15,10 +15,10 @@ model branches {
   phone_number   String                      @db.VarChar(255)
   branch_status  enum_branches_branch_status
   owner_id       String                      @db.Uuid
-  createdAt      DateTime?                   @db.Timestamptz(6)
-  updatedAt      DateTime?                   @db.Timestamptz(6)
+  createdAt      DateTime?                   @db.Timestamptz(6) @default(now())
+  updatedAt      DateTime?                   @db.Timestamptz(6) @updatedAt
   enabled_points Boolean                     @default(true)
-  users          users                       @relation(fields: [owner_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users          users                       @relation(fields: [owner_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   consumers          consumers[]
   memberships        memberships[]
@@ -41,9 +41,9 @@ model branch_integration {
   type      String @db.VarChar(255)
   status    Int    @default(1)
 
-  integration_id       String
-  integration_account  String
-  integration_password String
+  integration_id       String? @default("")
+  integration_account  String? @default("")
+  integration_password String? @default("")
 
   createdAt  DateTime  @default(now()) @db.Timestamptz(6)
   updatedAt  DateTime  @default(now()) @db.Timestamptz(6)
@@ -63,7 +63,7 @@ model branch_payment {
   payment_account_number String
   payment_account_owner  String
   createdAt              DateTime  @default(now()) @db.Timestamptz(6)
-  updatedAt              DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt              DateTime  @default(now()) @db.Timestamptz(6) @updatedAt
   deleted_at             DateTime? @db.Timestamptz(6)
   deleted_by             String?   @db.Uuid
   branches               branches  @relation(fields: [branch_id], references: [branch_id], onDelete: Cascade)
@@ -74,16 +74,16 @@ model branch_payment {
 model branch_details {
   id                                String    @id @default(uuid()) @db.Uuid
   branch_id                         String    @unique @db.Uuid
-  so_dang_ky                        String
-  ten_nha_thuoc                     String
-  loai_hinh                         String
-  tinh                              String
-  huyen                             String
-  dia_chi                           String
-  nguoi_dai_dien                    String
-  nguoi_chiu_trach_nhiem            String
-  nguoi_chiu_trach_nhiem_chuyen_mon String
-  so_chung_chi_hanh_nghe            String
+  so_dang_ky                        String?   @default("")
+  ten_nha_thuoc                     String?   @default("")
+  loai_hinh                         String?   @default("")
+  tinh                              String?   @default("")
+  huyen                             String?   @default("")
+  dia_chi                           String?   @default("")
+  nguoi_dai_dien                    String?   @default("")
+  nguoi_chiu_trach_nhiem            String?   @default("")
+  nguoi_chiu_trach_nhiem_chuyen_mon String?   @default("")
+  so_chung_chi_hanh_nghe            String?   @default("")
   createdAt                         DateTime? @default(now())
   updatedAt                         DateTime  @updatedAt
 
@@ -289,7 +289,7 @@ model import_invoices {
   status                 Int                      @default(1)
   createdAt              DateTime                 @default(now()) @db.Timestamptz(6)
   updatedAt              DateTime                 @updatedAt @db.Timestamptz(6)
-  stores                 stores                   @relation(fields: [store_id], references: [id])
+  stores                 stores                   @relation(fields: [store_id], references: [id], onDelete: Cascade)
   providers              providers?               @relation(fields: [provider_id], references: [id])
   import_invoice_product import_invoice_product[]
 
@@ -348,7 +348,7 @@ model stores {
   description        String?              @db.VarChar(255)
   deleted_at         DateTime?            @db.Timestamptz(6)
   deleted_by         String?              @db.Uuid
-  branches           branches             @relation(fields: [branch_id], references: [branch_id], onDelete: NoAction, onUpdate: NoAction)
+  branches           branches             @relation(fields: [branch_id], references: [branch_id], onDelete: Cascade, onUpdate: NoAction)
   groups             groups[]
   product_units      product_units[]
   products           products[]
@@ -379,7 +379,7 @@ model store_reward_point {
   description  String?   @db.VarChar(255)
   deleted_at   DateTime? @db.Timestamptz(6)
   deleted_by   String?   @db.Uuid
-  stores       stores    @relation(fields: [store_id], references: [id])
+  stores       stores    @relation(fields: [store_id], references: [id], onDelete: Cascade)
 
   @@index([store_id])
 }
@@ -414,7 +414,7 @@ model clinics {
   status      Int       @default(1)
   description String?   @db.VarChar(255)
   deleted_at  DateTime? @db.Timestamptz(6)
-  store       stores    @relation(fields: [store_id], references: [id])
+  store       stores    @relation(fields: [store_id], references: [id], onDelete: Cascade)
 
   @@index([store_id])
 }
@@ -440,7 +440,7 @@ model doctors {
   created_at            DateTime                @default(now()) @db.Timestamptz(6)
   updated_at            DateTime                @default(now()) @db.Timestamptz(6)
   deleted_at            DateTime?               @db.Timestamptz(6)
-  branch                branches                @relation(fields: [branch_id], references: [branch_id])
+  branch                branches                @relation(fields: [branch_id], references: [branch_id], onDelete: Cascade)
   stores                stores?                 @relation(fields: [storesId], references: [id])
   storesId              String?                 @db.Uuid
   invoice_prescriptions invoice_prescriptions[]
@@ -462,7 +462,7 @@ model providers {
   storeId     String   @db.Uuid // ID cửa hàng (liên kết đến bảng Store)
   createdAt   DateTime @default(now()) // Thời điểm tạo
   updatedAt   DateTime @updatedAt // Thời điểm cập nhật tự động
-  store       stores   @relation(fields: [storeId], references: [id])
+  store       stores   @relation(fields: [storeId], references: [id], onDelete: Cascade)
 
   import_invoices import_invoices[]
 }
@@ -487,8 +487,8 @@ model admins {
   reset_token       String?             @db.VarChar(255)
   permission        String[]            @default(["Store.All", "Report.All", "Supplier.All", "Medicine.All", "Membership.All", "Promotion.All", "Customer.All", "User.All"]) @db.VarChar(255)
   roleId            String?             @db.Uuid
-  createdAt         DateTime?           @db.Timestamptz(6)
-  updatedAt         DateTime?           @db.Timestamptz(6)
+  createdAt         DateTime?           @db.Timestamptz(6) @default(now())
+  updatedAt         DateTime?           @db.Timestamptz(6) @updatedAt
   roles             roles?              @relation(fields: [roleId], references: [id])
   admin_to_user     admin_to_user[]
   admin_subsciption admin_subsciption[]
@@ -502,13 +502,15 @@ model admin_to_user {
   userId    String   @db.Uuid @unique
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
-  admins    admins   @relation(fields: [adminId], references: [id])
-  users     users    @relation(fields: [userId], references: [id])
+  admins    admins   @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  users     users    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model users {
   id            String          @id @default(uuid()) @db.Uuid
   username      String          @db.VarChar(255)
+  first_name    String?          @db.VarChar(255)
+  last_name     String?         @db.VarChar(255)
   password      String          @db.VarChar(255)
   email         String?         @db.VarChar(255)
   age           Int?
@@ -520,8 +522,8 @@ model users {
   last_login    DateTime?       @db.Timestamptz(6)
   reset_token   String?         @db.VarChar(255)
   permission    String[]        @default(["Store.All", "Report.All", "Supplier.All", "Medicine.All", "Membership.All", "Promotion.All", "Customer.All", "User.Read", "User.Update", "User.Create"]) @db.VarChar(255)
-  createdAt     DateTime?       @db.Timestamptz(6)
-  updatedAt     DateTime?       @db.Timestamptz(6)
+  createdAt     DateTime?       @db.Timestamptz(6) @default(now())
+  updatedAt     DateTime?       @db.Timestamptz(6) @updatedAt
   branches      branches[]
   // points       points[]
   admin_to_user admin_to_user[]
@@ -541,6 +543,7 @@ model subscriptions {
   end_date   DateTime
   auto_renew Boolean @default(true)  // ADDED
   payment_method String? @db.VarChar(255) // ADDED
+  payment_status String? @default("unpaid") @db.VarChar(50) // ADDED // e.g., "paid", "unpaid"
   status     String   @db.VarChar(50) // e.g., "active", "expired", "pending"
   createdAt  DateTime @default(now()) @db.Timestamptz(6)
   updatedAt  DateTime @updatedAt
@@ -575,6 +578,7 @@ model admin_subsciption {
   status     String   @db.VarChar(50) // e.g., "active", "expired", "pending"
   auto_renew Boolean @default(true)  // ADDED
   payment_method String? @db.VarChar(255) // ADDED
+  payment_status String? @default("unpaid") @db.VarChar(50) // ADDED // e.g., "paid", "unpaid"
   trial_ends_at DateTime? @db.Timestamptz(6) // ADDED
   createdAt  DateTime @default(now()) @db.Timestamptz(6)
   updatedAt  DateTime @updatedAt @db.Timestamptz(6)
@@ -710,7 +714,7 @@ model point_transactions {
 model invoices {
   id                    String                  @id @default(uuid()) @db.Uuid
   invoice_id            String?                 @db.VarChar(255)
-  branchId              String                  @db.Uuid
+  branchId              String                 @db.Uuid
   saleDate              DateTime                @db.Date
   saleTime              String
   customerName          String?
@@ -734,8 +738,8 @@ model invoices {
   otherCharges          other_charges[]
   invoice_prescriptions invoice_prescriptions[]
 
-  branches  branches   @relation(fields: [branchId], references: [branch_id])
-  customers consumers? @relation(fields: [customerId], references: [id])
+  branches  branches   @relation(fields: [branchId], references: [branch_id], onDelete: Cascade)
+  customers consumers? @relation(fields: [customerId], references: [id], onDelete: Cascade)
 
   @@index([branchId])
   @@index([saleDate])
@@ -846,14 +850,14 @@ model financial_ledger {
 model product_assets {
   id         String   @id @default(uuid()) @db.Uuid
   store_id   String   @db.Uuid
-  asset_id   String   @db.Uuid
+  asset_id   String?   @db.Uuid
   product_id String?  @db.Uuid
   createdAt  DateTime @default(now()) @db.Timestamptz(6)
   updatedAt  DateTime @default(now()) @db.Timestamptz(6)
 
-  product products? @relation(fields: [product_id], references: [id])
-  asset   assets    @relation(fields: [asset_id], references: [id])
-  store   stores    @relation(fields: [store_id], references: [id])
+  product products? @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  asset   assets?    @relation(fields: [asset_id], references: [id])
+  store   stores    @relation(fields: [store_id], references: [id], onDelete: Cascade)
 }
 
 // Store assets (images, videos, etc.) for a store
@@ -865,8 +869,8 @@ model store_assets {
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @default(now()) @db.Timestamptz(6)
 
-  store stores @relation(fields: [store_id], references: [id])
-  asset assets @relation(fields: [asset_id], references: [id])
+  store stores @relation(fields: [store_id], references: [id], onDelete: Cascade)
+  asset assets @relation(fields: [asset_id], references: [id], onDelete: Cascade)
 }
 
 // Assets (images, videos, etc.)
@@ -884,7 +888,7 @@ model assets {
   createdAt   DateTime @default(now()) @db.Timestamptz(6)
   updatedAt   DateTime @default(now()) @db.Timestamptz(6)
 
-  stores stores @relation(fields: [store_id], references: [id])
+  stores stores @relation(fields: [store_id], references: [id], onDelete: Cascade)
 
   product_assets product_assets[]
   store_assets   store_assets[]

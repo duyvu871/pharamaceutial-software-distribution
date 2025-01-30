@@ -11,6 +11,9 @@ import * as SocketIo from 'socket.io';
 import { Server, createServer } from 'http';
 import Redis from "ioredis";
 import RedisServer from "./RedisServer";
+import { uploadRouter } from 'server/api/routes/upload.ts';
+import upload from 'server/configs/upload.ts';
+import uploadMiddleware from 'server/configs/upload.ts';
 
 
 class ExpressServer {
@@ -29,16 +32,17 @@ class ExpressServer {
         // initialize express instances 
         this._app = express();
 
-        // only accept content type application/json
-        this._app.use(bodyParser.urlencoded({ extended: true }));
-        this._app.use(bodyParser.json({ limit: '10mb' }));
-        this._app.use(bodyParser.text());
-        this._app.use(cookieParser());
         this._app.use(cors());
-        this._app.use('/api/v1', route.apiRoutes);
-        this._app.use('/', route.pageRoutes);
+        this._app.use(cookieParser());
         this._app.use('/statics', express.static('statics'));
         this._app.use('/storage', express.static('storage'));
+        this._app.use('/api/v1', uploadRouter);
+        this._app.use(bodyParser.text());
+        this._app.use(bodyParser.urlencoded({ extended: true }));
+        this._app.use(bodyParser.json({ limit: '10mb' }));
+        this._app.use('/api/v1', route.apiRoutes);
+        this._app.use('/', route.pageRoutes);
+
         this._app.use('*', routeNotFound);
         this._app.use(errorHandler);
 

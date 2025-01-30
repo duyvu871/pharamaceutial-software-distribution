@@ -20,7 +20,7 @@ export const AdminSidebarLayout = ({children}: {children: React.ReactNode}) => {
 				<AdminSidebar />
 			</AppShell.Navbar>
 
-			<AppShell.Main>
+			<AppShell.Main h={"100%"}>
 				{
 					children
 				}

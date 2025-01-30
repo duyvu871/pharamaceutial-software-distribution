@@ -17,29 +17,37 @@ const ProtectHighEndAdminContext = createContext<ProtectHighEndAdminContextType>
 	isHighEndAdmin: false,
 });
 
-export default function ProtectHighEndAdmin({ children, blockRender}: Props) {
-	const [block, setBlock] = useState<boolean>(true);
+export default function ProtectHighEndAdmin({ children, blockRender = true }: Props) {
+	const [isChecking, setIsChecking] = useState<boolean>(true);
 	const [access, setAccess] = useState<boolean>(false);
 	const [isHighEndAdmin, setIsHighEndAdmin] = useState<boolean>(false);
 
 	useLayoutEffect(() => {
 		checkHighEndAdmin()
 			.then((data) => {
-				if (data) {
-					setAccess(true);
-					setBlock(false);
-					setIsHighEndAdmin(true);
-				}
+				setAccess(data);
+				setIsHighEndAdmin(data);
+			})
+			.catch(() => {
+				setAccess(false);
+				setIsHighEndAdmin(false);
+			})
+			.finally(() => {
+				setIsChecking(false); // Kết thúc quá trình check
 			});
 	}, []);
 
-	if (!access && blockRender) return null;
-	if (block && blockRender) return <NoPermission />;
+	// Xử lý hiển thị khi blockRender được bật
+	if (blockRender) {
+		// Hiển thị nothing khi đang check
+		if (isChecking) return null;
+
+		// Hiển thị NoPermission nếu không có quyền
+		if (!access) return <NoPermission />;
+	}
 
 	return (
-		<ProtectHighEndAdminContext.Provider value={{
-			isHighEndAdmin: isHighEndAdmin
-		}}>
+		<ProtectHighEndAdminContext.Provider value={{ isHighEndAdmin }}>
 			{children}
 		</ProtectHighEndAdminContext.Provider>
 	);

@@ -12,7 +12,12 @@ export class SubscriptionValidation {
 			message: "Register ID is not valid"
 		}),
 	});
+
+	public static subscriptionPaymentStatus = z.object({
+		paymentStatus: z.enum(["total", "unregistered", "paid", "unpaid", "pending", "cancelled", "expired"]).optional(),
+	});
 }
 
 export type SubscriptionTypeParam = z.infer<typeof SubscriptionValidation.subscriptionTypeParam>;
 export type RegisterSubscription = z.infer<typeof SubscriptionValidation.registerSubscription>;
+export type SubscriptionPaymentStatus = z.infer<typeof SubscriptionValidation.subscriptionPaymentStatus>;

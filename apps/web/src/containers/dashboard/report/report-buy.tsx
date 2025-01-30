@@ -102,7 +102,7 @@ export default function ReportBuy() {
 		}
 
 		return (
-			<>
+			<Group wrap={"nowrap"}>
 				<Label label={"Kiểu hiển thị "} position={"top"}>
 					<Select
 						placeholder="Chọn"
@@ -146,7 +146,7 @@ export default function ReportBuy() {
 						</Button>
 					</Group>
 				</Label>
-			</>
+			</Group>
 		)
 	}
 

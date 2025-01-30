@@ -106,7 +106,7 @@ export default function ReportConsumer() {
 		}
 
 		return (
-			<>
+			<Group wrap={"nowrap"}>
 				<Label label={"Người bán"} position={"top"}>
 					<Select
 						placeholder="Chọn Người bán"
@@ -153,7 +153,7 @@ export default function ReportConsumer() {
 						</Button>
 					</Group>
 				</Label>
-			</>
+			</Group>
 		)
 	}
 

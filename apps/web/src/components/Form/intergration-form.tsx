@@ -1,8 +1,8 @@
 import { Button, Stack, TextInput, PasswordInput } from '@mantine/core';
-import { useForm } from '@mantine/form';
+import { useForm, zodResolver } from '@mantine/form';
 import { Typography } from '@component/Typography';
 import { useEffect } from 'react';
-import { IntegrationFormValues } from '@schema/branch-schema.ts';
+import { BranchIntegration, branchIntegrationSchema, IntegrationFormValues } from '@schema/branch-schema.ts';
 import { getBranchIntegration, upsertBranchIntegration } from '@api/branch.ts';
 import { useDashboard } from '@hook/dashboard/use-dasboard';
 import useToast from '@hook/client/use-toast-notification.ts';
@@ -14,15 +14,19 @@ export default function IntegrationForm() {
 
 	const {showErrorToast, showSuccessToast} = useToast();
 
-	const form = useForm<IntegrationFormValues>({
+	const form = useForm<BranchIntegration>({
+		validate: zodResolver(branchIntegrationSchema),
 		initialValues: {
-			integrationCode: '',
-			integrationAccount: '',
-			integrationPassword: '',
+			// integrationCode: '',
+			// integrationAccount: '',
+			// integrationPassword: '',
+			integration_id: '',
+			integration_password: '',
+			integration_account: '',
 		},
 	});
 
-	const handleSubmit = (values: IntegrationFormValues) => {
+	const handleSubmit = (values: BranchIntegration) => {
 		console.log(values);
 		// Handle form submission
 		if (!branchId) {

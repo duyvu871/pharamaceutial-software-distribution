@@ -23,6 +23,7 @@ import {
 	Popover,
 	Select,
 	Stack,
+    Tabs,
 } from "@mantine/core";
 import {
 	Check,
@@ -48,14 +49,14 @@ import { Label } from "@component/label";
 import { useFilterString } from "@hook/client/use-filter-string.ts";
 import { useSearchParams } from "@route/hooks";
 import { DatePicker, DateTimePicker } from "@mantine/dates";
-import { AdminCreateSchema, AdminType } from '@schema/admin/admin-schema.ts';
+import { AdminCreateSchema, AdminType, AminBranchFormFieldCreation } from '@schema/admin/admin-schema.ts';
 import {
 	createAdminData,
 	createOrUpdateBranch,
-	createOrUpdateUserSlave,
-	getAdminData, getBranches,
+	createOrUpdateUserSlave, deleteBranch,
+	getAdminData, getBranches, getBranchPaymentStat,
 	getUserSlaveList,
-	updateAdminData,
+	updateAdminData, updatePaymentSubscriptionStatus,
 } from '@api/admin/admin-curd.ts';
 import { MdOutlineSubscriptions } from "react-icons/md";
 
@@ -64,7 +65,7 @@ import { TbCategoryPlus } from "react-icons/tb";
 import { registerSubscription } from '@api/subscription.ts';
 import { AdminPlans, PlanType } from '@schema/subscription-schema.ts';
 import { AdminGettingBranches } from '@schema/branch-schema.ts';
-import { BranchPlanType } from '@type/enum/branch';
+import { BranchPlanType, PaymentStatus } from '@type/enum/branch';
 import SubscriptionRegister from '@component/Subscription/subscription-register.tsx';
 import AdminBranchUpsertForm from '@component/Form/admin-branch-upsert-form.tsx';
 import BranchSubscriptionCollection from '@component/Subscription/branch-subscription-collection.tsx';
@@ -76,9 +77,10 @@ type DashboardContextType = {
 };
 
 const idKey = "branch_id";
+const initFilter = 'createdAt:desc';
 
 type Schema = AdminGettingBranches;
-type CreationSchema = Partial<AdminGettingBranches>;
+type CreationSchema = AminBranchFormFieldCreation;
 
 export const DashBoardContext = createContext<DashboardContextType>({
 	activeModal: () => {},
@@ -127,8 +129,10 @@ export default function BranchDashboard() {
 	const [perPage, setPerPage] = useState<number>(10);
 	const search = useFilterString<Schema>("");
 	const filter = useFilterString<Schema>("");
-	const orderBy = useFilterString<Schema>(`${idKey}:desc`);
-	// const [activeAction]
+	const orderBy = useFilterString<Schema>(initFilter);
+	const [activePaymentStatus, setActivePaymentStatus] = useState<string>("total");
+	const [statByPaymentStatus, setStatByPaymentStatus] = useState<Record<string, number>>({});
+
 	const [
 		visibleActionOverlay,
 		{ toggle, close: closeActionOverLay, open: openActionOverlay },
@@ -155,8 +159,7 @@ export default function BranchDashboard() {
 	const toggleDetail = (id: string) =>
 		setDetailOpen(detailOpen === id ? null : id);
 
-	const { showErrorToast, showSuccessToast, showInfoToast, showWarningToast } =
-		useToast();
+	const { showErrorToast, showSuccessToast, showInfoToast, showWarningToast } = useToast();
 
 	const updateOrCreate = useCallback(async (model: CreationSchema) => {
 		try {
@@ -213,10 +216,57 @@ export default function BranchDashboard() {
 			setIsUpdating(false);
 			closeActionOverLay();
 		}
-	}, [openActionOverlay, showSuccessToast, showErrorToast, closeActionOverLay, activeDetail]);
+	}, [openActionOverlay, showSuccessToast, showErrorToast, closeActionOverLay, activeDetail, data]);
+
+	const updatePaymentSubscriptionStatusAction = useCallback(async (id: string, status: string) => {
+		try {
+			// if (!activeDetail) {
+			// 	showErrorToast("Không tìm thấy thông tin cửa hàng");
+			// 	return;
+			// }
+			if (!id) {
+				showErrorToast("Không tìm thấy thông tin gói dịch vụ");
+				return;
+			}
+			if (!status) {
+				showErrorToast("Không tìm thấy thông tin trạng thái");
+				return;
+			}
+			const update = await updatePaymentSubscriptionStatus("branch", id, status);
+
+			if (update) {
+				setData((prev) =>
+					prev.map((item) => {
+						const newSubscriptions = item.subscriptions.map((sub) =>
+							sub.id === id ? { ...sub, payment_status: status } : sub
+						);
+						return {
+							...item,
+							subscriptions: newSubscriptions,
+						};
+					})
+				);
+				showSuccessToast('Cập nhật trạng thái gói dịch vụ thành công');
+			}
+
+		} catch (error: any) {
+			showErrorToast(error.message);
+		}
+	}, []);
+
+	const getPaymentStat = useCallback(async () => {
+		getBranchPaymentStat()
+			.then((model) => {
+				setStatByPaymentStatus(model);
+			})
+			.catch((error) => {
+				showErrorToast(error.message);
+			});
+	}, [showErrorToast]);
 
 	const resetFilter = () => {
 		openMainOverlay();
+		getPaymentStat();
 		getBranches({
 			page: 1,
 			limit: perPage,
@@ -241,6 +291,14 @@ export default function BranchDashboard() {
 		size: 15,
 		className: "text-zinc-600",
 	};
+
+	const BadgeColor = {
+		unpaid: "bg-zinc-500/10 text-zinc-500",
+		paid: "bg-green-500/10 text-green-500",
+		pending: "bg-yellow-500/10 text-yellow-500",
+		cancelled: "bg-zinc-500/10 text-zinc-500",
+		expired: "bg-red-500/10 text-red-500",
+	}
 
 	const rowAction: ActionItemRender<Schema>[] = [
 		{
@@ -282,16 +340,64 @@ export default function BranchDashboard() {
 		{
 			label: (model) => (
 				<Group gap={5} className={cn({
-					"opacity-50 cursor-not-allowed": model
+					"opacity-50 cursor-not-allowed": !model
 				})}>
 					<Trash2 {...iconProps} /> Xóa
 				</Group>
 			),
-			action: (model) => {
-				showWarningToast("Chức năng này đang được phát triển");
+			action: async (model) => {
+				try {
+					console.log("model", model);
+					if (!model) {
+						showErrorToast("Không tìm thấy thông tin cửa hàng");
+						return;
+					}
+
+					const allowToRemove = confirm("Bạn có chắc chắn muốn xóa cửa hàng này không?");
+					if (!allowToRemove) return;
+
+					const remove = await deleteBranch(model.branch_id);
+					if (remove) {
+						setData(data.filter((item) => item.branch_id !== model.branch_id));
+						showSuccessToast('Xóa cửa hàng thành công');
+					}
+
+				} catch (error: any) {
+					showErrorToast(error.message);
+				}
 			},
 		},
 	];
+
+	const PaymentStatusFilter = () => {
+		return (
+			<Tabs
+				defaultValue="total"
+				value={activePaymentStatus}
+				color={"var(--main-color)"}
+				onChange={(value) => value && setActivePaymentStatus(value)}
+			>
+				<Tabs.List>
+					{
+						Object.keys(statByPaymentStatus).map((key) => (
+							<Tabs.Tab key={key} value={key} >
+								<Group wrap={"nowrap"} gap={2}>
+									{PaymentStatus[key as keyof typeof PaymentStatus]}
+									<StateStatus
+										state={key}
+										customColor={BadgeColor}
+										customText={{
+											[key]: statByPaymentStatus[key].toString()
+										}}
+									/>
+								</Group>
+							</Tabs.Tab>
+						))
+					}
+				</Tabs.List>
+			</Tabs>
+		)
+	}
 
 	const ActionButton = ({ data }: { data: Schema }) => {
 		const [opened, setOpened] = useState<boolean>(false);
@@ -363,7 +469,7 @@ export default function BranchDashboard() {
 		};
 
 		return (
-			<>
+			<Group wrap={"nowrap"}>
 				<Label label={"Từ ngày"} position={"top"}>
 					<DateTimePicker
 						placeholder={"Chọn ngày bắt đầu"}
@@ -393,7 +499,7 @@ export default function BranchDashboard() {
 						</Button>
 					</Group>
 				</Label>
-			</>
+			</Group>
 		);
 	};
 
@@ -403,7 +509,11 @@ export default function BranchDashboard() {
 			render: (data) => data.branch_name,
 		},
 		{
-			title: "Tên chủ cửa hàng",
+			title: "Địa chỉ",
+			render: (data) => data.address,
+		},
+		{
+			title: "Tên đại lý",
 			render: (data) => data.users.username,
 		},
 		{
@@ -411,17 +521,25 @@ export default function BranchDashboard() {
 			render: (data) => (
 				<Group gap={5} maw={200}>
 					{data?.subscriptions?.map((sub) => (
-						<StateStatus
-							state={sub?.branch_plans?.plan_type}
-							customColor={{
-								[BranchPlanType["30Day"]]: "bg-zinc-500/10 text-zinc-500",
-								[BranchPlanType["1Year"]]: "bg-yellow-500/10 text-yellow-500",
-							}}
-							customText={{
-								[BranchPlanType["30Day"]]: "30 ngày",
-								[BranchPlanType["1Year"]]: "1 năm",
-							}}
-						/>
+						<Group gap={2} wrap={"nowrap"} p={5} className={"bg-zinc-100 rounded-md"}>
+							{/*<StateStatus*/}
+							{/*	state={sub?.branch_plans?.plan_type}*/}
+							{/*	customColor={{*/}
+							{/*		[BranchPlanType["30Day"]]: "bg-zinc-500/10 text-zinc-500",*/}
+							{/*		[BranchPlanType["1Year"]]: "bg-yellow-500/10 text-yellow-500",*/}
+							{/*	}}*/}
+							{/*	customText={{*/}
+							{/*		[BranchPlanType["30Day"]]: `30 ngày`,*/}
+							{/*		[BranchPlanType["1Year"]]: "1 năm",*/}
+							{/*	}}*/}
+							{/*/>*/}
+							{sub.branch_plans.plan_name}
+							<StateStatus
+								state={sub.payment_status ?? 'unpaid'}
+								customColor={BadgeColor}
+								customText={PaymentStatus}
+							/>
+						</Group>
 					))}
 					{data.subscriptions.length === 0 && (
 						<Badge variant="light" color="gray">
@@ -431,13 +549,11 @@ export default function BranchDashboard() {
 				</Group>
 			),
 		},
+
+
 		{
 			title: "Số điện thoại",
 			render: (data) => data.phone_number,
-		},
-		{
-			title: "Địa chỉ",
-			render: (data) => data.address,
 		},
 		{
 			title: 'Trạng thái',
@@ -459,7 +575,10 @@ export default function BranchDashboard() {
 		},
 	];
 
-	const filterComponent = [<FilterComponent />];
+	const filterComponent = [
+		<FilterComponent />,
+		<PaymentStatusFilter />
+	];
 
 	useEffect(() => {
 		if (!opened) {
@@ -484,12 +603,14 @@ export default function BranchDashboard() {
 
 	useEffect(() => {
 		openMainOverlay();
+		getPaymentStat()
 		getBranches({
 			page: page,
 			limit: perPage,
 			filterBy: filter.filter,
 			searchFields: search.filter,
 			orderBy: orderBy.filter,
+			paymentStatus: activePaymentStatus,
 		})
 			.then((model) => {
 				setTotal(model.total);
@@ -504,12 +625,16 @@ export default function BranchDashboard() {
 					closeMainOverlay();
 				}, 300);
 			});
-	}, [filter.filter, search.filter, page, perPage, orderBy.filter]);
+	}, [filter.filter, search.filter, page, perPage, orderBy.filter, activePaymentStatus]);
 
 	useEffect(() => {
 		console.log("page", page);
 		console.log("perPage", perPage);
 	}, [page, perPage]);
+
+	// useEffect(() => {
+	//
+	// }, []);
 
 	return (
 		<DashBoardContext.Provider
@@ -556,7 +681,10 @@ export default function BranchDashboard() {
 					overlayProps={{ radius: "sm", blur: 2 }}
 				/>
 				{activeDetail && (
-					<BranchSubscriptionCollection subscriptions={activeDetail["subscriptions"]} />
+					<BranchSubscriptionCollection
+						subscriptions={activeDetail["subscriptions"]}
+						updatePaymentStatus={updatePaymentSubscriptionStatusAction}
+					/>
 				)}
 			</Modal>
 			<Modal
@@ -575,9 +703,7 @@ export default function BranchDashboard() {
 					zIndex={1000}
 					overlayProps={{ radius: "sm", blur: 2 }}
 				/>
-				{activeDetail && (
-					<AdminBranchUpsertForm defaultValue={activeDetail} onSubmit={updateOrCreate} />
-				)}
+				<AdminBranchUpsertForm defaultValue={activeDetail ?? undefined} onSubmit={updateOrCreate} />
 			</Modal>
 			<EnterpriseResourcePlanningTable<Schema>
 				name={`Danh sách cửa hàng`}

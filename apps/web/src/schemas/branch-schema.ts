@@ -20,19 +20,53 @@ export interface IntegrationFormValues {
 }
 
 export const branchDetailsSchema = z.object({
-	so_dang_ky: z.string().nonempty("Số đăng ký không được để trống."),
-	ten_nha_thuoc: z.string().nonempty("Tên nhà thuốc không được để trống."),
-	loai_hinh: z.string().nonempty("Loại hình không được để trống."),
-	tinh: z.string().nonempty("Tỉnh không được để trống."),
-	huyen: z.string().nonempty("Huyện không được để trống."),
-	dia_chi: z.string().nonempty("Địa chỉ không được để trống."),
-	nguoi_dai_dien: z.string().nonempty("Người đại diện không được để trống."),
-	nguoi_chiu_trach_nhiem: z.string().nonempty("Người chịu trách nhiệm không được để trống."),
-	nguoi_chiu_trach_nhiem_chuyen_mon: z.string().nonempty("Người chịu trách nhiệm chuyên môn không được để trống."),
-	so_chung_chi_hanh_nghe: z.string().nonempty("Số chứng chỉ hành nghề không được để trống."),
+	so_dang_ky: z.string({
+		message: "Số đăng ký không hợp lệ",
+	}),
+	ten_nha_thuoc: z.string({
+		message: "Tên nhà thuốc không hợp lệ",
+	}),
+	loai_hinh: z.string({
+		message: "Loại hình không hợp lệ",
+	}),
+	tinh: z.string({
+		message: "Tỉnh không hợp lệ",
+	}),
+	huyen: z.string({
+		message: "Huyện không hợp lệ",
+	}),
+	dia_chi: z.string({
+		message: "Địa chỉ không hợp lệ",
+	}),
+	nguoi_dai_dien: z.string({
+		message: "Người đại diện không hợp lệ",
+	}),
+	nguoi_chiu_trach_nhiem: z.string({
+		message: "Người chịu trách nhiệm không hợp lệ",
+	}),
+	nguoi_chiu_trach_nhiem_chuyen_mon: z.string({
+		message: "Người chịu trách nhiệm chuyên môn không hợp lệ",
+	}),
+	so_chung_chi_hanh_nghe: z.string({
+		message: "Số chứng chỉ hành nghề không hợp lệ",
+	}),
 });
 
 export type BranchDetails = z.infer<typeof branchDetailsSchema>;
+
+export const branchIntegrationSchema = z.object({
+	integration_id: z.string({
+		message: "Mã liên thông không hợp lệ",
+	}).optional(),
+	integration_password: z.string({
+		message: "Mật khẩu liên thông không hợp lệ",
+	}).optional(),
+	integration_account: z.string({
+		message: "Tài khoản liên thông không hợp lệ",
+	}).optional(),
+});
+
+export type BranchIntegration = z.infer<typeof branchIntegrationSchema>;
 
 export const metaDataSchema = z.object({
 	mime: z.string(),
@@ -199,6 +233,8 @@ export type AdminGettingBranches = Prisma.branchesGetPayload<{
 			include: {
 				branch_plans: true,
 			}
-		}
+		},
+		branch_details: true,
+		branch_integration: true,
 	}
 }>;

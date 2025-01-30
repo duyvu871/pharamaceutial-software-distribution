@@ -266,7 +266,7 @@ export default function DoctorDashboard() {
 		}
 
 		return (
-			<>
+			<Group wrap={"nowrap"}>
 				<Label label={"Trạng thái"} position={"top"}>
 					<Select
 						placeholder="Chọn trạng thái"
@@ -313,7 +313,7 @@ export default function DoctorDashboard() {
 						</Button>
 					</Group>
 				</Label>
-			</>
+			</Group>
 		)
 	}
 

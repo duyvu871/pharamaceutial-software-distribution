@@ -5,7 +5,10 @@ import { branches, admin_to_user, user_permissions } from "@prisma/client";
 
 // login schema for validation in login form
 export const loginSchema = z.object({
-	role: z.enum(['admin', 'user', 'membership']),
+	role: z.enum(['admin', 'user', 'membership'], {
+		message: 'loại tài khoản không hợp lệ',
+		required_error: 'loại tài khoản không được để trống',
+	}),
 	username: z.string().min(3, { message: 'Tên đăng nhập quá ngắn' }),
 	password: z
 		.string()
@@ -90,6 +93,8 @@ export type UserSettingPayloadType = z.infer<typeof userSettingSchema>;
 export type UserSchema = {
 	id: string;
 	username: string;
+	first_name: string | null;
+	last_name: string | null;
 	password: string;
 	email: string | null;
 	age: number | null;

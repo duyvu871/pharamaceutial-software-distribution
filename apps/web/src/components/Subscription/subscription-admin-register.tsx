@@ -220,7 +220,7 @@ export default function SubscriptionAdminRegister({onSelectPlan, activePlan}: Su
 		}
 
 		return (
-			<>
+			<Group wrap={"nowrap"}>
 				<Label label={"Tìm kiếm"} position={"top"}>
 					<Group wrap={"nowrap"} gap={5}>
 						<InputBase
@@ -243,7 +243,7 @@ export default function SubscriptionAdminRegister({onSelectPlan, activePlan}: Su
 						</Button>
 					</Group>
 				</Label>
-			</>
+			</Group>
 		)
 	}
 

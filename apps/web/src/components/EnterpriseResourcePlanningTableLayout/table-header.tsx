@@ -28,7 +28,7 @@ function TableHeader(props: TableHeaderProps) {
 				</div>
 			</div>
 			<div className={"w-full h-[1px] bg-zinc-300"}/>
-			<div className="flex gap-2 items-center mt-2">
+			<div className="flex flex-col gap-2 justify-start items-start mt-2">
 				{props.filter.map((filter, index) => (
 					<Fragment key={`filter-${index}`}>
 						{filter}

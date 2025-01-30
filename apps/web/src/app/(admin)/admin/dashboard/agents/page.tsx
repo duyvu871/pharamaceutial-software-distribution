@@ -2,24 +2,25 @@
 import { AdminSidebarLayout } from "@layout/admin-sidebar-layout"
 import AppLayout from "@layout/app-layout"
 import RefreshCookieAuthProvider from "@provider/refresh-cookie-provider"
-import AdminDashboard from '@container/admin/admin-dashboard.tsx';
 import ProtectHighEndAdmin from '@layout/protect/high-end-admin.tsx';
 import { AdminProfileProvider } from '@provider/admin-profile-provider.tsx';
 import UserDashboard from '@container/admin/user-dashboard.tsx';
 import { Suspense } from "react";
+import AdminHeaderToolbar from '@component/Header/admin-header.tsx';
 
 export default function DashBoard (){
 	return (
 		<RefreshCookieAuthProvider>
 			<Suspense>
 				<AppLayout>
-						<ProtectHighEndAdmin>
-							<AdminProfileProvider>
-								<AdminSidebarLayout>
-									<UserDashboard />
-								</AdminSidebarLayout>
-							</AdminProfileProvider>
-						</ProtectHighEndAdmin>
+					<ProtectHighEndAdmin  blockRender={false}>
+						<AdminProfileProvider>
+							<AdminSidebarLayout>
+								<AdminHeaderToolbar />
+								<UserDashboard />
+							</AdminSidebarLayout>
+						</AdminProfileProvider>
+					</ProtectHighEndAdmin>
 				</AppLayout>
 			</Suspense>
 		</RefreshCookieAuthProvider>

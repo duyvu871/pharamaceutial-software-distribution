@@ -2,10 +2,12 @@
 import axiosWithAuth from '@lib/axios.ts';
 import { PaginationFilterParams } from '@type/api/params.ts';
 import { Pagination, SuccessResponse } from '@type/api/response.ts';
-import { AdminType } from '@schema/admin/admin-schema.ts';
+import { AdminType, AminBranchFormFieldCreation } from '@schema/admin/admin-schema.ts';
 import { UserSchema } from '@schema/user-schema.ts';
 import { AdminGettingBranches, BranchType } from '@schema/branch-schema.ts';
+import { Subscription } from '@schema/subscription-schema.ts';
 
+// Get admin data
 export const getAdminData = async (filter: PaginationFilterParams, isMock?: boolean) => {
 	try {
 		const response = await axiosWithAuth.get<SuccessResponse<Pagination<AdminType>>>(`/admin`);
@@ -16,6 +18,7 @@ export const getAdminData = async (filter: PaginationFilterParams, isMock?: bool
 	}
 };
 
+// Create admin data
 export const createAdminData = async (admin: Partial<AdminType>) => {
 	try {
 		const response = await axiosWithAuth.post<SuccessResponse<AdminType>>(`/admin`, admin);
@@ -26,6 +29,7 @@ export const createAdminData = async (admin: Partial<AdminType>) => {
 	}
 }
 
+// Get admin data by id
 export const getAdminDataById = async (adminId: string) => {
 	try {
 		const response = await axiosWithAuth.get<SuccessResponse<AdminType>>(`/admin/${adminId}`);
@@ -36,6 +40,7 @@ export const getAdminDataById = async (adminId: string) => {
 	}
 }
 
+// Update admin data
 export const updateAdminData = async (adminId: string, admin: Partial<AdminType>) => {
 	try {
 		const response = await axiosWithAuth.post<SuccessResponse<AdminType>>(`/admin/${adminId}`, admin);
@@ -46,6 +51,7 @@ export const updateAdminData = async (adminId: string, admin: Partial<AdminType>
 	}
 }
 
+// Check high end admin
 export const checkHighEndAdmin = async () => {
 	try {
 		const response = await axiosWithAuth.get<SuccessResponse<boolean>>(`/admin/check-high-end`);
@@ -56,9 +62,10 @@ export const checkHighEndAdmin = async () => {
 	}
 }
 
+// Delete admin data
 export const deleteAdminData = async (adminId: string) => {
 	try {
-		const response = await axiosWithAuth.delete<SuccessResponse<boolean>>(`/admin/${adminId}`);
+		const response = await axiosWithAuth.delete<SuccessResponse<AdminType>>(`/admin/${adminId}`);
 
 		return response.data.data;
 	} catch (error) {
@@ -66,6 +73,7 @@ export const deleteAdminData = async (adminId: string) => {
 	}
 }
 
+// Get admin subscription
 export const setAdminSubscription = async (adminId: string, subscription: string) => {
 	try {
 		const response = await axiosWithAuth.post<SuccessResponse<boolean>>(`/admin/subscription`, {
@@ -82,6 +90,7 @@ export const setAdminSubscription = async (adminId: string, subscription: string
 	}
 }
 
+// Get user subscription
 export const setUserSubscription = async (userId: string,  subscription: string) => {
 	try {
 		const response = await axiosWithAuth.post<SuccessResponse<boolean>>(`/admin/subscription`, {
@@ -98,6 +107,7 @@ export const setUserSubscription = async (userId: string,  subscription: string)
 	}
 }
 
+// Get user slave list
 export const getUserSlaveList = async (filter: PaginationFilterParams) => {
 	try {
 		const response = await axiosWithAuth.get<SuccessResponse<Pagination<UserSchema>>>(`/admin/user-slave`, {
@@ -117,6 +127,18 @@ export const getUserSlaveList = async (filter: PaginationFilterParams) => {
 	}
 }
 
+// Delete user slave
+export const deleteUserSlave = async (userId: string) => {
+	try {
+		const response = await axiosWithAuth.delete<SuccessResponse<UserSchema>>(`/admin/user-slave/${userId}`);
+		return response.data.data;
+	} catch (error) {
+		console.error('Error deleting user:', error);
+		throw error;
+	}
+}
+
+// Create or update user slave
 export const createOrUpdateUserSlave = async (user: Partial<UserSchema>) => {
 	try {
 		const response = await axiosWithAuth.post<SuccessResponse<UserSchema>>(`/admin/user-slave`, user);
@@ -127,7 +149,13 @@ export const createOrUpdateUserSlave = async (user: Partial<UserSchema>) => {
 	}
 }
 
-export const getBranches = async (filter: PaginationFilterParams) => {
+// Get branch list
+export const getBranches = async (
+	filter: PaginationFilterParams
+		& {
+		paymentStatus?: string;
+	}
+) => {
 	try {
 		const response = await axiosWithAuth.get<SuccessResponse<Pagination<AdminGettingBranches>>>(`/admin/branches`, {
 			params: {
@@ -137,6 +165,7 @@ export const getBranches = async (filter: PaginationFilterParams) => {
 				searchFields: filter.searchFields,
 				orderBy: filter.orderBy,
 				filterBy: filter.filterBy,
+				paymentStatus: filter.paymentStatus,
 			},
 		});
 		return response.data.data;
@@ -146,12 +175,48 @@ export const getBranches = async (filter: PaginationFilterParams) => {
 	}
 }
 
-export const createOrUpdateBranch = async (branch: Partial<AdminGettingBranches>) => {
+export const getBranchPaymentStat = async () => {
+	try {
+		const response = await axiosWithAuth.get<SuccessResponse<Record<string, number>>>(`/admin/payment-stat`);
+		return response.data.data;
+	} catch (error) {
+		console.error('Error getting branch payment stat:', error);
+		throw error;
+	}
+}
+
+// Delete branch
+export const deleteBranch = async (branchId: string) => {
+	try {
+		const response = await axiosWithAuth.delete<SuccessResponse<AdminGettingBranches>>(`/admin/branches/${branchId}`);
+		return response.data.data;
+	} catch (error) {
+		console.error('Error deleting branch:', error);
+		throw error;
+	}
+}
+
+// Create or update branch
+export const createOrUpdateBranch = async (branch: Partial<AminBranchFormFieldCreation>) => {
 	try {
 		const response = await axiosWithAuth.post<SuccessResponse<AdminGettingBranches>>(`/admin/branches`, branch);
 		return response.data.data;
 	} catch (error) {
 		console.error('Error creating branch:', error);
+		throw error;
+	}
+}
+
+export const updatePaymentSubscriptionStatus = async (type: "branch" | "admin", id: string, status: string) => {
+	try {
+		const response = await axiosWithAuth.post<SuccessResponse<Subscription>>(`/admin/payment-subscription`, {
+			type,
+			id,
+			status,
+		});
+		return response.data.data;
+	} catch (error) {
+		console.error('Error updating payment subscription status:', error);
 		throw error;
 	}
 }
