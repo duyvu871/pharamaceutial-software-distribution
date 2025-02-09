@@ -9,3 +9,8 @@ docker-compose up -d --build
 ```bash
 sh ./load_backup_docker.sh  ./backups/big_backup.sql
 ```
+
+## Dừng db:
+```bash
+docker-compose down
+```
