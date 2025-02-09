@@ -1,0 +1,47 @@
+services:
+  postgres:
+    build: .
+    container_name: erado_postgres
+    env_file:
+      - .env
+    environment:
+      TZ: Asia/Ho_Chi_Minh
+      POSTGRES_USER: ${DB_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${DB_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${DB_POSTGRES_DATABASE}
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_erado:/var/lib/postgresql/data
+      - ./init-db:/docker-entrypoint-initdb.d
+      - ./backups:/backup
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_POSTGRES_USER} -d ${DB_POSTGRES_DATABASE}"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    command:
+      - "postgres"
+      - "-c"
+      - "shared_buffers=256MB"
+      - "-c"
+      - "work_mem=32MB"
+  backup:
+    image: postgres:15-alpine
+    container_name: erado_backup
+    depends_on:
+      - postgres
+    env_file:
+      - .env
+    environment:
+      - TZ=Asia/Ho_Chi_Minh
+      - DB_HOST=postgres
+    entrypoint: ["/bin/sh", "-c", "/backup.sh"]
+    volumes:
+      - ./backup_interval.sh:/backup.sh:ro
+      - ./backups:/backup
+
+volumes:
+  postgres_erado:

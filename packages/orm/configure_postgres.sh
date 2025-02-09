@@ -12,7 +12,7 @@ if [ -z "$DB_POSTGRES_HOST" ] || [ -z "$DB_POSTGRES_PORT" ] || [ -z "$DB_POSTGRE
 fi
 
 # User và mật khẩu
-DATABASE_USER="nha_thuoc_user" # Bạn có thể tùy chỉnh tên user ở đây
+DATABASE_USER="$DB_POSTGRES_USER" # Bạn có thể tùy chỉnh tên user ở đây
 DATABASE_PASSWORD="$DB_POSTGRES_PASSWORD"
 DATABASE_NAME="$DB_POSTGRES_DATABASE"
 
