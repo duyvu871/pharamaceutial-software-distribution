@@ -494,6 +494,8 @@ model admins {
   admin_subsciption admin_subsciption[]
 
   admin_permissions admin_permissions[]
+
+  branch_plans branch_plans[]
 }
 
 model admin_to_user {
@@ -558,6 +560,7 @@ model subscriptions {
 
 model branch_plans {
   id          String   @id @default(uuid()) @db.Uuid
+  admin_id    String?  @db.Uuid
   plan_name   String   @db.VarChar(255)
   plan_type   String   @db.VarChar(255)
   price       Float
@@ -565,7 +568,8 @@ model branch_plans {
   description String?  @db.VarChar(255)
   createdAt   DateTime @default(now()) @db.Timestamptz(6)
   updatedAt   DateTime @updatedAt @db.Timestamptz(6)
-
+  
+  admins      admins?     @relation(fields: [admin_id], references: [id], onDelete: Cascade) // Thêm relation
   subscriptions subscriptions[]
 }
 

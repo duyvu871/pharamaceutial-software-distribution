@@ -71,6 +71,14 @@ export const sidebarItems: SidebarItem[] = [
 		label: "Cài đặt",
 		children: [
 			{
+				label: "Gói dịch vụ - cửa hàng",
+				href: "/admin/dashboard/settings/branch-plan",
+			},
+			{
+				label: "Gói dịch vụ - admin",
+				href: "/admin/dashboard/settings/branch-plan",
+			},
+			{
 				label: "Chung",
 				href: "/admin/dashboard/settings/general",
 			},

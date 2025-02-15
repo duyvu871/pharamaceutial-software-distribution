@@ -261,7 +261,7 @@ export class AdminController {
 			req: Request<
 				any,
 				any,
-				ConditionalRequired<UserCreation, "id", "password"|"username">,
+				ConditionalRequired<UserCreation, "id", "password" | "username">,
 				any
 			>,
 			res: Response
@@ -495,7 +495,7 @@ export class AdminController {
 				const jwtPayload = req.jwtPayload;
 				const id = jwtPayload?.id as string;
 				const userType = jwtPayload?.type as "MEMBERSHIP" | "USER" | "ADMIN";
-				const {branch_details, branch_integration, ...branch} = req.body;
+				const { branch_details, branch_integration, ...branch } = req.body;
 
 				let branchCreated;
 				let upsertBranchDetails: branch_details | null = null;
@@ -770,6 +770,31 @@ export class AdminController {
 			}
 		}
 	)
+
+	public static createAdminPlan = AsyncMiddleware.asyncHandler(
+		async (req: Request<any, any, {
+			plan_name: string;
+			plan_type: string;
+			price: number;
+			duration: number;
+			description?: string;
+		}>, res: Response) => {
+			const jwtPayload = req.jwtPayload;
+			const adminId = jwtPayload?.id as string;
+
+			if (!(await AdminTask.isAdminHighEnd(adminId))) {
+				throw new BadRequest("permission_denied", "Không có quyền tạo plan", "Permission denied");
+			}
+
+			const newPlan = await prisma.admin_plans.create({
+				data: {
+					...req.body,
+				}
+			});
+
+			return res.status(200).json(new Success(newPlan).toJson).end();
+		}
+	);
 
 	public static updatePaymentSubscription = AsyncMiddleware.asyncHandler(
 		async (req: Request<any, any, UpdatePaymentSubscriptionBody>, res: Response) => {
