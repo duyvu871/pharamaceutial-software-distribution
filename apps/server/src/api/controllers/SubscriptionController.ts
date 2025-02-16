@@ -199,5 +199,26 @@ export class SubscriptionController {
 		}
 	)
 
-	
+	public static getAdminSubscription = AsyncMiddleware.asyncHandler(
+		async (req: Request<BranchIdParam, any, any, PaginationQueryV2>, res: Response) => {
+			try {
+				const adminId = req.params.branchId;
+
+				const data = await prisma.admin_subsciption.findMany({
+					where: {
+						admin_id: adminId,
+					},
+					include: {
+						admin_plans: true
+					}
+				});
+
+				const response = new Success(data).toJson;
+
+				return res.status(200).json(response).end();
+			} catch (error) {
+				throw error;
+			}
+		}
+	)
 }

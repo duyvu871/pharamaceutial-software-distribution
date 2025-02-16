@@ -1,12 +1,13 @@
-import { Router, Request, Response } from "express";
+import { Router } from "express";
 import { validateBody, validateHeader, validateParams, validateQuery } from 'middlewares/ValidateRequest';
+import permissionMiddleware from 'middlewares/PermissionMiddleware';
+import uploadMiddleware from 'server/configs/upload.ts';
 import { AuthorizationValidation } from 'validations/Authorization';
 import { AuthController } from 'controllers/AuthController';
 import JsonWebToken from 'middlewares/JsonWebToken';
 import { UserController } from 'controllers/UserController';
 import { UserValidation } from 'validations/User';
 import { BranchValidation } from 'validations/Branch';
-import permissionMiddleware from 'middlewares/PermissionMiddleware';
 import { BranchPermission } from 'server/repository/branch/schema';
 import { BranchController } from 'controllers/BranchController';
 import { AutocompleteValidation } from 'validations/Autocomplete';
@@ -21,11 +22,8 @@ import { ProductController } from 'controllers/ProductController';
 import { ProductValidation } from 'validations/Product.ts';
 import { ProviderController } from 'controllers/ProviderController.ts';
 import { InvoiceController } from 'controllers/InvoiceController.ts';
-import { InvoiceId, InvoiceValidation } from 'validations/Invoice.ts';
-import uploadMiddleware from 'server/configs/upload.ts';
+import { InvoiceValidation } from 'validations/Invoice.ts';
 import { storeRouter } from 'server/api/routes/store.ts';
-import { ImportController } from 'controllers/ImportController.ts';
-import { ImportValidation } from 'validations/ImportValidation.ts';
 import { importRoute } from 'server/api/routes/import.ts';
 import { uploadRouter } from 'server/api/routes/upload.ts';
 import { ProviderValidation } from 'validations/Provider.ts';
@@ -33,6 +31,7 @@ import { doctorRoute } from 'server/api/routes/doctor.ts';
 import { financialLedger } from 'server/api/routes/financial-ledger.ts';
 import { adminRoute } from 'server/api/routes/admin.ts';
 import { subscriptionRoute } from 'server/api/routes/subscription.ts';
+import { healthCheckRouter } from 'server/api/routes/health.ts';
 
 const apiRouter = Router();
 const pageRouter = Router();
@@ -58,7 +57,6 @@ apiRouter.route('/user/reset-password').post(
   ...authChain,
   validateBody(UserValidation.resetPassword),
   UserController.resetPassword);
-
 
 // Branch route
 apiRouter.route('/branch/create').post(
@@ -256,6 +254,7 @@ apiRouter.route('/invoice/:branchId/delete/:invoiceId').delete(
 
 
 // Store routes
+apiRouter.use(healthCheckRouter);
 apiRouter.use(storeRouter);
 apiRouter.use(importRoute);
 apiRouter.use(uploadRouter);
